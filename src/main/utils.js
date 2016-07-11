@@ -20,21 +20,6 @@ if(!Array.prototype.flattenDeep){
     };
 }
 
-function ObjectIdSet(){
-    Set.call(this);
-}
-ObjectIdSet.prototype = Object.create(Set.prototype);
-ObjectIdSet.prototype.has = function(test){
-    this.forEach((value) => {
-        if(value.equals(test)){
-            return true;
-        }
-    });
-    return false;
-};
-
-module.exports = ObjectIdSet;
-
 /*
 Array.prototype.merge = function(array){
     for(let i = 0; i < array.length; i++){

@@ -1,19 +1,15 @@
 'use strict';
 
 const Sentence = require('../model/sentenceModel');
-const annotationSetController = require('../../annotationSet/controller/annotationSetController');
-const InvalidArgumentException = require('../../../../exceptions/valencerException').InvalidArgumentException;
-const InconsistentDataException = require('../../../../exceptions/valencerException').InconsistentDataException;
+const annoSetController = require('../../annotationSet/controller/annotationSetController');
+const InconsistentDataException = require('../../../../exception/valencerException').InconsistentDataException
+const InvalidArgumentException = require('../../../../exception/valencerException').InvalidArgumentException
 const logger = require('../../logger');
 
 function importSentences(jsonixSentences){
     logger.info('Importing sentences');
     return jsonixSentences.map((jsonixSentence) => {
-        try{
-            return importSentence(jsonixSentence);
-        }catch(err){
-            // TODO: propagate error? 
-        }
+        return importSentence(jsonixSentence);
     });
 }
 
@@ -22,22 +18,8 @@ function* importSentence(jsonixSentence){
         throw new InvalidArgumentException('Cannot import sentence. Input is null or undefined.');
     }
     logger.verbose('Importing sentence with fn_id = '+jsonixSentence.id+' and text = '+jsonixSentence.text);
-    try{
-        var mySentencePromise = Sentence.findByFNId(jsonixSentence.id);
-        var mySentence = yield _toSentence(mySentencePromise, jsonixSentence);
-        var annotationSets = annotationSetController.importAnnotationSets(
-            annotationSetController.toJsonixAnnotationSetSubArray(jsonixSentence)
-        );
-        mySentence.annotationSets = annotationSets;
-        yield mySentence.save();
-        return mySentence;
-    }catch(err){
-        throw new Error(err);
-    }
-}
-
-function* _toSentence(sentencePromise, jsonixSentence){
-    var mySentence = yield sentencePromise;
+    var sentenceAnnoSets =  yield annoSetController.importAnnotationSets(toJsonixAnnoSetArray(jsonixSentence));
+    var mySentence = yield findSentenceByFNId(jsonixSentence.id);
     if(mySentence !== null){
         logger.silly('Sentence already exists in database. Comparing text values.');
         if(mySentence.text !== jsonixSentence.text){
@@ -45,7 +27,39 @@ function* _toSentence(sentencePromise, jsonixSentence){
                 ' not have same text');
         }else{
             logger.silly('Text values match. Proceeding.');
-            return mySentence;
+            mySentence.annotationSets = mergeAnnotationSets(mySentence.annotationSets, sentenceAnnoSets);
+        }
+    }else{
+        logger.silly('Sentence not in database. Creating new entry.');
+        mySentence = new Sentence({
+            fn_id: jsonixSentence.id,
+            text: jsonixSentence.text
+        });
+        mySentence.annotationSets = sentenceAnnoSets;
+        try{
+            yield mySentence.save();
+        }catch(err){
+            logger.error(err);
+        }
+    }
+    
+    try{
+        yield mySentence.save();
+        return mySentence;
+    }catch(err){
+        logger.error(err);
+    }
+}
+
+function* toSentence(jsonixSentence){
+    var mySentence = yield findSentenceByFNId(jsonixSentence.id);
+    if(mySentence !== null){
+        logger.silly('Sentence already exists in database. Comparing text values.');
+        if(mySentence.text !== jsonixSentence.text){
+            throw new InconsistentDataException('FrameNet database inconsistency detected: sentences with same ID do' +
+                ' not have same text');
+        }else{
+            logger.silly('Text values match. Proceeding.');
         }
     }else{
         logger.silly('Sentence not in database. Creating new entry.');
@@ -55,58 +69,43 @@ function* _toSentence(sentencePromise, jsonixSentence){
         });
         try{
             yield mySentence.save();
-            return mySentence;
         }catch(err){
-            throw new Error(err);   
+            logger.error(err);
         }
     }
+    return mySentence;
 }
 
-function* mergeAnnotationSetObjectIdSetAndSave(jsonixSentence, mongooseSentence){
-    /*if(!mongooseSentence && !jsonixSentence){
-
-    }else{
-        return Promise.reject('Cannot merge annotationSetObjectIdSet: input jsonixSentence and/or mongooseSentence' +
-            ' are null or undefined.');
-    }*/
-     var annotationSetObjectIdSet = yield annotationSetController.getAnnoSetObjectIdSetFromSentence(jsonixSentence);
-     mongooseSentence.annotationSets.merge(annotationSetObjectIdSet);
-     return mongooseSentence.save(); // This is a promise
+function findSentenceByFNId(fn_id){
+    return Sentence.findByFNId(fn_id);
 }
 
-function toJsonixSentenceArray(jsonixLexUnit){
-    if(!jsonixLexUnit){
-        throw new InvalidArgumentException('Cannot get sentences. Input lexUnit is null or undefined.')
+function toJsonixAnnoSetArray(jsonixSentence){
+    if(!jsonixSentence){
+        throw new InvalidArgumentException('Cannot get annotationSets. Input jsonixSentence is null or undefined.')
     }
-    // Catching errors thrown by Jsonix
+    logger.verbose('Getting all annotationSets from jsonixSentence');
     try{
-        logger.verbose('Getting all sentences from lexUnit');
-        var sentences = [];
-        var subCorpusIterator = 0;
-        if(jsonixLexUnit.value.hasOwnProperty('subCorpus')){
-            while(jsonixLexUnit.value.subCorpus[subCorpusIterator] !== undefined){
-                var subCorpus = jsonixLexUnit.value.subCorpus[subCorpusIterator];
-                logger.silly('Processing subCorpus: '+subCorpus.name);
-                var sentenceIterator = 0;
-                if(subCorpus.hasOwnProperty('sentence')){
-                    while(subCorpus.sentence[sentenceIterator] !== undefined) {
-                        var sentence = subCorpus.sentence[sentenceIterator];
-                        logger.silly('Processing sentence: fn_id = '+ sentence.id + ' text = ' + sentence.text);
-                        sentences.push(sentence);
-                        sentenceIterator++;
-                    }
-                }
-                subCorpusIterator++;
+        var annotationSets = [];
+        var annoSetIterator = 0;
+        if(jsonixSentence.hasOwnProperty('annotationSet')){
+            while(jsonixSentence.annotationSet[annoSetIterator] !== undefined){
+                let annotationSet = jsonixSentence.annotationSet[annoSetIterator];
+                logger.silly('Processing AnnotationSet: fn_id = ' + annotationSet.id);
+                annotationSets.push(annotationSet);
+                annoSetIterator ++;
             }
         }
-        return sentences;
+        return annotationSets;
     }catch(err){
-        throw new Error(err);
+        logger.error(err);
     }
 }
 
 module.exports = {
-    toJsonixSentenceArray,
+    importSentences,
     importSentence,
-    importSentences
+    toSentence,
+    findSentenceByFNId,
+    toJsonixAnnoSetArray
 };

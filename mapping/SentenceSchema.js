@@ -275,10 +275,7 @@ var SentenceSchema_Module_Factory = function () {
         localName: 'POSType',
         values: ['N', 'V', 'A', 'ADV', 'PRON', 'PREP', 'NUM', 'C', 'INTJ', 'ART', 'SCON', 'CCON', 'AVP']
       }],
-    elementInfos: [{
-      elementName: 'sentence',
-      typeInfo: '.SentenceType'
-    }]
+    elementInfos: []
   };
   return {
     SentenceSchema: SentenceSchema

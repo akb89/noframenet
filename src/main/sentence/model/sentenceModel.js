@@ -1,19 +1,20 @@
 'use strict';
 
 const mongoose = require('mongoose');
+mongoose.Promise = require('bluebird');
 
-var SentenceSchema = mongoose.Schema({
+var sentenceSchema = mongoose.Schema({
     fn_id: {type: Number},
     text: {type: String},
-    annotationSets: [{type: mongoose.Schema.Types.ObjectId, ref: 'AnnotationSet'}]
+    annotationSets: [{type: mongoose.Schema.Types.ObjectId, ref: 'AnnotationSet'}] // TODO: remove?
 });
 
-SentenceSchema.index({fn_id: 1}, {unique: true});
+sentenceSchema.index({fn_id: 1}, {unique: true});
 
-SentenceSchema.static('findByFNId', function(fnId){
+sentenceSchema.static('findByFNId', function(fnId){
     return this.findOne().where('fn_id').equals(fnId);
 });
 
-var Sentence = mongoose.model('Sentence', SentenceSchema);
+var Sentence = mongoose.model('Sentence', sentenceSchema);
 
 module.exports = Sentence;

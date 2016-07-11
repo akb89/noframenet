@@ -1,6 +1,7 @@
 'use strict';
 
 const mongoose = require('mongoose');
+mongoose.Promise = require('bluebird');
 
 var valenceUnitSchema = mongoose.Schema({
     FE: {type: String, index:true},

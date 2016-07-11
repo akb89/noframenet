@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<?xml-stylesheet type="text/xsl" href="sentence.xsl"?>
+<sentence corpID="113" docID="8082" sentNo="2" paragNo="11" aPos="91295950" ID="1304134" xsi:schemaLocation="../schema/sentence.xsd" xmlns="http://framenet.icsi.berkeley.edu" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <text>But he bemoaned the fratricide that has forced millions of refugees from Rwanda and Burundi since last year .</text>
+    <annotationSet cDate="01/15/2005 01:11:51 PST Sat" status="UNANN" ID="2056429">
+        <layer rank="1" name="PENN">
+            <label end="2" start="0" name="cc"/>
+            <label end="5" start="4" name="PP"/>
+            <label end="14" start="7" name="VVD"/>
+            <label end="18" start="16" name="dt"/>
+            <label end="29" start="20" name="nn"/>
+            <label end="34" start="31" name="wdt"/>
+            <label end="38" start="36" name="VHZ"/>
+            <label end="45" start="40" name="VVN"/>
+            <label end="54" start="47" name="nns"/>
+            <label end="57" start="56" name="in"/>
+            <label end="66" start="59" name="nns"/>
+            <label end="71" start="68" name="in"/>
+            <label end="78" start="73" name="NP"/>
+            <label end="82" start="80" name="cc"/>
+            <label end="90" start="84" name="NP"/>
+            <label end="96" start="92" name="in"/>
+            <label end="101" start="98" name="jj"/>
+            <label end="106" start="103" name="nn"/>
+            <label end="108" start="108" name="sent"/>
+        </layer>
+        <layer rank="1" name="NER"/>
+        <layer rank="1" name="WSL"/>
+    </annotationSet>
+    <annotationSet cDate="01/15/2005 01:11:51 PST Sat" status="MANUAL" ID="2056430">
+        <layer rank="1" name="Target">
+            <label cBy="Pam" end="29" start="20" name="Target"/>
+        </layer>
+        <layer rank="1" name="FE"/>
+        <layer rank="1" name="GF"/>
+        <layer rank="1" name="PT"/>
+        <layer rank="1" name="Other"/>
+        <layer rank="1" name="Sent"/>
+        <layer rank="1" name="Noun">
+            <label end="14" start="7" name="Gov"/>
+            <label end="106" start="16" name="X"/>
+        </layer>
+    </annotationSet>
+    <annotationSet cDate="01/06/2003 07:17:13 PST Mon" status="MANUAL" ID="79947">
+        <layer rank="1" name="FE">
+            <label cBy="Shw" feID="4450" end="104" start="85" name="Killer"/>
+            <label cBy="Shw" feID="4451" itype="INI" name="Victim"/>
+        </layer>
+        <layer rank="1" name="GF">
+            <label end="104" start="85" name="Ext"/>
+        </layer>
+        <layer rank="1" name="PT">
+            <label end="104" start="85" name="NP"/>
+        </layer>
+        <layer rank="1" name="Sent">
+            <label end="0" start="0" name="Metaphor"/>
+        </layer>
+        <layer rank="1" name="Other"/>
+        <layer rank="1" name="Target">
+            <label cBy="BoC" end="132" start="123" name="Target"/>
+        </layer>
+        <layer rank="1" name="Noun"/>
+    </annotationSet>
+</sentence>

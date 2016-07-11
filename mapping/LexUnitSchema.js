@@ -29,7 +29,7 @@ var LexUnitSchema_Module_Factory = function () {
           }]
       }, {
         localName: 'LabelType',
-        typeName: 'type',
+        typeName: 'labelType',
         propertyInfos: [{
             name: 'name',
             required: true,
@@ -125,7 +125,7 @@ var LexUnitSchema_Module_Factory = function () {
             collection: true,
             typeInfo: '.SemTypeRefType'
           }, {
-            name: 'valenceUnits',
+            name: 'valences',
             typeInfo: '.ValencesType'
           }, {
             name: 'subCorpus',

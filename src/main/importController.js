@@ -17,7 +17,7 @@ const logger = require('./logger');
 const OPEN_FILES_LIMIT = 500; //TODO externalize
 const path = require('path');
 
-//const annotationSetController = require('./annotationSet/controller/annotationSetController');
+//const annoSetController = require('./AnnotationSet/controller/annoSetController');
 //const sentenceController = require('./sentence/controller/sentenceController');
 
 importController.importData = function*(next){
@@ -66,12 +66,12 @@ function processFile(__directory, file) {
 function importAnnotationSet(annotationSet){
     let layers = getLayers(annotationSet);
     if(layers.length == 0 || layers == null){
-        logger.error('Cannot import annotationSet. Layers array is empty, null of undefined.');
+        logger.error('Cannot import AnnotationSet. Layers array is empty, null of undefined.');
     }else{
-        logger.debug('Importing annotationSet');
+        logger.debug('Importing AnnotationSet');
         let labelObjectIdSet = getLabelObjectIdSet(layers);
         if(labelObjectIdSet.length === 0 || labelObjectIdSet == null){
-            logger.error('Cannot import annotationSet with fn_id = '+annotationSet.ID+'. LabelObjectIdSet is empty,' +
+            logger.error('Cannot import AnnotationSet with fn_id = '+annotationSet.ID+'. LabelObjectIdSet is empty,' +
                 ' null or undefined.');
         }else{
             let myAnnotationSet = new AnnotationSet();
@@ -122,7 +122,7 @@ function getLabelObjectIdSet(layers){
 function getLayers(annotationSet){
     let layers = [];
     if(annotationSet == null){
-        logger.error('Cannot get layers. Input annotationSet is null or undefined.'); // TODO Check
+        logger.error('Cannot get layers. Input AnnotationSet is null or undefined.'); // TODO Check
     }else{
         let layerIterator = 0;
         while(annotationSet.layer[layerIterator] !== undefined){
@@ -134,7 +134,7 @@ function getLayers(annotationSet){
 }
 
 function isValidLayer(layerName){
-    // TODO externalize parameters in this function as import configs.
+    // TODO externalize parameters in this function as import config.
     if(layerName === 'FE' || layerName === 'PT' || layerName === 'GF'){
         return true;
     }
@@ -170,22 +170,22 @@ function* importXmlLexUnitContent(jsonixLexUnit){
     try{
 
         // import AnnotationSets
-        yield annotationSetController.importAnnotationSets(annotationSetController.toJsonixAnnotationSetArray(lexUnit));
+        yield annoSetController.importAnnotationSets(annoSetController.toJsonixAnnoSetArray(jsonixLexUnit));
 
         // import labels
-        importLabels(getLabels(lexUnit));
+        importLabels(getLabels(jsonixLexUnit));
 
         // import patterns
-        importPatterns(getPatterns(lexUnit));
+        importPatterns(getPatterns(jsonixLexUnit));
 
         // import valenceUnits
-        importValenceUnits(getValenceUnits(lexUnit));
+        importValenceUnits(getValenceUnits(jsonixLexUnit));
 
         // import labelSets
-        importLabelSets(getLabelSets(lexUnit));
+        importLabelSets(getLabelSets(jsonixLexUnit));
 
         // import lexUnits
-        importLexUnits(getLexUnits(lexUnit));
+        importLexUnits(getLexUnits(jsonixLexUnit));
     }catch(err){
 
     }
