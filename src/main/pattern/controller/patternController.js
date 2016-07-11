@@ -19,20 +19,25 @@ function* importPattern(jsonixPattern){
         throw new InvalidArgumentException('Cannot import Pattern. Input jsonixPattern is null or undefined.');
     }
     logger.silly('Importing Pattern');
-        var valenceUnits = yield valenceUnitController.importValenceUnits(toJsonixValenceUnitArray(jsonixPattern));
-        var myPattern = yield findPatternByValenceUnits(valenceUnits);
-        var patternAnnoSets = yield findAnnotationSets(toJsonixAnnoSetArray(jsonixPattern));
-        if(patternAnnoSets.includes(null)){
-            throw new Error('Pattern contains AnnotationSet references not in the database.');
-        }
-        if(myPattern !== null){
-            logger.silly('Pattern already exists in database. Updating annotationSets references.');
-            myPattern.annotationSets = mergeAnnotationSets(myPattern.annotationSets, patternAnnoSets);
-        }else{
-            logger.silly('Pattern does not exist in database. Creating new entry.');
-            myPattern = new Pattern();
-            myPattern.annotationSets = patternAnnoSets;
-        }
+    var valenceUnits = yield valenceUnitController.importValenceUnits(toJsonixValenceUnitArray(jsonixPattern));
+    var myPattern = yield findPatternByValenceUnits(valenceUnits);
+    var patternAnnoSets = yield findAnnotationSets(toJsonixAnnoSetArray(jsonixPattern));
+    var savedPattern = yield _importPattern(myPattern, patternAnnoSets, valenceUnits);
+    return savedPattern;
+}
+
+function* _importPattern(myPattern, patternAnnoSets, valenceUnits){
+    if(patternAnnoSets.includes(null)){
+        throw new Error('Pattern contains AnnotationSet references not in the database.');
+    }
+    if(myPattern !== null){
+        logger.silly('Pattern already exists in database. Updating annotationSets references.');
+        myPattern.annotationSets = mergeAnnotationSets(myPattern.annotationSets, patternAnnoSets);
+    }else{
+        logger.silly('Pattern does not exist in database. Creating new entry.');
+        myPattern = new Pattern();
+        myPattern.annotationSets = patternAnnoSets;
+    }
     try{
         myPattern.valenceUnits = valenceUnits;
         yield myPattern.save();
@@ -97,6 +102,7 @@ function toJsonixValenceUnitArray(jsonixPattern){
 module.exports = {
     importPatterns,
     importPattern,
+    _importPattern,
     findPatternByValenceUnits,
     mergeAnnotationSets,
     findAnnotationSets,

@@ -10,6 +10,10 @@ var valenceUnitSchema = mongoose.Schema({
 });
 valenceUnitSchema.index({FE: 1, PT: 1, GF: 1}, {unique: true});
 
+valenceUnitSchema.static('findByLabels', function (feLabel, ptLabel, gfLabel) {
+    return ValenceUnit.findOne().where('FE').equals(feLabel).where('PT').equals(ptLabel).where('GF').equals(gfLabel);
+});
+
 valenceUnitSchema.static('findByTokenTypes', function (labeledTokenArray){
     let query = 'this.find()';
     for(let i = 0; i < labeledTokenArray; i++){

@@ -16,16 +16,7 @@ function* importValenceUnit(jsonixValenceUnit){
         throw new InvalidArgumentException('Cannot import valence unit. Input jsonixValenceUnit is null or undefined.');
     }
     logger.verbose('Importing valence unit FE = '+jsonixValenceUnit.fe+' PT = '+jsonixValenceUnit.pt+' GF = '+jsonixValenceUnit.gf);
-    try{
-        var myValenceUnit = yield toValenceUnit(jsonixValenceUnit);
-        return myValenceUnit;
-    }catch(err){
-        logger.error(err);
-    }
-}
-
-function* toValenceUnit(jsonixValenceUnit){
-    var myValenceUnit = yield toValenceUnitPromise(jsonixValenceUnit);
+    var myValenceUnit = yield findValenceUnitByLabels(jsonixValenceUnit.fe, jsonixValenceUnit.pt, jsonixValenceUnit.gf);
     if(myValenceUnit !== null){
         logger.silly('ValenceUnit already exists in the database.');
         return myValenceUnit
@@ -45,13 +36,12 @@ function* toValenceUnit(jsonixValenceUnit){
     }
 }
 
-function toValenceUnitPromise(jsonixValenceUnit){
-    return ValenceUnit.findOne().where('FE').equals(jsonixValenceUnit.fe).where('PT').equals(jsonixValenceUnit.pt).where('GF').equals(jsonixValenceUnit.gf);
+function findValenceUnitByLabels(feLabel, ptLabel, gfLabel){
+    return ValenceUnit.findByLabels(feLabel, ptLabel, gfLabel);
 }
 
 module.exports = {
     importValenceUnits,
     importValenceUnit,
-    toValenceUnit,
-    toValenceUnitPromise
+    findValenceUnitByLabels
 };
