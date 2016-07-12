@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 mongoose.Promise = require('bluebird');
 
 var labelSchema = mongoose.Schema({
-    name:  {type: String, index:true}, // TODO : add fn_id for FE?é
+    name:  {type: String, index:true}, // TODO : add fn_id for FE?
     type:  {type: String},
     startPos:   {type: Number},
     endPos:     {type: Number}

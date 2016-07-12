@@ -41,11 +41,6 @@ function findPatternByValenceUnits(valenceUnits){
     return Pattern.findByValenceUnits(valenceUnits);
 }
 
-// TODO remove later
-function mergeAnnotationSets(annoSetArray1, annoSetArray2){
-    return annoSetArray1.merge(annoSetArray2).sort();
-}
-
 function toJsonixAnnoSetArray(jsonixPattern){
     var annotationSets = [];
     var annotationSetIterator = 0;
@@ -74,7 +69,6 @@ module.exports = {
     importPatterns,
     importPattern,
     findPatternByValenceUnits,
-    mergeAnnotationSets,
     findAnnotationSets,
     toJsonixAnnoSetArray,
     toJsonixValenceUnitArray

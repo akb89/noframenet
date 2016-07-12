@@ -10,7 +10,7 @@ var lexUnitSchema = mongoose.Schema({
     status: {type: String},
     frame: {type: String},
     frameId: {type: Number},
-    totalAnnotated: {type: Number},
+    totalAnnotated: {type: Number}
 });
 
 lexUnitSchema.static('findByFNId', function(fnId){

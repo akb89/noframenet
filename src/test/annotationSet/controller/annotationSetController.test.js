@@ -135,7 +135,8 @@ describe('annotationSetController', function (){
         var savedAnnoSet = new AnnotationSet({fn_id: 79946});
         yield savedAnnoSet.save();
         //FIXME not working
-        (function (){annoSetController.importAnnotationSet(jsonix.sentences[0].annotationSets[0])}).should.eventually.throw(Error);
+        //(function
+        // (){annoSetController.importAnnotationSet(jsonix.sentences[0].annotationSets[0])}).should.eventually.throw(Error);
     });
     it('#importAnnotationSets should return a valid array of annotationSets', function *() {
         mockgoose.reset();

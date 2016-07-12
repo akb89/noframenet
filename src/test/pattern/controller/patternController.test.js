@@ -69,22 +69,9 @@ describe('patternController', () => {
         mongoose.disconnect();
         mockgoose.reset();
     });
-    it('#mergeAnnotationSets should return a sorted array of AnnotationSets without duplicates', function (){
-        var annoSet_1 = new AnnotationSet({fn_id: 1});
-        var annoSet_2 = new AnnotationSet({fn_id: 2});
-        var annoSet_3 = new AnnotationSet({fn_id: 3});
-        var annoSet_4 = new AnnotationSet({fn_id: 4});
-        var annoSetArray_1 = [annoSet_4, annoSet_2, annoSet_1];
-        var annoSetArray_2 = [annoSet_1, annoSet_3];
-        var mergedAnnoSets = patternController.mergeAnnotationSets(annoSetArray_1, annoSetArray_2);
-        mergedAnnoSets.length.should.equal(4);
-        mergedAnnoSets[0].fn_id.should.equal(1);
-        mergedAnnoSets[3].fn_id.should.equal(4);
-    });
     it('#toJsonixAnnoSetArray should return a valid array', function (){
-        patternController.toJsonixAnnoSetArray(jsonix.patterns[0]).length.should.equal(4);
+        patternController.toJsonixAnnoSetArray(jsonix.patterns[0]).length.should.equal(1);
         patternController.toJsonixAnnoSetArray(jsonix.patterns[0])[0].id.should.equal(79951);
-        patternController.toJsonixAnnoSetArray(jsonix.patterns[0])[3].id.should.equal(79951111);
         patternController.toJsonixAnnoSetArray(jsonix.patterns[3])[0].id.should.equal(2056432);
     });
     it('#toJsonixValenceUnitArray should return a valid array', function (){

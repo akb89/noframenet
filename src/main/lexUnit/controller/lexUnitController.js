@@ -1,6 +1,5 @@
 'use strict';
 
-const annoSetController = require('../../annotationSet/controller/annotationSetController');
 const patternController = require('../../pattern/controller/patternController');
 const sentenceController = require('../../sentence/controller/sentenceController');
 const LexUnit = require('../model/lexUnitModel');
@@ -14,10 +13,8 @@ function* importLexUnit(jsonixLexUnit){
     logger.info('Importing lexUnit with fn_id = '+jsonixLexUnit.value.id+' and name = '+jsonixLexUnit.value.name);
     var myLexUnit = yield findLexUnitByFNId(jsonixLexUnit.value.id);
     if(myLexUnit !== null){
-        logger.silly('LexUnit already exists in database.')
-        yield sentenceController.importSentences(toJsonixSentenceArray(jsonixLexUnit));
-        let annoSets = yield annoSetController.importAnnotationSets(toJsonixAnnoSetArray(jsonixLexUnit));
-        yield annoSetController.updateLexUnitReferences(annoSets, myLexUnit);
+        logger.silly('LexUnit already exists in database.');
+        yield sentenceController.importSentences(toJsonixSentenceArray(jsonixLexUnit), myLexUnit);
         yield patternController.importPatterns(toJsonixPatternArray(jsonixLexUnit));
         return myLexUnit
     }
@@ -31,9 +28,7 @@ function* importLexUnit(jsonixLexUnit){
         frameId: jsonixLexUnit.value.frameId,
         totalAnnotated: jsonixLexUnit.value.totalAnnotated
     });
-    yield sentenceController.importSentences(toJsonixSentenceArray(jsonixLexUnit));
-    let annoSets = yield annoSetController.importAnnotationSets(toJsonixAnnoSetArray(jsonixLexUnit));
-    yield annoSetController.updateLexUnitReferences(annoSets, myLexUnit);
+    yield sentenceController.importSentences(toJsonixSentenceArray(jsonixLexUnit), myLexUnit);
     yield patternController.importPatterns(toJsonixPatternArray(jsonixLexUnit));
     return myLexUnit.save();
 }

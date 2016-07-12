@@ -75,9 +75,6 @@
                 <valenceUnit GF="" PT="INI" FE="Killer"/>
                 <valenceUnit GF="" PT="INI" FE="Victim"/>
                 <annoSet ID="79951"/>
-                <annoSet ID="799511"/>
-                <annoSet ID="7995111"/>
-                <annoSet ID="79951111"/>
             </pattern>
             <pattern total="1">
                 <valenceUnit GF="Ext" PT="NP" FE="Killer"/>

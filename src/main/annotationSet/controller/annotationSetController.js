@@ -5,26 +5,28 @@ const labelController = require('../../label/controller/labelController');
 const InvalidArgumentException = require('../../../../exception/valencerException').InvalidArgumentException
 const logger = require('../../logger');
 
-function importAnnotationSets(jsonixAnnotationSets){
+function importAnnotationSets(jsonixAnnotationSets, dbSentence, dbLexUnit){
     logger.info('Importing annotationSets');
     return jsonixAnnotationSets.map((jsonixAnnotationSet) => {
-        return importAnnotationSet(jsonixAnnotationSet);
+        return importAnnotationSet(jsonixAnnotationSet, dbSentence, dbLexUnit);
     });
 }
 
-function* importAnnotationSet(jsonixAnnotationSet){
+function* importAnnotationSet(jsonixAnnotationSet, dbSentence, dbLexUnit){
     logger.verbose('Importing AnnotationSet with fn_id = '+jsonixAnnotationSet.id);
     var myAnnotationSet = yield findAnnotationSetByFNId(jsonixAnnotationSet.id);
     if(myAnnotationSet !== null){
-        console.log('throwing error');
         throw new Error('AnnotationSet already exists in the database. AnnotationSets should not refer to multiple' +
             ' lexUnits.');
     }
     logger.silly('AnnotationSet not in database. Creating new entry.');
     myAnnotationSet = new AnnotationSet({fn_id: jsonixAnnotationSet.id});
-    myAnnotationSet.labels = yield labelController.importLabels(
+    myAnnotationSet.sentence = dbSentence;
+    myAnnotationSet.lexUnit = dbLexUnit;
+    myAnnotationSet.labels = yield labelController.importLabelsFromLayers(
         toJsonixLayerArray(jsonixAnnotationSet)
     );
+    // myAnnotationSet.pattern is updated during import of patterns
     return myAnnotationSet.save();
 }
 
@@ -58,22 +60,11 @@ function toJsonixLayerArray(jsonixAnnotationSet){
     var layerIterator = 0;
     if(jsonixAnnotationSet.hasOwnProperty('layer')){
         while(jsonixAnnotationSet.layer[layerIterator] !== undefined){
-            /*if(isValidLayer(jsonixAnnotationSet.layer[layerIterator])){
-                layers.push(jsonixAnnotationSet.layer[layerIterator]);
-            }*/
             layers.push(jsonixAnnotationSet.layer[layerIterator]);
             layerIterator++;
         }
     }
     return layers;
-}
-
-//TODO keep or remove?
-function isValidLayer(jsonixLayer){
-    if(jsonixLayer.name === 'FE' || jsonixLayer.name === 'PT' || jsonixLayer.name === 'GF' || jsonixLayer.name === 'Target'){
-        return true;
-    }
-    return false;
 }
 
 module.exports = {
