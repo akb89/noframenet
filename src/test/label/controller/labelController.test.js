@@ -1,20 +1,16 @@
 'use strict';
 
 const config = require('../../../../config/test');
-
 const mongoose = config.mongoose;
 const mockgoose = config.mockgoose;
 config.mochagen.install();
 const should = config.should;
 const unmarshaller = config.unmarshaller;
-
 const annoSetController = config.annoSetController;
 const labelController = config.labelController;
 const lexUnitController = config.lexUnitController;
 const sentenceController = config.sentenceController;
-
 const InvalidArgumentException = config.InvalidArgumentException;
-
 const lexUnitXmlPath = config.path.join(config.testLexUnitXmlDir, 'lu9080.xml');
 
 var lexUnitPromise = new Promise((resolve, reject) => {
@@ -27,32 +23,36 @@ var lexUnitPromise = new Promise((resolve, reject) => {
     }
 });
 
-var jsonixLexUnit;
-var jsonixSentenceArray;
-var jsonixAnnotationSetArray_0;
-var jsonixLayerArray_0_0;
-var jsonixLayerArray_0_1;
-var jsonixLabelArray_0_1_0;
+var jsonix = {
+    lexunit: null,
+    sentences: [{
+        annotationSets: [{
+            layers: [{
+                labels: []
+            }]
+        }]
+    }]
+};
 
 describe('labelController', () => {
     before(function*(done){
         yield mockgoose(mongoose);
         yield mongoose.connect('mongodb://example.com/TestingDB');
-        jsonixLexUnit = yield lexUnitPromise;
-        jsonixSentenceArray = lexUnitController.toJsonixSentenceArray(
-            jsonixLexUnit
+        jsonix.lexunit = yield lexUnitPromise;
+        jsonix.sentences = lexUnitController.toJsonixSentenceArray(
+            jsonix.lexunit
         );
-        jsonixAnnotationSetArray_0 = sentenceController.toJsonixAnnoSetArray(
-            jsonixSentenceArray[0]
+        jsonix.sentences[0].annotationSets = sentenceController.toJsonixAnnoSetArray(
+            jsonix.sentences[0]
         );
-        jsonixLayerArray_0_0 = annoSetController.toJsonixLayerArray(
-            jsonixAnnotationSetArray_0[0]
+        jsonix.sentences[0].annotationSets[0].layers = annoSetController.toJsonixLayerArray(
+            jsonix.sentences[0].annotationSets[0]
         );
-        jsonixLayerArray_0_1 = annoSetController.toJsonixLayerArray(
-            jsonixAnnotationSetArray_0[1]
+        jsonix.sentences[0].annotationSets[1].layers = annoSetController.toJsonixLayerArray(
+            jsonix.sentences[0].annotationSets[1]
         );
-        jsonixLabelArray_0_1_0 = labelController.toJsonixLabelArray(
-            jsonixLayerArray_0_1[0]
+        jsonix.sentences[0].annotationSets[1].layers[0].labels = labelController.toJsonixLabelArray(
+            jsonix.sentences[0].annotationSets[1].layers[0]
         );
         return done;
     });
@@ -60,48 +60,39 @@ describe('labelController', () => {
         mongoose.disconnect();
         mockgoose.reset();
     });
-    it('#toJsonixLabelArray should return a valid array', () => {
-        var jsonixLabelArray_0_0_0 = labelController.toJsonixLabelArray(
-            jsonixLayerArray_0_0[0]
+    it('#toJsonixLabelArray should return a valid array', function () {
+        var jsonixLabelArray = labelController.toJsonixLabelArray(
+            jsonix.sentences[0].annotationSets[0].layers[0]
         );
-        jsonixLabelArray_0_0_0.length.should.equal(31);
-        jsonixLabelArray_0_0_0[0].name.should.equal('ITJ');
-        jsonixLabelArray_0_0_0[0].start.should.equal(0);
-        jsonixLabelArray_0_0_0[0].end.should.equal(3);
+        jsonixLabelArray.length.should.equal(31);
+        jsonixLabelArray[0].name.should.equal('ITJ');
+        jsonixLabelArray[0].start.should.equal(0);
+        jsonixLabelArray[0].end.should.equal(3);
     });
-    it('#toLabelArray should return a valid array', () => {
-        jsonixLabelArray_0_1_0.length.should.equal(2);
-        jsonixLabelArray_0_1_0[1].name.should.equal('Victim');
-    });
-    it('#toLabel should throw an InvalidArgumentException when given an undefined input', () => {
-        return (() => {labelController.toLabel(undefined, undefined).should.throw(InvalidArgumentException)});
-        // TODO : check that. It's weird that it passes like this. 
-    });
-    it('#toLabel should throw an InvalidArgumentException when given an empty input', () => {
-        return (() => {labelController.toLabel(emptyLabelArray[0], undefined).should.throw(InvalidArgumentException)});
-        // TODO : check that. It's weird that it passes like this.
-    });
-    it('#toLabel should return a valid label', function *() {
-        var label_0_1_0_0 = yield labelController.toLabel(
-            jsonixLabelArray_0_1_0[0], jsonixLayerArray_0_1[0]
+    it('#importLabel should return a valid label', function *() {
+        mockgoose.reset();
+        var label = yield labelController.importLabel(
+            jsonix.sentences[0].annotationSets[1].layers[0].labels[0],
+            jsonix.sentences[0].annotationSets[1].layers[0]
         );
-        label_0_1_0_0.name.should.equal('Killer');
-        label_0_1_0_0.type.should.equal('FE');
-        label_0_1_0_0.startPos.should.equal(85);
-        label_0_1_0_0.endPos.should.equal(104);
+        label.name.should.equal('Killer');
+        label.type.should.equal('FE');
+        label.startPos.should.equal(85);
+        label.endPos.should.equal(104);
     });
-
     it('#importLayer should return a valid array of labels', function *() {
+        mockgoose.reset();
         var importedLayer = yield labelController.importLayer(
-            jsonixLayerArray_0_1[0]
+            jsonix.sentences[0].annotationSets[1].layers[0]
         );
         importedLayer.length.should.equal(2);
         importedLayer[0].name.should.equal('Killer');
         importedLayer[1].type.should.equal('FE');
     });
-    it('#importLabels should return a valid array of labels', function *() {
-        var importedLabels = yield labelController.importLabels(
-            jsonixLayerArray_0_1
+    it('#importLabelsFromLayers should return a valid array of labels', function *() {
+        mockgoose.reset();
+        var importedLabels = yield labelController.importLabelsFromLayers(
+            jsonix.sentences[0].annotationSets[1].layers
         );
         importedLabels.length.should.equal(6);
         importedLabels[5].name.should.equal('Target');

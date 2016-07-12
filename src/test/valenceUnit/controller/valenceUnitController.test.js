@@ -22,17 +22,22 @@ var lexUnitPromise = new Promise((resolve, reject) => {
     }
 });
 
-var jsonixLexUnit;
-var jsonixValenceUnitArray_0;
+var jsonix = {
+    lexUnit: null,
+    valenceUnits: null
+};
+
 var savedValenceUnit;
 
-describe('valenceUnitController', () => {
+describe('valenceUnitController', function (){
     before(function* (done) {
         yield mockgoose(mongoose);
         yield mongoose.connect('mongodb://example.com/TestingDB');
-        jsonixLexUnit = yield lexUnitPromise;
-        jsonixValenceUnitArray_0 = patternController.toJsonixValenceUnitArray(
-            lexUnitController.toJsonixPatternArray(jsonixLexUnit)[0]
+        jsonix.lexUnit = yield lexUnitPromise;
+        jsonix.valenceUnits = patternController.toJsonixValenceUnitArray(
+            lexUnitController.toJsonixPatternArray(
+                jsonix.lexUnit
+            )[0]
         );
         savedValenceUnit = new ValenceUnit({
             FE: 'Killer',
@@ -46,27 +51,27 @@ describe('valenceUnitController', () => {
         mongoose.disconnect();
         mockgoose.reset();
     });
-    it('#findValenceUnitByLabels should return a valid promise when expected', () => {
+    it('#findValenceUnitByLabels should return a valid promise when expected', function (){
         var jsonixExistingVU = patternController.toJsonixValenceUnitArray(
-            lexUnitController.toJsonixPatternArray(jsonixLexUnit)[2]
+            lexUnitController.toJsonixPatternArray(jsonix.lexUnit)[2]
         )[0];
         return valenceUnitController.findValenceUnitByLabels(jsonixExistingVU.fe, jsonixExistingVU.pt, jsonixExistingVU.gf).should.eventually.have.property('GF', 'Gen');
     });
-    it('#findValenceUnitByLabels should fail when expected', () => {
+    it('#findValenceUnitByLabels should fail when expected', function (){
         mockgoose.reset();
         var jsonixVU = patternController.toJsonixValenceUnitArray(
-            lexUnitController.toJsonixPatternArray(jsonixLexUnit)[0]
+            lexUnitController.toJsonixPatternArray(jsonix.lexUnit)[0]
         )[0];
         return valenceUnitController.findValenceUnitByLabels(jsonixVU.fe, jsonixVU.pt, jsonixVU.gf).should.eventually.equal(null);
     });
     it('#importValenceUnit should return a valid valenceUnit', function *() {
-        var valenceUnit = yield valenceUnitController.importValenceUnit(jsonixValenceUnitArray_0[0]);
+        var valenceUnit = yield valenceUnitController.importValenceUnit(jsonix.valenceUnits[0]);
         valenceUnit.FE.should.equal('Killer');
         valenceUnit.PT.should.equal('INI');
         valenceUnit.GF.should.equal('');
     });
     it('#importValenceUnits should return a valid array of valenceUnits', function *() {
-        var valenceUnits = yield valenceUnitController.importValenceUnits(jsonixValenceUnitArray_0);
+        var valenceUnits = yield valenceUnitController.importValenceUnits(jsonix.valenceUnits);
         valenceUnits.length.should.equal(2);
         valenceUnits[1].FE.should.equal('Victim');
     });

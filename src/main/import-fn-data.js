@@ -13,7 +13,7 @@ var context = new Jsonix.Context([FrameSchema, LexUnitSchema]);
 var unmarshaller = context.createUnmarshaller();
 
 var frameDir = properties.get('main.frame.directory');
-var lexUnitDir = properties.get('main.lexunit.directory');
+var lexUnitDir = properties.get('main.lexUnit.directory');
 
 var MongoClient = require('mongodb').MongoClient, assert = require('assert');
 

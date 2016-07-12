@@ -25,7 +25,7 @@ importController.importData = function*(next){
     yield next;
 };
 
-saveFNXmlLexUnitToDB(properties.get('main.lexunit.directory')).then((ok) => {console.log(ok)});
+saveFNXmlLexUnitToDB(properties.get('main.lexUnit.directory')).then((ok) => {console.log(ok)});
 
 // TODO must be yielded for call: yield saveTest() which returns, e.g. an array of true/false
 function saveFNXmlLexUnitToDB(lexUnitDir){
@@ -173,7 +173,7 @@ function* importXmlLexUnitContent(jsonixLexUnit){
         yield annoSetController.importAnnotationSets(annoSetController.toJsonixAnnoSetArray(jsonixLexUnit));
 
         // import labels
-        importLabels(getLabels(jsonixLexUnit));
+        importLabelsFromLayers(getLabels(jsonixLexUnit));
 
         // import patterns
         importPatterns(getPatterns(jsonixLexUnit));

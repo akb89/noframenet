@@ -11,7 +11,6 @@ var lexUnitSchema = mongoose.Schema({
     frame: {type: String},
     frameId: {type: Number},
     totalAnnotated: {type: Number},
-    sentences: [{type: mongoose.Schema.Types.ObjectId, ref: 'Sentence'}]
 });
 
 lexUnitSchema.static('findByFNId', function(fnId){

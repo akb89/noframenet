@@ -14,9 +14,6 @@ function importSentences(jsonixSentences){
 }
 
 function* importSentence(jsonixSentence){
-    if(!jsonixSentence){
-        throw new InvalidArgumentException('Cannot import sentence. Input is null or undefined.');
-    }
     logger.verbose('Importing sentence with fn_id = '+jsonixSentence.id+' and text = '+jsonixSentence.text);
     var sentenceAnnoSets =  yield annoSetController.importAnnotationSets(toJsonixAnnoSetArray(jsonixSentence));
     var mySentence = yield findSentenceByFNId(jsonixSentence.id);

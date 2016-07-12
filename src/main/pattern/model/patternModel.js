@@ -6,7 +6,6 @@ mongoose.Promise = require('bluebird');
 //TODO: implement mongoose validation to enforce uniqueness of patterns.
 var patternSchema = mongoose.Schema({
     valenceUnits: [{type: mongoose.Schema.Types.ObjectId, ref: 'ValenceUnit'}],
-    annotationSets: [{type: mongoose.Schema.Types.ObjectId, ref: 'AnnotationSet'}] //TODO remove
 });
 
 patternSchema.static('findByValenceUnits', function(valenceUnits){

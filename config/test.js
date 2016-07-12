@@ -15,6 +15,7 @@ chai.use(chaiAsPromised);
 chai.use(sinonChai);
 
 const should = chai.should();
+const expect = chai.expect;
 
 const unmarshaller = require('../mapping/Unmarshaller').Unmarshaller;
 
@@ -49,6 +50,7 @@ module.exports = {
     chai,
     sinon,
     should,
+    expect,
     InvalidArgumentException,
     unmarshaller,
     AnnotationSet,

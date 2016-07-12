@@ -1,16 +1,18 @@
 'use strict';
 
 const config = require('../../../../config/test');
-
 const mongoose = config.mongoose;
 const mockgoose = config.mockgoose;
 config.mochagen.install();
 const should = config.should;
+const expect = config.expect;
 const unmarshaller = config.unmarshaller;
-
+const AnnotationSet = config.AnnotationSet;
+const Pattern = config.Pattern;
 const annoSetController = config.annoSetController;
 const lexUnitController = config.lexUnitController;
 const sentenceController = config.sentenceController;
+const InvalidArgumentException = config.InvalidArgumentException;
 
 const lexUnitXmlPath = config.path.join(config.testLexUnitXmlDir, 'lu9080.xml');
 
@@ -24,24 +26,28 @@ var lexUnitPromise = new Promise((resolve, reject) => {
     }
 });
 
-var jsonixLexUnit;
-var jsonixSentenceArray;
-var jsonixAnnoSetArray_0;
-var jsonixAnnoSetArray_1;
+var jsonix = {
+    lexUnit: null,
+    sentences: [{
+        annotationsSets: [{
+            layers: []
+        }]
+    }]
+};
 
-describe('annotationSetController', () => {
+describe('annotationSetController', function (){
     before(function* (done) {
         yield mockgoose(mongoose);
         yield mongoose.connect('mongodb://example.com/TestingDB');
-        jsonixLexUnit = yield lexUnitPromise;
-        jsonixSentenceArray = lexUnitController.toJsonixSentenceArray(
-            jsonixLexUnit
+        jsonix.lexUnit = yield lexUnitPromise;
+        jsonix.sentences = lexUnitController.toJsonixSentenceArray(
+            jsonix.lexUnit
         );
-        jsonixAnnoSetArray_0 = sentenceController.toJsonixAnnoSetArray(
-            jsonixSentenceArray[0]
+        jsonix.sentences[0].annotationSets = sentenceController.toJsonixAnnoSetArray(
+            jsonix.sentences[0]
         );
-        jsonixAnnoSetArray_1 = sentenceController.toJsonixAnnoSetArray(
-            jsonixSentenceArray[1]
+        jsonix.sentences[1].annotationSets = sentenceController.toJsonixAnnoSetArray(
+            jsonix.sentences[1]
         );
         return done;
     });
@@ -49,47 +55,94 @@ describe('annotationSetController', () => {
         mongoose.disconnect();
         mockgoose.reset();
     });
-    it('#toJsonixLayerArray should return a valid array', () => {
-        var jsonixLayerArray_0_1 = annoSetController.toJsonixLayerArray(
-            jsonixAnnoSetArray_0[1]
+    it('#toJsonixLayerArray should return a valid array', function (){
+        jsonix.sentences[0].annotationSets[1].layers = annoSetController.toJsonixLayerArray(
+            jsonix.sentences[0].annotationSets[1]
         );
-        jsonixLayerArray_0_1.length.should.equal(7);
-        jsonixLayerArray_0_1[0].rank.should.equal(1);
-        jsonixLayerArray_0_1[0].name.should.equal('FE');
-    });
-    it('#toAnnotationSetPromise should return a valid promise when expected', () => {
-        return annoSetController.toAnnotationSetPromise(jsonixAnnoSetArray_0[0]).should.be.fulfilled;
-    });
-    it('#toAnnotationSetPromise should fail when expected', () => {
-        return annoSetController.toAnnotationSetPromise(jsonixAnnoSetArray_1[1]).should.eventually.equal(null);
-    });
-    it('#toAnnotationSet should return an AnnotationSet with a valid fn_id', function *() {
-        var annotationSet_0_0 = yield annoSetController.toAnnotationSet(
-            jsonixAnnoSetArray_0[0]
+        jsonix.sentences[0].annotationSets[0].layers = annoSetController.toJsonixLayerArray(
+            jsonix.sentences[0].annotationSets[0]
         );
-        annotationSet_0_0.fn_id.should.equal(79946);
+        jsonix.sentences[0].annotationSets[1].layers.length.should.equal(7);
+        jsonix.sentences[0].annotationSets[1].layers[0].rank.should.equal(1);
+        jsonix.sentences[0].annotationSets[1].layers[0].name.should.equal('FE');
+        jsonix.sentences[0].annotationSets[0].layers.length.should.equal(3);
+    });
+    it('#findAnnotationSetByFNId should fail when expected', function *(){
+        var annoSet = yield annoSetController.findAnnotationSetByFNId(jsonix.sentences[1].annotationSets[1].id).should.eventually.equal(null);
+        expect(annoSet).to.be.null;
+    });
+    it('#findAnnotationSetByFNId should return a valid promise when expected', function *(){
+        var savedAnnoSet = new AnnotationSet({fn_id: 79946});
+        yield savedAnnoSet.save();
+        var annoSet = yield annoSetController.findAnnotationSetByFNId(jsonix.sentences[0].annotationSets[0].id);
+        expect(annoSet).to.not.be.null;
+        annoSet.fn_id.should.equal(79946);
+    });
+    it('#updatePatternReference should update a given annotationSet.pattern reference', function *(){
+        mockgoose.reset();
+        var savedAnnoSet = new AnnotationSet({fn_id: 79946});
+        yield savedAnnoSet.save();
+        var pattern = new Pattern();
+        yield pattern.save();
+        expect(savedAnnoSet.pattern).to.be.undefined;
+        yield annoSetController.updatePatternReference(savedAnnoSet, pattern);
+        savedAnnoSet.pattern.should.not.be.undefined;
+    });
+    it('#updatePatternReferences should throw an InvalidArgumentException if the input annotationSet array contains' +
+        ' null entries', function *(){
+        mockgoose.reset();
+        var annoSetArray = [null, 'notNull'];
+        var pattern = new Pattern();
+        (function (){annoSetController.updatePatternReferences(annoSetArray, pattern)}).should.throw(InvalidArgumentException);
+    });
+    it('#updatePatternReferences should update all pattern references of a given array of annotationSet', function *(){
+        mockgoose.reset();
+        var savedAnnoSet1 = new AnnotationSet({fn_id: 79946});
+        yield savedAnnoSet1.save();
+        var savedAnnoSet2 = new AnnotationSet({fn_id: 79947});
+        yield savedAnnoSet2.save();
+        var annoSets = [savedAnnoSet1, savedAnnoSet2];
+        var pattern = new Pattern();
+        yield pattern.save();
+        expect(savedAnnoSet1.pattern).to.be.undefined;
+        expect(savedAnnoSet2.pattern).to.be.undefined;
+        yield annoSetController.updatePatternReferences(annoSets, pattern);
+        savedAnnoSet1.pattern.should.not.be.undefined;
+        savedAnnoSet2.pattern.should.not.be.undefined;
     });
     it('#importAnnotationSet should return a valid AnnotationSet', function *() {
-        var importedAnnoSet_1_0 = yield annoSetController.importAnnotationSet(
-            jsonixAnnoSetArray_1[0]
+        mockgoose.reset();
+        var importedAnnoSet = yield annoSetController.importAnnotationSet(
+            jsonix.sentences[1].annotationSets[0]
         );
-        importedAnnoSet_1_0.should.not.equal(null);
-        importedAnnoSet_1_0.fn_id.should.equal(79948);
+        importedAnnoSet.should.not.equal(null);
+        importedAnnoSet.fn_id.should.equal(79948);
     });
-    // TODO: test when labels are added (pushed) to an existing AnnotationSet with non-empty labels
     it('#importAnnotationSet should return an AnnotationSet with valid labels', function *() {
-        var importedAnnoSet_0_1 = yield annoSetController.importAnnotationSet(
-            jsonixAnnoSetArray_0[1]
+        var importedAnnoSet = yield annoSetController.importAnnotationSet(
+            jsonix.sentences[0].annotationSets[1]
         );
-        importedAnnoSet_0_1.labels.length.should.equal(6);
-        importedAnnoSet_0_1.labels[0].type.should.equal('FE');
-        importedAnnoSet_0_1.labels[0].name.should.equal('Killer');
+        importedAnnoSet.labels.length.should.equal(6);
+        importedAnnoSet.labels[0].type.should.equal('FE');
+        importedAnnoSet.labels[0].name.should.equal('Killer');
+    });
+    /**
+     * A given AnnotationSet is imported during import of a lexical unit. A given AnnotationSet can only refer to
+     * one lexical unit. Therefore, annotationSets should be inserted only once in the database.
+     */
+    it('#importAnnotationSet should throw an Error if AnnotationSet already exists in the database', function *() {
+        mockgoose.reset();
+        var savedAnnoSet = new AnnotationSet({fn_id: 79946});
+        yield savedAnnoSet.save();
+        //FIXME not working
+        (function (){annoSetController.importAnnotationSet(jsonix.sentences[0].annotationSets[0])}).should.eventually.throw(Error);
     });
     it('#importAnnotationSets should return a valid array of annotationSets', function *() {
-        var importedAnnotationSets = yield annoSetController.importAnnotationSets(
-            jsonixAnnoSetArray_0
+        mockgoose.reset();
+        var importedAnnoSets = yield annoSetController.importAnnotationSets(
+            sentenceController.toJsonixAnnoSetArray(jsonix.sentences[0])
         );
-        importedAnnotationSets.length.should.equal(2);
-        importedAnnotationSets[0].fn_id.should.equal(79946);
+        importedAnnoSets.length.should.equal(2);
+        importedAnnoSets[0].fn_id.should.equal(79946);
     });
 });

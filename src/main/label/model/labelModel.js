@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 mongoose.Promise = require('bluebird');
 
 var labelSchema = mongoose.Schema({
-    name:  {type: String, index:true}, // TODO : add fn_id for FE?
+    name:  {type: String, index:true}, // TODO : add fn_id for FE?é
     type:  {type: String},
     startPos:   {type: Number},
     endPos:     {type: Number}
@@ -12,10 +12,9 @@ var labelSchema = mongoose.Schema({
 
 labelSchema.index({name: 1, type: 1, startPos: 1, endPos: 1}, {unique: true});
 
-labelSchema.static('findLabel', function (label){
-    return Label.findOne().where('name').equals(label.name).where('type').equals(label.type).where('startPos').equals(label.startPos).where('endPos').equals(label.endPos);
+labelSchema.static('findLabel', function (name, type, startPos, endPos){
+    return Label.findOne().where('name').equals(name).where('type').equals(type).where('startPos').equals(startPos).where('endPos').equals(endPos);
 });
-
 
 var Label = mongoose.model('Label', labelSchema);
 
