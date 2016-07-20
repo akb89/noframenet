@@ -9,25 +9,32 @@ require('../../utils');
 
 function importPatterns(jsonixPatterns){
     logger.verbose('Importing patterns');
+    /*var patterns = [];
+    for(let jsonixPattern of jsonixPatterns){
+        var pattern = yield importPattern(jsonixPattern);
+        patterns.push(pattern);
+    }
+    return patterns;*/
     return jsonixPatterns.map((jsonixPattern) => {
         return importPattern(jsonixPattern);
     });
 }
-
+//FIXME
 function* importPattern(jsonixPattern){
     logger.silly('Importing Pattern');
     var valenceUnits = yield valenceUnitController.importValenceUnits(toJsonixValenceUnitArray(jsonixPattern));
     var myPattern = yield findPatternByValenceUnits(valenceUnits);
-    var patternAnnoSets = yield findAnnotationSets(toJsonixAnnoSetArray(jsonixPattern));
+    //var patternAnnoSets = yield findAnnotationSets(toJsonixAnnoSetArray(jsonixPattern));
     if(myPattern !== null){
         logger.silly('Pattern already exists in database. Updating annotationSets references');
-        yield annoSetController.updatePatternReferences(patternAnnoSets, myPattern);
+        //yield annoSetController.updatePatternReferences(patternAnnoSets, myPattern);
         return myPattern;
     }
     logger.silly('Pattern does not exist in database. Creating new entry.');
     myPattern = new Pattern();
     myPattern.valenceUnits = valenceUnits.sort();
-    yield annoSetController.updatePatternReferences(patternAnnoSets, myPattern);
+    //yield annoSetController.updatePatternReferences(patternAnnoSets, myPattern);
+    console.log('test');
     return myPattern.save();
 }
 

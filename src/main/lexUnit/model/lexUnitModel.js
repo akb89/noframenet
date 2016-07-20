@@ -13,6 +13,8 @@ var lexUnitSchema = mongoose.Schema({
     totalAnnotated: {type: Number}
 });
 
+lexUnitSchema.index({fn_id: 1}, {unique: true});
+
 lexUnitSchema.static('findByFNId', function(fnId){
     return this.findOne().where('fn_id').equals(fnId);
 });

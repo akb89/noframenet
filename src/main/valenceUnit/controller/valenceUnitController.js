@@ -3,11 +3,18 @@
 const ValenceUnit = require('../model/valenceUnitModel');
 const logger = require('../../logger');
 
-function importValenceUnits(jsonixValenceUnits){
+function* importValenceUnits(jsonixValenceUnits){
     logger.silly('Importing valence units');
+    var valenceUnits = [];
+    for(let jsonixValenceUnit of jsonixValenceUnits){
+        var valenceUnit = yield importValenceUnit(jsonixValenceUnit);
+        valenceUnits.push(valenceUnit);
+    }
+    return valenceUnits;
+    /*
     return jsonixValenceUnits.map((jsonixValenceUnit) => {
         return importValenceUnit(jsonixValenceUnit);
-    });
+    });*/
 }
 
 function* importValenceUnit(jsonixValenceUnit){
@@ -17,7 +24,7 @@ function* importValenceUnit(jsonixValenceUnit){
         logger.silly('ValenceUnit already exists in the database.');
         return myValenceUnit
     }
-    logger.silly('ValenceUnit not in database. Creating new entry.');
+    logger.silly('ValenceUnit not in database. Creating new entry for FE.PT.GF = '+jsonixValenceUnit.fe+'.'+jsonixValenceUnit.pt+'.'+jsonixValenceUnit.gf);
     myValenceUnit = new ValenceUnit({
         FE: jsonixValenceUnit.fe,
         PT: jsonixValenceUnit.pt,

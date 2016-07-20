@@ -4,11 +4,18 @@ const Sentence = require('../model/sentenceModel');
 const annoSetController = require('../../annotationSet/controller/annotationSetController');
 const logger = require('../../logger');
 
-function importSentences(jsonixSentences, dbLexUnit){
-    logger.info('Importing sentences');
+function* importSentences(jsonixSentences, dbLexUnit){
+    logger.verbose('Importing sentences');
+    var sentences = [];
+    for(let jsonixSentence of jsonixSentences){
+        var sentence = yield importSentence(jsonixSentence, dbLexUnit);
+        sentences.push(sentence);
+    }
+    return sentences;
+    /*
     return jsonixSentences.map((jsonixSentence) => {
         return importSentence(jsonixSentence, dbLexUnit);
-    });
+    });*/
 }
 
 function* importSentence(jsonixSentence, dbLexUnit){

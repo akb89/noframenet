@@ -3,19 +3,36 @@
 const patternController = require('../../pattern/controller/patternController');
 const sentenceController = require('../../sentence/controller/sentenceController');
 const LexUnit = require('../model/lexUnitModel');
-const InvalidArgumentException = require('../../../../exception/valencerException').InvalidArgumentException
+const InvalidArgumentException = require('../../../../exception/valencerException').InvalidArgumentException;
 const logger = require('../../logger');
+
+function importLexUnits(jsonixLexUnits){
+    /*var lexUnits = [];
+    for(let jsonixLexUnit of jsonixLexUnits){
+        try{
+            var lexUnit = yield importLexUnit(jsonixLexUnit);
+            lexUnits.push(lexUnit);
+        }catch(err){
+            logger.error(err);
+        }
+    }
+    return lexUnits;*/
+    return jsonixLexUnits.map((jsonixLexUnit) => {
+        return importLexUnit(jsonixLexUnit);
+    });
+}
 
 function* importLexUnit(jsonixLexUnit){
     if(!jsonixLexUnit){
         throw new InvalidArgumentException('Cannot import lexUnit. Input is null or undefined.');
     }
+    logger.info('Importing LU');
     logger.info('Importing lexUnit with fn_id = '+jsonixLexUnit.value.id+' and name = '+jsonixLexUnit.value.name);
     var myLexUnit = yield findLexUnitByFNId(jsonixLexUnit.value.id);
     if(myLexUnit !== null){
         logger.silly('LexUnit already exists in database.');
         yield sentenceController.importSentences(toJsonixSentenceArray(jsonixLexUnit), myLexUnit);
-        yield patternController.importPatterns(toJsonixPatternArray(jsonixLexUnit));
+        //yield patternController.importPatterns(toJsonixPatternArray(jsonixLexUnit));
         return myLexUnit
     }
     logger.silly('LexUnit not in database. Creating new entry.');
@@ -29,7 +46,9 @@ function* importLexUnit(jsonixLexUnit){
         totalAnnotated: jsonixLexUnit.value.totalAnnotated
     });
     yield sentenceController.importSentences(toJsonixSentenceArray(jsonixLexUnit), myLexUnit);
-    yield patternController.importPatterns(toJsonixPatternArray(jsonixLexUnit));
+    //yield patternController.importPatterns(toJsonixPatternArray(jsonixLexUnit));
+    console.log('here');
+    //console.log('almost3 fn_id = '+jsonixLexUnit.value.id+' and name = '+jsonixLexUnit.value.name);
     return myLexUnit.save();
 }
 
@@ -84,6 +103,7 @@ function toJsonixSentenceArray(jsonixLexUnit){
 }
 
 module.exports = {
+    importLexUnits,
     importLexUnit,
     toJsonixPatternArray,
     toJsonixSentenceArray

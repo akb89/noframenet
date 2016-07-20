@@ -6,8 +6,8 @@ const winston = require('winston');
 
 var logger = new (winston.Logger)({
     transports: [
-        new (winston.transports.Console)({level: 'error', colorize: true})//,
-        //new (winston.transports.File)({ filename: 'valencer.log' })
+        new (winston.transports.Console)({level: 'info', colorize: true}),
+        new (winston.transports.File)({filename: 'noFrameNet.log', level: 'info', colorize: true})
     ]
 });
 module.exports = logger;

@@ -37,7 +37,7 @@ describe('lexUnitController', () => {
         mongoose.disconnect();
         mockgoose.reset();
     });
-    it('lexUnitPromise should be fulfilled', () => {
+    it('lexUnitPromise should be fulfilled', function (){
         return lexUnitPromise.should.be.fulfilled;
     });
     it('#toJsonixSentenceArray should return a valid array', function (){
@@ -58,18 +58,35 @@ describe('lexUnitController', () => {
         lexUnit.fn_id.should.equal(9080);
         lexUnit.name.should.equal('fratricide.n');
     });
-    it('#importLexUnit should ultimately insert all annotationSets referring to the input lexUnit', function *(){
+    it('#importLexUnit should ultimately insert all annotationSets', function *(){
         mockgoose.reset();
-        var lexUnit = yield lexUnitController.importLexUnit(jsonix.lexUnit);
-        var annoSets = yield AnnotationSet.find().where('lexUnit').equals(lexUnit);
+        yield lexUnitController.importLexUnit(jsonix.lexUnit);
+        var annoSets = yield AnnotationSet.find();
         annoSets.length.should.equal(10);
         annoSets[0].sentence.should.not.be.undefined;
         annoSets[9].sentence.should.not.be.undefined;
     });
-    it('#importLexUnit should insert valid patterns to the relevant annotationSets', function *(){
+    it('#importLexUnit should ultimately insert all annotationSets referring to the input lexUnit if' +
+        ' FrameNet-specific', function *(){
         mockgoose.reset();
         var lexUnit = yield lexUnitController.importLexUnit(jsonix.lexUnit);
         var annoSets = yield AnnotationSet.find().where('lexUnit').equals(lexUnit);
+        annoSets.length.should.equal(5);
+        annoSets[0].sentence.should.not.be.undefined;
+        annoSets[4].sentence.should.not.be.undefined;
+    });
+    it('#importLexUnit should ultimately insert all annotationSets referring to the input lexUnit', function *(){
+        mockgoose.reset();
+        yield lexUnitController.importLexUnit(jsonix.lexUnit);
+        var annoSets = yield AnnotationSet.find().where('lexUnit').equals();
+        annoSets.length.should.equal(5);
+        annoSets[0].sentence.should.not.be.undefined;
+        annoSets[4].sentence.should.not.be.undefined;
+    });
+    it('#importLexUnit should insert valid patterns to the relevant annotationSets', function *(){
+        mockgoose.reset();
+        yield lexUnitController.importLexUnit(jsonix.lexUnit);
+        var annoSets = yield AnnotationSet.find();
         annoSets.length.should.equal(10);
         expect(annoSets[0].pattern).to.be.undefined;
         expect(annoSets[1].pattern).not.to.be.undefined;

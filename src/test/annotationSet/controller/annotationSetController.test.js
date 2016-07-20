@@ -88,13 +88,6 @@ describe('annotationSetController', function (){
         yield annoSetController.updatePatternReference(savedAnnoSet, pattern);
         savedAnnoSet.pattern.should.not.be.undefined;
     });
-    it('#updatePatternReferences should throw an InvalidArgumentException if the input annotationSet array contains' +
-        ' null entries', function *(){
-        mockgoose.reset();
-        var annoSetArray = [null, 'notNull'];
-        var pattern = new Pattern();
-        (function (){annoSetController.updatePatternReferences(annoSetArray, pattern)}).should.throw(InvalidArgumentException);
-    });
     it('#updatePatternReferences should update all pattern references of a given array of annotationSet', function *(){
         mockgoose.reset();
         var savedAnnoSet1 = new AnnotationSet({fn_id: 79946});
@@ -125,18 +118,6 @@ describe('annotationSetController', function (){
         importedAnnoSet.labels.length.should.equal(6);
         importedAnnoSet.labels[0].type.should.equal('FE');
         importedAnnoSet.labels[0].name.should.equal('Killer');
-    });
-    /**
-     * A given AnnotationSet is imported during import of a lexical unit. A given AnnotationSet can only refer to
-     * one lexical unit. Therefore, annotationSets should be inserted only once in the database.
-     */
-    it('#importAnnotationSet should throw an Error if AnnotationSet already exists in the database', function *() {
-        mockgoose.reset();
-        var savedAnnoSet = new AnnotationSet({fn_id: 79946});
-        yield savedAnnoSet.save();
-        //FIXME not working
-        //(function
-        // (){annoSetController.importAnnotationSet(jsonix.sentences[0].annotationSets[0])}).should.eventually.throw(Error);
     });
     it('#importAnnotationSets should return a valid array of annotationSets', function *() {
         mockgoose.reset();
