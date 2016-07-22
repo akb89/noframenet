@@ -4,11 +4,11 @@ const mongoose = require('mongoose');
 mongoose.Promise = require('bluebird');
 
 var sentenceSchema = mongoose.Schema({
-    fn_id: {type: Number},
+    fn_id: {type: Number, unique: true},
     text: {type: String}
 });
 
-sentenceSchema.index({fn_id: 1}, {unique: true});
+//sentenceSchema.index({fn_id: 1}, {unique: true});
 
 sentenceSchema.static('findByFNId', function(fnId){
     return this.findOne().where('fn_id').equals(fnId);

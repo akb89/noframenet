@@ -5,65 +5,35 @@ const logger = require('../../logger');
 require('../../utils'); // for .flatten()
 
 function* importLabelsFromLayers(jsonixLayers){
-    logger.verbose('Importing layers and labels');
-    var labels = yield importLayers(jsonixLayers);
-    return labels.flatten();
+    //TODO: cleanup this function. Return is not pretty
+    try{
+        var labels = yield Label.insertMany(importLayers(jsonixLayers).flatten());
+        logger.verbose('Batch insert of labels: '+labels);
+        return labels;
+    }catch(err){
+        logger.error(err);
+    }
 }
 
 function importLayers(jsonixLayers){
-    /*
-    var layers = [];
-    for(let jsonixLayer of jsonixLayers){
-        var layer = yield importLayer(jsonixLayer);
-        layers.push(layer);
-    }
-    return layers;*/
-
     return jsonixLayers.map((jsonixLayer) => {
-        return importLayer(jsonixLayer); // Layer name is needed to fill in Label.type.
+        return importLabels(jsonixLayer); // Layer name is needed to fill in Label.type.
     });
 }
 
-function* importLayer(jsonixLayer){
-    logger.verbose('Importing all labels from layer with name = '+jsonixLayer.name);
-    var myLabelArray = yield importLabels(jsonixLayer);
-    return myLabelArray;
-}
-
-// Array calling generator functions
 function importLabels(jsonixLayer){
-    /*var labels = [];
-    var jsonixLabels = toJsonixLabelArray(jsonixLayer);
-    for(let jsonixLabel of jsonixLabels){
-        var label = yield importLabel(jsonixLabel, jsonixLayer);
-        labels.push(label);
-    }
-    return labels;*/
-
     return toJsonixLabelArray(jsonixLayer).map((jsonixLabel) => {
         return importLabel(jsonixLabel, jsonixLayer);
     });
 }
 
-// TODO: check this: revised version once removed unique index. This should speed up the import process
-function* importLabel(jsonixLabel, jsonixLayer){
-    var myLabel = new Label({
+function importLabel(jsonixLabel, jsonixLayer){
+    return new Label({
         name: jsonixLabel.name,
         type: jsonixLayer.name,
         startPos: jsonixLabel.start,
         endPos: jsonixLabel.end
     });
-    logger.silly('Inserting label with name = '+jsonixLabel.name+' type = '+jsonixLayer.name+' startPos = '+jsonixLabel.start+' endPos = '+jsonixLabel.end+' not in database.' +
-        ' Creating new entry.');
-    try{
-        yield myLabel.save();
-    }catch(err){
-        logger.error(err);
-        //logger.silly('Label name = '+jsonixLabel.name+' type = '+jsonixLayer.name+' startPos =
-        // '+jsonixLabel.start+' endPos = '+jsonixLabel.end+' was inserted to database during import process. Starting label import once again.');
-        //yield importLabel(jsonixLabel, jsonixLayer);
-    }
-    return myLabel;
 }
 
 function* _importLabel(jsonixLabel, jsonixLayer){
@@ -75,7 +45,7 @@ function* _importLabel(jsonixLabel, jsonixLayer){
     });
     var dbLabel = yield findLabel(myLabel);
     if(dbLabel !== null){
-        logger.silly('Label name = '+jsonixLabel.name+' type = '+jsonixLayer.name+' startPos = '+jsonixLabel.start+' endPos = '+jsonixLabel.end+' already exists in the database');
+        logger.silly('Label name = '+jsonixLabel.name+' type = '+jsonixLayer.name+' startPos = '+jsonixLabel.start+' endPos = '+jsonixLabel.end+' already in database');
         return dbLabel;
     }
     logger.silly('Label name = '+jsonixLabel.name+' type = '+jsonixLayer.name+' startPos = '+jsonixLabel.start+' endPos = '+jsonixLabel.end+' not in database.' +
@@ -95,7 +65,6 @@ function findLabel(label){
 }
 
 function toJsonixLabelArray(jsonixLayer){
-    logger.verbose('Getting all labels from jsonixLayer');
     var labels = [];
     var labelIterator = 0;
     if(jsonixLayer.hasOwnProperty('label')){
@@ -111,7 +80,6 @@ function toJsonixLabelArray(jsonixLayer){
 module.exports = {
     importLabelsFromLayers,
     importLayers,
-    importLayer,
     importLabels,
     importLabel,
     findLabel,

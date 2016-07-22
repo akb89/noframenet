@@ -58,6 +58,8 @@ function importFNData(lexUnitDir){
         var jsonixLexUnits = yield files.map((file) => {return processFile(lexUnitDir, file)});
         //console.log(jsonixLexUnits);
 
+        logger.info(elapsed_time('Xml2Json unmarshalling of '+files.length+' files completed '));
+
         logger.info('Connection to database');
         mongoose.connect('mongodb://localhost/test');
 

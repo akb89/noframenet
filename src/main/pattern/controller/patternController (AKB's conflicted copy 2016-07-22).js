@@ -8,13 +8,6 @@ const logger = require('../../logger');
 require('../../utils');
 
 function importPatterns(jsonixPatterns){
-    logger.verbose('Importing patterns');
-    /*var patterns = [];
-    for(let jsonixPattern of jsonixPatterns){
-        var pattern = yield importPattern(jsonixPattern);
-        patterns.push(pattern);
-    }
-    return patterns;*/
     return jsonixPatterns.map((jsonixPattern) => {
         return importPattern(jsonixPattern);
     });
@@ -22,11 +15,30 @@ function importPatterns(jsonixPatterns){
 
 function* importPattern(jsonixPattern){
     var valenceUnits = yield valenceUnitController.importValenceUnits(toJsonixValenceUnitArray(jsonixPattern));
-    logger.silly('Importing Pattern: '+valenceUnits);
+    var myPattern = new Pattern();
+    myPattern.valenceUnits = valenceUnits.sort(); //TODO: remove sort?
+    logger.verbose('Inserting pattern: '+valenceUnits);
+    try{
+        yield myPattern.save();
+        try{
+            var patternAnnoSets = yield findAnnotationSets(toJsonixAnnoSetArray(jsonixPattern));
+            yield annoSetController.updatePatternReferences(patternAnnoSets, myPattern);
+        }catch(err){
+            logger.error(err);
+        }
+    }catch(err){
+        logger.error(err);
+    }
+    return myPattern;
+}
+
+function* _importPattern(jsonixPattern){
+    var valenceUnits = yield valenceUnitController.importValenceUnits(toJsonixValenceUnitArray(jsonixPattern));
+    //logger.silly('Importing Pattern: '+valenceUnits);
     var myPattern = yield findPatternByValenceUnits(valenceUnits);
     var patternAnnoSets = yield findAnnotationSets(toJsonixAnnoSetArray(jsonixPattern));
     if(myPattern !== null){
-        logger.silly('Pattern: '+valenceUnits+' already in database. Updating annotationSets references');
+        logger.verbose('Pattern: '+valenceUnits+' already in database. Updating annotationSets references');
         try{
             yield annoSetController.updatePatternReferences(patternAnnoSets, myPattern);
         }catch(err){
@@ -34,7 +46,7 @@ function* importPattern(jsonixPattern){
         }
         return myPattern;
     }
-    logger.silly('Pattern: '+valenceUnits+' not in database. Creating new entry.');
+    logger.verbose('Pattern: '+valenceUnits+' not in database. Creating new entry.');
     myPattern = new Pattern();
     myPattern.valenceUnits = valenceUnits.sort();
     try{
@@ -47,7 +59,7 @@ function* importPattern(jsonixPattern){
     }catch(err){
         logger.verbose('Pattern: '+valenceUnits+' was inserted to database during import process. Starting' +
             ' importPattern over again.');
-        yield importPattern(jsonixPattern);
+        yield importPattern(jsonixPattern); //FIXME
     }
     return myPattern;
 }

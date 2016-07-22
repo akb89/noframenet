@@ -4,7 +4,7 @@ const ValenceUnit = require('../model/valenceUnitModel');
 const logger = require('../../logger');
 
 function importValenceUnits(jsonixValenceUnits){
-    logger.silly('Importing valence units');
+    //logger.silly('Importing valence units');
     /*var valenceUnits = [];
     for(let jsonixValenceUnit of jsonixValenceUnits){
         var valenceUnit = yield importValenceUnit(jsonixValenceUnit);
@@ -18,13 +18,14 @@ function importValenceUnits(jsonixValenceUnits){
 }
 
 function* importValenceUnit(jsonixValenceUnit){
-    logger.verbose('Importing valence unit FE = '+jsonixValenceUnit.fe+' PT = '+jsonixValenceUnit.pt+' GF = '+jsonixValenceUnit.gf);
+    //logger.verbose('Importing valence unit FE = '+jsonixValenceUnit.fe+' PT = '+jsonixValenceUnit.pt+' GF =
+    // '+jsonixValenceUnit.gf);
     var myValenceUnit = yield findValenceUnitByLabels(jsonixValenceUnit.fe, jsonixValenceUnit.pt, jsonixValenceUnit.gf);
     if(myValenceUnit !== null){
-        logger.silly('ValenceUnit FE.PT.GF = '+jsonixValenceUnit.fe+'.'+jsonixValenceUnit.pt+'.'+jsonixValenceUnit.gf+ ' already in database.');
+        logger.verbose('ValenceUnit FE.PT.GF = '+jsonixValenceUnit.fe+'.'+jsonixValenceUnit.pt+'.'+jsonixValenceUnit.gf+ ' already in database.');
         return myValenceUnit
     }
-    logger.silly('ValenceUnit FE.PT.GF = '+jsonixValenceUnit.fe+'.'+jsonixValenceUnit.pt+'.'+jsonixValenceUnit.gf+' not in database. Creating new entry.');
+    logger.verbose('ValenceUnit FE.PT.GF = '+jsonixValenceUnit.fe+'.'+jsonixValenceUnit.pt+'.'+jsonixValenceUnit.gf+' not in database. Creating new entry.');
     myValenceUnit = new ValenceUnit({
         FE: jsonixValenceUnit.fe,
         PT: jsonixValenceUnit.pt,
@@ -33,8 +34,8 @@ function* importValenceUnit(jsonixValenceUnit){
     try{
         yield myValenceUnit.save();
     }catch(err){
-        logger.silly('ValenceUnit FE.PT.GF = '+jsonixValenceUnit.fe+'.'+jsonixValenceUnit.pt+'.'+jsonixValenceUnit.gf+' was inserted to database during import process. Starting importValenceUnit over again.');
-        yield importValenceUnit(jsonixValenceUnit);
+        logger.verbose('ValenceUnit FE.PT.GF = '+jsonixValenceUnit.fe+'.'+jsonixValenceUnit.pt+'.'+jsonixValenceUnit.gf+' was inserted to database during import process. Starting importValenceUnit over again.');
+        yield importValenceUnit(jsonixValenceUnit); //FIXME
     }
     return myValenceUnit;
 }

@@ -10,7 +10,8 @@ var labelSchema = mongoose.Schema({
     endPos:     {type: Number}
 });
 
-labelSchema.index({name: 1, type: 1, startPos: 1, endPos: 1}, {unique: true});
+//labelSchema.index({name: 1, type: 1, startPos: 1, endPos: 1}, {unique: true});
+// TODO Remove unique index?
 
 labelSchema.static('findLabel', function (name, type, startPos, endPos){
     return Label.findOne().where('name').equals(name).where('type').equals(type).where('startPos').equals(startPos).where('endPos').equals(endPos);

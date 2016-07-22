@@ -4,16 +4,16 @@ const mongoose = require('mongoose');
 mongoose.Promise = require('bluebird');
 
 var lexUnitSchema = mongoose.Schema({
-    fn_id: {type: Number},
-    name: {type: String},
+    fn_id: {type: Number, unique: true},
+    name: {type: String, index: true},
     pos: {type: String},
     status: {type: String},
-    frame: {type: String},
-    frameId: {type: Number},
+    frame: {type: String, index: true},
+    frameId: {type: Number, index: true},
     totalAnnotated: {type: Number}
 });
 
-lexUnitSchema.index({fn_id: 1}, {unique: true});
+//lexUnitSchema.index({fn_id: 1}, {unique: true});
 
 lexUnitSchema.static('findByFNId', function(fnId){
     return this.findOne().where('fn_id').equals(fnId);

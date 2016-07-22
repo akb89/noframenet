@@ -3,7 +3,6 @@
 const config = require('../../../../config/test');
 
 const mongoose = config.mongoose;
-const mockgoose = config.mockgoose;
 config.mochagen.install();
 const should = config.should;
 const unmarshaller = config.unmarshaller;
@@ -38,7 +37,6 @@ var saved = {
 
 describe('patternController', () => {
     before(function* (done) {
-        yield mockgoose(mongoose);
         yield mongoose.connect('mongodb://example.com/TestingDB');
         jsonix.lexUnit = yield lexUnitPromise;
 
@@ -66,8 +64,8 @@ describe('patternController', () => {
     });
 
     after(function() {
+
         mongoose.disconnect();
-        mockgoose.reset();
     });
     it('#toJsonixAnnoSetArray should return a valid array', function (){
         patternController.toJsonixAnnoSetArray(jsonix.patterns[0]).length.should.equal(1);
