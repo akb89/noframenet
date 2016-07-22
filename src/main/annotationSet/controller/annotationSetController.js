@@ -8,6 +8,17 @@ const logger = require('../../logger');
 const frameNetLayers = ['FE', 'PT', 'GF']; //TODO: externalize?
 
 function importAnnotationSets(jsonixAnnotationSets, dbSentence, dbLexUnit){
+<<<<<<< HEAD
+=======
+    //logger.verbose('Importing annotationSets');
+    /*var annoSets = [];
+    for(let jsonixAnnoSet of jsonixAnnotationSets){
+        var annoSet = yield importAnnotationSet(jsonixAnnoSet, dbSentence, dbLexUnit);
+        annoSets.push(annoSet);
+    }
+    return annoSets;*/
+
+>>>>>>> 5e06e03b4ffc4606f99c2fc27823d02587314a5b
     return jsonixAnnotationSets.map((jsonixAnnotationSet) => {
         return importAnnotationSet(jsonixAnnotationSet, dbSentence, dbLexUnit);
     });
@@ -15,6 +26,10 @@ function importAnnotationSets(jsonixAnnotationSets, dbSentence, dbLexUnit){
 
 //TODO revise corresponding tests
 function* importAnnotationSet(jsonixAnnotationSet, dbSentence, dbLexUnit){
+<<<<<<< HEAD
+=======
+    //logger.verbose('Importing AnnotationSet with fn_id = '+jsonixAnnotationSet.id);
+>>>>>>> 5e06e03b4ffc4606f99c2fc27823d02587314a5b
     var jsonixLayers = toJsonixLayerArray(jsonixAnnotationSet);
     if(!isFrameNetSpecific(jsonixLayers)){
         logger.silly('Skipping non-FrameNet-specific AnnotationSet with fn_id = '+jsonixAnnotationSet.id);

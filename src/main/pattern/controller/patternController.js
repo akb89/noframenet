@@ -8,6 +8,17 @@ const logger = require('../../logger');
 require('../../utils');
 
 function importPatterns(jsonixPatterns){
+<<<<<<< HEAD
+=======
+    //logger.verbose('Importing patterns');
+    /*var patterns = [];
+    for(let jsonixPattern of jsonixPatterns){
+        var pattern = yield importPattern(jsonixPattern);
+        patterns.push(pattern);
+    }
+    return patterns;*/
+
+>>>>>>> 5e06e03b4ffc4606f99c2fc27823d02587314a5b
     return jsonixPatterns.map((jsonixPattern) => {
         return importPattern(jsonixPattern);
     });
@@ -16,7 +27,11 @@ function importPatterns(jsonixPatterns){
 function* importPattern(jsonixPattern){
     var valenceUnits = yield valenceUnitController.importValenceUnits(toJsonixValenceUnitArray(jsonixPattern));
     var myPattern = new Pattern();
+<<<<<<< HEAD
     myPattern.valenceUnits = valenceUnits.sort(); //TODO: remove sort?
+=======
+    myPattern.valenceUnits = valenceUnits.sort(); //TODO: remove sort? 
+>>>>>>> 5e06e03b4ffc4606f99c2fc27823d02587314a5b
     logger.verbose('Inserting pattern: '+valenceUnits);
     try{
         yield myPattern.save();

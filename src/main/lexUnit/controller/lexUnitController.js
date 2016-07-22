@@ -7,6 +7,20 @@ const InvalidArgumentException = require('../../../../exception/valencerExceptio
 const logger = require('../../logger');
 
 function importLexUnits(jsonixLexUnits){
+<<<<<<< HEAD
+=======
+    /*var lexUnits = [];
+    for(let jsonixLexUnit of jsonixLexUnits){
+        try{
+            var lexUnit = yield importLexUnit(jsonixLexUnit);
+            lexUnits.push(lexUnit);
+        }catch(err){
+            logger.error(err);
+        }
+    }
+    return lexUnits;*/
+
+>>>>>>> 5e06e03b4ffc4606f99c2fc27823d02587314a5b
     return jsonixLexUnits.map((jsonixLexUnit) => {
         return importLexUnit(jsonixLexUnit);
     });

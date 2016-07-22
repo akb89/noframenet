@@ -5,6 +5,17 @@ const annoSetController = require('../../annotationSet/controller/annotationSetC
 const logger = require('../../logger');
 
 function importSentences(jsonixSentences, dbLexUnit){
+<<<<<<< HEAD
+=======
+    //logger.verbose('Importing sentences');
+    /*var sentences = [];
+    for(let jsonixSentence of jsonixSentences){
+        var sentence = yield importSentence(jsonixSentence, dbLexUnit);
+        sentences.push(sentence);
+    }
+    return sentences;*/
+
+>>>>>>> 5e06e03b4ffc4606f99c2fc27823d02587314a5b
     return jsonixSentences.map((jsonixSentence) => {
         return importSentence(jsonixSentence, dbLexUnit);
     });

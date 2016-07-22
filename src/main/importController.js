@@ -60,6 +60,8 @@ function importFNData(lexUnitDir){
 
         logger.info(elapsed_time('Xml2Json unmarshalling of '+files.length+' files completed '));
 
+<<<<<<< HEAD
+=======
         logger.info('Connection to database');
         mongoose.connect('mongodb://localhost/test');
 
@@ -68,6 +70,35 @@ function importFNData(lexUnitDir){
         //var jsonixLexUnits = yield files.map((file) => {return processFile(lexUnitDir, file)});
         //console.log(jsonixLexUnits);
 
+        /*
+        for(let file of files){
+            var promise = yield processFile(lexUnitDir, file);
+            console.log(promise);
+        }
+
+        /*
+        var filesArray = chunk(filesP);
+        logger.info('Number of chunks = ' + filesArray.length);
+        logger.info('Total files in chunks = '+filesArray.flatten().length);
+>>>>>>> 5e06e03b4ffc4606f99c2fc27823d02587314a5b
+        logger.info('Connection to database');
+        mongoose.connect('mongodb://localhost/test');
+
+        yield lexUnitController.importLexUnits(jsonixLexUnits);
+
+        //var jsonixLexUnits = yield files.map((file) => {return processFile(lexUnitDir, file)});
+        //console.log(jsonixLexUnits);
+
+<<<<<<< HEAD
+=======
+        /*
+        for(let i=0; i<filesArray.length; i++){
+            var jsonixLexUnits = yield filesArray[i].map((file) => {return processFile(lexUnitDir, file)});
+            console.log(jsonixLexUnits.length);
+            //yield lexUnitController.importLexUnits(jsonixLexUnits);
+            console.log('Processing next batch of lexUnits');
+        }
+>>>>>>> 5e06e03b4ffc4606f99c2fc27823d02587314a5b
         /*
          for(let file of files){
          var promise = yield processFile(lexUnitDir, file);

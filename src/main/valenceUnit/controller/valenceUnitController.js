@@ -4,6 +4,17 @@ const ValenceUnit = require('../model/valenceUnitModel');
 const logger = require('../../logger');
 
 function importValenceUnits(jsonixValenceUnits){
+<<<<<<< HEAD
+=======
+    //logger.silly('Importing valence units');
+    /*var valenceUnits = [];
+    for(let jsonixValenceUnit of jsonixValenceUnits){
+        var valenceUnit = yield importValenceUnit(jsonixValenceUnit);
+        valenceUnits.push(valenceUnit);
+    }
+    return valenceUnits;*/
+
+>>>>>>> 5e06e03b4ffc4606f99c2fc27823d02587314a5b
     return jsonixValenceUnits.map((jsonixValenceUnit) => {
         return importValenceUnit(jsonixValenceUnit);
     });
