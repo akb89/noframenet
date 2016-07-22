@@ -58,6 +58,8 @@ function importFNData(lexUnitDir){
         var jsonixLexUnits = yield files.map((file) => {return processFile(lexUnitDir, file)});
         //console.log(jsonixLexUnits);
 
+        logger.info(elapsed_time('Xml2Json unmarshalling of '+files.length+' files completed '));
+
         logger.info('Connection to database');
         mongoose.connect('mongodb://localhost/test');
 
@@ -67,33 +69,33 @@ function importFNData(lexUnitDir){
         //console.log(jsonixLexUnits);
 
         /*
-        for(let file of files){
-            var promise = yield processFile(lexUnitDir, file);
-            console.log(promise);
-        }
+         for(let file of files){
+         var promise = yield processFile(lexUnitDir, file);
+         console.log(promise);
+         }
 
-        /*
-        var filesArray = chunk(filesP);
-        logger.info('Number of chunks = ' + filesArray.length);
-        logger.info('Total files in chunks = '+filesArray.flatten().length);
-        logger.info('Connection to database');
-        //mongoose.connect('mongodb://localhost/test');
+         /*
+         var filesArray = chunk(filesP);
+         logger.info('Number of chunks = ' + filesArray.length);
+         logger.info('Total files in chunks = '+filesArray.flatten().length);
+         logger.info('Connection to database');
+         //mongoose.connect('mongodb://localhost/test');
 
-        /*
-        for(let i=0; i<filesArray.length; i++){
-            var jsonixLexUnits = yield filesArray[i].map((file) => {return processFile(lexUnitDir, file)});
-            console.log(jsonixLexUnits.length);
-            //yield lexUnitController.importLexUnits(jsonixLexUnits);
-            console.log('Processing next batch of lexUnits');
-        }
-        /*
-        for(let files of filesArray){
-            var jsonixLexUnits = yield files.map((file) => {return processFile(lexUnitDir, file)});
-            var lexunits = yield lexUnitController.importLexUnits(jsonixLexUnits);
-            //var lexunits = yield jsonixLexUnits.map((jsonixLexUnit) => {return
-            // lexUnitController.importLexUnit(jsonixLexUnit)});
-            //console.log('Processing next batch of lexUnits');
-        }*/
+         /*
+         for(let i=0; i<filesArray.length; i++){
+         var jsonixLexUnits = yield filesArray[i].map((file) => {return processFile(lexUnitDir, file)});
+         console.log(jsonixLexUnits.length);
+         //yield lexUnitController.importLexUnits(jsonixLexUnits);
+         console.log('Processing next batch of lexUnits');
+         }
+         /*
+         for(let files of filesArray){
+         var jsonixLexUnits = yield files.map((file) => {return processFile(lexUnitDir, file)});
+         var lexunits = yield lexUnitController.importLexUnits(jsonixLexUnits);
+         //var lexunits = yield jsonixLexUnits.map((jsonixLexUnit) => {return
+         // lexUnitController.importLexUnit(jsonixLexUnit)});
+         //console.log('Processing next batch of lexUnits');
+         }*/
         logger.info('Import completed');
     })
 }

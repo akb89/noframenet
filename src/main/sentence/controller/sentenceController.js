@@ -5,36 +5,29 @@ const annoSetController = require('../../annotationSet/controller/annotationSetC
 const logger = require('../../logger');
 
 function importSentences(jsonixSentences, dbLexUnit){
-    logger.verbose('Importing sentences');
-    /*var sentences = [];
-    for(let jsonixSentence of jsonixSentences){
-        var sentence = yield importSentence(jsonixSentence, dbLexUnit);
-        sentences.push(sentence);
-    }
-    return sentences;*/
-
     return jsonixSentences.map((jsonixSentence) => {
         return importSentence(jsonixSentence, dbLexUnit);
     });
 }
 
 function* importSentence(jsonixSentence, dbLexUnit){
-    logger.verbose('Importing sentence with fn_id = '+jsonixSentence.id+' and text = \''+jsonixSentence.text+'\'');
+    //logger.verbose('Importing sentence with fn_id = '+jsonixSentence.id+' and text = \''+jsonixSentence.text+'\'');
     var mySentence = yield findSentenceByFNId(jsonixSentence.id);
     if(mySentence !== null){
-        logger.silly('Sentence with fn_id = '+jsonixSentence.id+' and text = \''+jsonixSentence.text+'\' already in' +
-            ' database. Comparing text values.');
+        logger.verbose('Sentence with fn_id = '+jsonixSentence.id+' and text = \''+jsonixSentence.text+'\' already in' +
+            ' database.');
         yield annoSetController.importAnnotationSets(toJsonixAnnoSetArray(jsonixSentence), mySentence, dbLexUnit);
         return mySentence;
     }
-    logger.silly('Sentence with fn_id = '+jsonixSentence.id+' and text = \''+jsonixSentence.text+'\' not in database. Creating new entry.');
+    logger.verbose('Sentence with fn_id = '+jsonixSentence.id+' and text = \''+jsonixSentence.text+'\' not in' +
+        ' database. Creating new entry.');
     mySentence = new Sentence({
         fn_id: jsonixSentence.id,
         text: jsonixSentence.text
     });
-    yield annoSetController.importAnnotationSets(toJsonixAnnoSetArray(jsonixSentence), mySentence, dbLexUnit);
     try{
         yield mySentence.save();
+        yield annoSetController.importAnnotationSets(toJsonixAnnoSetArray(jsonixSentence), mySentence, dbLexUnit);
     }catch(err){
         logger.verbose('Sentence with fn_id = '+jsonixSentence.id+' and text = \''+jsonixSentence.text+'\' was' +
             ' inserted to database during import process. Starting importSentence over again.');
@@ -53,7 +46,7 @@ function toJsonixAnnoSetArray(jsonixSentence){
     if(jsonixSentence.hasOwnProperty('annotationSet')){
         while(jsonixSentence.annotationSet[annoSetIterator] !== undefined){
             let annotationSet = jsonixSentence.annotationSet[annoSetIterator];
-            logger.silly('Processing AnnotationSet: fn_id = ' + annotationSet.id);
+            //logger.silly('Processing AnnotationSet: fn_id = ' + annotationSet.id);
             annotationSets.push(annotationSet);
             annoSetIterator ++;
         }
