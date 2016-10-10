@@ -10,13 +10,12 @@ import preProcessor from "./preProcessor";
 import lexUnitSchema from "./mapping/LexUnitSchema";
 import AnnotationSet from "./model/annotationSetModel";
 import Label from "./model/labelModel";
-import LexUnit from "./model/lexUnitModel";
 import Pattern from "./model/patternModel";
 import Sentence from "./model/sentenceModel";
 import ValenceUnit from "./model/valenceUnitModel";
 import jsonixUtils from "./utils/jsonixUtils";
 import Promise from "bluebird";
-import {AnnotationSetSet, PatternSet, SentenceSet, ValenceUnitSet} from "./utils/fnUtils";
+import {PatternSet, ValenceUnitSet} from "./utils/fnUtils";
 import "./utils/utils";
 import config from "./config";
 
@@ -27,7 +26,7 @@ const unmarshaller = context.createUnmarshaller();
 const logger = config.logger;
 const startTime = process.hrtime();
 
-if (require.main === module) {
+if(require.main === module) {
     importLexUnits(config.lexUnitDir, config.dbUri, config.lexUnitChunkSize, config.validLayers);
 }
 
@@ -36,28 +35,21 @@ if (require.main === module) {
 async function importLexUnits(lexUnitDir, dbUri, chunkSize, validLayers) {
     var batchSet = await preProcessor.getFilteredArrayOfFiles(lexUnitDir, chunkSize);
     var db = await preProcessor.connectToDatabase(dbUri);
-    var annoSetSet = new AnnotationSetSet();
-    var patterns = new PatternSet();
-    //var sentenceSet = new SentenceSet();
+    var patternSet = new PatternSet();
     var sentenceIdSet = new Set();
     var valenceUnitSet = new ValenceUnitSet();
     var counter = {
         batch: 1,
         annoSet: 0,
         label: 0,
-        pattern: 0,
         sentence: 0
     };
     for (let batch of batchSet) {
-        var annotationSets = []; // TODO: move to unique
+        var annotationSets = [];
         var labels = [];
-       //var patterns = []; // TODO: move to unique patterns
-        var sentences = []; // TODO: move to unique sentences
+        var sentences = [];
         logger.info(`Importing lexUnit batch ${counter.batch} out of ${batchSet.length}...`);
         counter.batch++;
-
-        //await db.createCollection('sentences');
-
         await importAll(
             batch,
             db,
@@ -65,60 +57,57 @@ async function importLexUnits(lexUnitDir, dbUri, chunkSize, validLayers) {
             sentenceIdSet,
             annotationSets,
             labels,
-            patterns,
+            patternSet,
             sentences,
             valenceUnitSet,
             validLayers,
             counter
         );
     }
-    await saveSetToDb(db, patterns, valenceUnitSet);
-    logOutputStats(sentences, valenceUnitSet, counter);
+    await saveSetToDb(db, patternSet, valenceUnitSet);
+    logOutputStats(patternSet, valenceUnitSet, counter);
 }
 
-async function saveSetToDb(db, patterns, valenceUnitSet) {
-    await db.collection('patterns').insertMany(patterns.map((pattern) => {
-        return pattern.toObject();
+async function saveSetToDb(db, patternSet, valenceUnitSet) {
+    await db.collection('patterns').insertMany(patternSet.map((pattern) => {
+        return pattern.toObject({depopulate: true});
     }), {w: 0, j: false, ordered: false});
     await db.collection('valenceunits').insertMany(valenceUnitSet.map((valenceUnit) => {
         return valenceUnit.toObject();
     }), {writeConcern: 0, j: false, ordered: false});
 }
 
-function logOutputStats(sentenceSet, valenceUnitSet, counter) {
+function logOutputStats(patternSet, valenceUnitSet, counter) {
     logger.info(`Import process completed in ${process.hrtime(startTime)[0]}s`);
     logger.info('Total inserted to MongoDB: ');
     logger.info(`AnnotationSets = ${counter.annoSet}`);
     logger.info(`Labels = ${counter.label}`);
-    logger.info(`Patterns = ${counter.pattern}`);
+    logger.info(`Patterns = ${patternSet.length}`);
     logger.info(`Sentences = ${counter.sentence}`);
-    //logger.info(`Sentences = ${sentenceSet.length}`);
     logger.info(`ValenceUnits = ${valenceUnitSet.length}`);
 }
 
-async function importAll(files, db, lexUnitDir, sentenceIdSet, annotationSets, labels, patterns, sentences, valenceUnitSet,
+async function importAll(files, db, lexUnitDir, sentenceIdSet, annotationSets, labels, patternSet, sentences, valenceUnitSet,
                          validLayers, counter) {
 
     await Promise.all(files.map(async(file) => {
-            var unmarshalledFile = await initFile(file, lexUnitDir, annotationSets, labels, patterns, sentences,
+            var unmarshalledFile = await initFile(file, lexUnitDir, annotationSets, labels, patternSet, sentences,
                 valenceUnitSet);
-            await initLexUnit(unmarshalledFile, sentenceIdSet, annotationSets, labels, patterns, sentences, valenceUnitSet,
+            await initLexUnit(unmarshalledFile, sentenceIdSet, annotationSets, labels, patternSet, sentences, valenceUnitSet,
                 validLayers);
         }
     ));
 
     counter.annoSet += annotationSets.length;
     counter.label += labels.length;
-    counter.pattern += patterns.length;
     counter.sentence += sentences.length;
 
-    await saveArraysToDb(db, annotationSets, labels, patterns, sentences);
+    await saveArraysToDb(db, annotationSets, labels, sentences);
 }
 
-async function saveArraysToDb(db, annotationSets, labels, patterns, sentences) {
+async function saveArraysToDb(db, annotationSets, labels, sentences) {
     await db.collection('annotationsets').insertMany(annotationSets, {w: 0, j: false, ordered: false});
     await db.collection('labels').insertMany(labels, {w: 0, j: false, ordered: false});
-    //await db.collection('patterns').insertMany(patterns, {w: 0, j: false, ordered: false});
     await db.collection('sentences').insertMany(sentences, {w: 0, j: false, ordered: false});
 }
 
@@ -134,17 +123,16 @@ function initFile(file, lexUnitDir) {
     });
 }
 
-async function initLexUnit(jsonixLexUnit, sentenceIdSet, annotationSets, labels, patterns, sentences, valenceUnitSet,
+async function initLexUnit(jsonixLexUnit, sentenceIdSet, annotationSets, labels, patternSet, sentences, valenceUnitSet,
                            validLayers) {
     logger.debug(
         `Processing lexUnit with id = ${jsonixLexUnit.value.id} and name = ${jsonixLexUnit.value.name}`);
-    //var lexUnit = await db.collection('lexunits').findOne({_id: jsonixLexUnit.value.id});
     var lexUnitId = jsonixLexUnit.value.id;
     await initSentences(
         jsonixUtils.toJsonixLexUnitSentenceArray(jsonixLexUnit),
         sentenceIdSet,
         lexUnitId,
-        getPatternsMap(jsonixLexUnit, patterns, valenceUnitSet),
+        getPatternsMap(jsonixLexUnit, patternSet, valenceUnitSet),
         annotationSets,
         labels,
         sentences,
@@ -152,7 +140,7 @@ async function initLexUnit(jsonixLexUnit, sentenceIdSet, annotationSets, labels,
     );
 }
 
-function getPatternsMap(jsonixLexUnit, patterns, valenceUnitSet) {
+function getPatternsMap(jsonixLexUnit, patternSet, valenceUnitSet) {
     var map = new Map();
     jsonixUtils.toJsonixPatternArray(jsonixLexUnit).forEach((jsonixPattern) => {
         var valenceUnits = jsonixUtils.toJsonixValenceUnitArray(jsonixPattern).map((jsonixValenceUnit) => {
@@ -172,15 +160,11 @@ function getPatternsMap(jsonixLexUnit, patterns, valenceUnitSet) {
         var _pattern = new Pattern({
             valenceUnits: valenceUnits
         });
-        //console.log(_pattern);
-        //console.log(_pattern.toObject({depopulate: true}));
-        var pattern = patterns.get(_pattern.toObject({depopulate: true}));
+        var pattern = patternSet.get(_pattern);
         if(pattern == undefined){
             pattern = _pattern;
-            patterns.add(pattern);
+            patternSet.add(pattern);
         }
-        console.log(patterns);
-        //patterns.push(pattern.toObject({depopulate: true}));
         jsonixUtils.toJsonixPatternAnnoSetArray(jsonixPattern).forEach((jsonixAnnoSet) => {
             map.set(jsonixAnnoSet.id, pattern);
         });
