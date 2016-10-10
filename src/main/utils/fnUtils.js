@@ -37,9 +37,12 @@ class FrameElementSet extends FastSet{
 class PatternSet extends FastSet{
     constructor(){
         super(null, function (a, b) {
-            return a.map(x => x._id.toString()).sort().join('') === b.map(x => x._id.toString()).sort().join('');
+            if(a.valenceUnits.length !== b.valenceUnits.length){
+                return false;
+            }
+            return a.valenceUnits.map(x => x._id).sort().join('') === b.valenceUnits.map(x => x._id).sort().join('');
         }, function (object) {
-            return object.map(x => x._id.toString()).sort().join('');
+            return object.valenceUnits.map(x => x._id).sort().join('');
         })
     }
 }

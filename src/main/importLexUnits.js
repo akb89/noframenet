@@ -10,6 +10,7 @@ import preProcessor from "./preProcessor";
 import lexUnitSchema from "./mapping/LexUnitSchema";
 import AnnotationSet from "./model/annotationSetModel";
 import Label from "./model/labelModel";
+import LexUnit from "./model/lexUnitModel";
 import Pattern from "./model/patternModel";
 import Sentence from "./model/sentenceModel";
 import ValenceUnit from "./model/valenceUnitModel";
@@ -27,17 +28,18 @@ const logger = config.logger;
 const startTime = process.hrtime();
 
 if (require.main === module) {
-    importLexUnits(config.lexUnitDir, config.dbUri, config.lexUnitChunkSize, config.frameNetLayers);
+    importLexUnits(config.lexUnitDir, config.dbUri, config.lexUnitChunkSize, config.validLayers);
 }
 
 // TODO add error and exit on invalid directory
 // FIXME: breaks on bulk size of 1 or 2
-async function importLexUnits(lexUnitDir, dbUri, chunkSize, frameNetLayers) {
+async function importLexUnits(lexUnitDir, dbUri, chunkSize, validLayers) {
     var batchSet = await preProcessor.getFilteredArrayOfFiles(lexUnitDir, chunkSize);
     var db = await preProcessor.connectToDatabase(dbUri);
     var annoSetSet = new AnnotationSetSet();
-    var patternSet = new PatternSet();
-    var sentenceSet = new SentenceSet();
+    var patterns = new PatternSet();
+    //var sentenceSet = new SentenceSet();
+    var sentenceIdSet = new Set();
     var valenceUnitSet = new ValenceUnitSet();
     var counter = {
         batch: 1,
@@ -49,30 +51,34 @@ async function importLexUnits(lexUnitDir, dbUri, chunkSize, frameNetLayers) {
     for (let batch of batchSet) {
         var annotationSets = []; // TODO: move to unique
         var labels = [];
-        var patterns = []; // TODO: move to unique patterns
-        //var sentences = []; // TODO: move to unique sentences
+       //var patterns = []; // TODO: move to unique patterns
+        var sentences = []; // TODO: move to unique sentences
         logger.info(`Importing lexUnit batch ${counter.batch} out of ${batchSet.length}...`);
         counter.batch++;
+
+        //await db.createCollection('sentences');
+
         await importAll(
             batch,
             db,
             lexUnitDir,
+            sentenceIdSet,
             annotationSets,
             labels,
             patterns,
-            sentenceSet,
+            sentences,
             valenceUnitSet,
-            frameNetLayers,
+            validLayers,
             counter
         );
     }
-    await saveSetToDb(db, sentenceSet, valenceUnitSet);
-    logOutputStats(sentenceSet, valenceUnitSet, counter);
+    await saveSetToDb(db, patterns, valenceUnitSet);
+    logOutputStats(sentences, valenceUnitSet, counter);
 }
 
-async function saveSetToDb(db, sentenceSet, valenceUnitSet) {
-    await db.collection('sentences').insertMany(sentenceSet.map((sentence) => {
-        return sentence.toObject();
+async function saveSetToDb(db, patterns, valenceUnitSet) {
+    await db.collection('patterns').insertMany(patterns.map((pattern) => {
+        return pattern.toObject();
     }), {w: 0, j: false, ordered: false});
     await db.collection('valenceunits').insertMany(valenceUnitSet.map((valenceUnit) => {
         return valenceUnit.toObject();
@@ -85,35 +91,35 @@ function logOutputStats(sentenceSet, valenceUnitSet, counter) {
     logger.info(`AnnotationSets = ${counter.annoSet}`);
     logger.info(`Labels = ${counter.label}`);
     logger.info(`Patterns = ${counter.pattern}`);
-    //logger.info(`Sentences = ${counter.sentence}`);
-    logger.info(`Sentences = ${sentenceSet.length}`);
+    logger.info(`Sentences = ${counter.sentence}`);
+    //logger.info(`Sentences = ${sentenceSet.length}`);
     logger.info(`ValenceUnits = ${valenceUnitSet.length}`);
 }
 
-async function importAll(files, db, lexUnitDir, annotationSets, labels, patterns, sentenceSet, valenceUnitSet,
-                         frameNetLayers, counter) {
+async function importAll(files, db, lexUnitDir, sentenceIdSet, annotationSets, labels, patterns, sentences, valenceUnitSet,
+                         validLayers, counter) {
 
     await Promise.all(files.map(async(file) => {
-            var unmarshalledFile = await initFile(file, lexUnitDir, annotationSets, labels, patterns, sentenceSet,
+            var unmarshalledFile = await initFile(file, lexUnitDir, annotationSets, labels, patterns, sentences,
                 valenceUnitSet);
-            await initLexUnit(unmarshalledFile, db, annotationSets, labels, patterns, sentenceSet, valenceUnitSet,
-                frameNetLayers);
+            await initLexUnit(unmarshalledFile, sentenceIdSet, annotationSets, labels, patterns, sentences, valenceUnitSet,
+                validLayers);
         }
     ));
 
     counter.annoSet += annotationSets.length;
     counter.label += labels.length;
     counter.pattern += patterns.length;
-    //counter.sentence += sentences.length;
+    counter.sentence += sentences.length;
 
-    await saveArraysToDb(db, annotationSets, labels, patterns);
+    await saveArraysToDb(db, annotationSets, labels, patterns, sentences);
 }
 
-async function saveArraysToDb(db, annotationSets, labels, patterns) {
+async function saveArraysToDb(db, annotationSets, labels, patterns, sentences) {
     await db.collection('annotationsets').insertMany(annotationSets, {w: 0, j: false, ordered: false});
     await db.collection('labels').insertMany(labels, {w: 0, j: false, ordered: false});
-    await db.collection('patterns').insertMany(patterns, {w: 0, j: false, ordered: false});
-    //await db.collection('sentences').insertMany(sentences, {w: 0, j: false, ordered: false});
+    //await db.collection('patterns').insertMany(patterns, {w: 0, j: false, ordered: false});
+    await db.collection('sentences').insertMany(sentences, {w: 0, j: false, ordered: false});
 }
 
 function initFile(file, lexUnitDir) {
@@ -128,26 +134,28 @@ function initFile(file, lexUnitDir) {
     });
 }
 
-async function initLexUnit(jsonixLexUnit, db, annotationSets, labels, patterns, sentenceSet, valenceUnitSet,
-                           frameNetLayers) {
+async function initLexUnit(jsonixLexUnit, sentenceIdSet, annotationSets, labels, patterns, sentences, valenceUnitSet,
+                           validLayers) {
     logger.debug(
         `Processing lexUnit with id = ${jsonixLexUnit.value.id} and name = ${jsonixLexUnit.value.name}`);
-    var lexUnit = await db.collection('lexunits').findOne({_id: jsonixLexUnit.value.id});
-    initSentences(
+    //var lexUnit = await db.collection('lexunits').findOne({_id: jsonixLexUnit.value.id});
+    var lexUnitId = jsonixLexUnit.value.id;
+    await initSentences(
         jsonixUtils.toJsonixLexUnitSentenceArray(jsonixLexUnit),
-        lexUnit,
+        sentenceIdSet,
+        lexUnitId,
         getPatternsMap(jsonixLexUnit, patterns, valenceUnitSet),
         annotationSets,
         labels,
-        sentenceSet,
-        frameNetLayers
+        sentences,
+        validLayers
     );
 }
 
 function getPatternsMap(jsonixLexUnit, patterns, valenceUnitSet) {
     var map = new Map();
     jsonixUtils.toJsonixPatternArray(jsonixLexUnit).forEach((jsonixPattern) => {
-        var patternVUs = jsonixUtils.toJsonixValenceUnitArray(jsonixPattern).map((jsonixValenceUnit) => {
+        var valenceUnits = jsonixUtils.toJsonixValenceUnitArray(jsonixPattern).map((jsonixValenceUnit) => {
             var _valenceUnit = new ValenceUnit({
                 FE: jsonixValenceUnit.fe,
                 PT: jsonixValenceUnit.pt,
@@ -161,101 +169,100 @@ function getPatternsMap(jsonixLexUnit, patterns, valenceUnitSet) {
                 return _valenceUnit;
             }
         });
-        var pattern = new Pattern({
-            valenceUnits: patternVUs
+        var _pattern = new Pattern({
+            valenceUnits: valenceUnits
         });
-        patterns.push(pattern.toObject({depopulate: true}));
+        //console.log(_pattern);
+        //console.log(_pattern.toObject({depopulate: true}));
+        var pattern = patterns.get(_pattern.toObject({depopulate: true}));
+        if(pattern == undefined){
+            pattern = _pattern;
+            patterns.add(pattern);
+        }
+        console.log(patterns);
+        //patterns.push(pattern.toObject({depopulate: true}));
         jsonixUtils.toJsonixPatternAnnoSetArray(jsonixPattern).forEach((jsonixAnnoSet) => {
-            if (map.has(jsonixAnnoSet.id)) {
-                logger.error('AnnoSet already exists');
-            }
             map.set(jsonixAnnoSet.id, pattern);
         });
     });
     return map;
 }
 
-function initSentences(jsonixSentences, lexUnit, annoSetPatternsMap, annotationSets, labels, sentenceSet,
-                       frameNetLayers) {
-    async.each(jsonixSentences, (jsonixSentence) => {
+async function initSentences(jsonixSentences, sentenceIdSet, lexUnitId, annoSetPatternsMap, annotationSets, labels, sentences,
+                       validLayers) {
+    await Promise.all(jsonixSentences.map((jsonixSentence) => {
         initSentence(
             jsonixSentence,
-            lexUnit,
+            sentenceIdSet,
+            lexUnitId,
             annoSetPatternsMap,
             annotationSets,
             labels,
-            sentenceSet,
-            frameNetLayers
+            sentences,
+            validLayers
         );
-    });
+    }));
 }
 
-function initSentence(jsonixSentence, lexUnit, annoSetPatternsMap, annotationSets, labels, sentenceSet, frameNetLayers) {
-    var _sentence = new Sentence({
-        _id: jsonixSentence.id
-    });
-    var sentence = sentenceSet.get(_sentence);
-    if(sentence !== undefined){
-        initAnnoSets(
-            jsonixUtils.toJsonixSentenceAnnoSetArray(jsonixSentence),
-            lexUnit,
-            sentence,
-            annoSetPatternsMap,
-            annotationSets,
-            labels,
-            frameNetLayers
-        );
-    }else{
-        _sentence.text = jsonixSentence.text;
-        _sentence.paragraphNumber = jsonixSentence.paragNo;
-        _sentence.sentenceNumber = jsonixSentence.sentNo;
-        _sentence.aPos = jsonixSentence.aPos;
-        sentenceSet.add(_sentence);
-        initAnnoSets(
-            jsonixUtils.toJsonixSentenceAnnoSetArray(jsonixSentence),
-            lexUnit,
-            _sentence,
-            annoSetPatternsMap,
-            annotationSets,
-            labels,
-            frameNetLayers
-        );
+ async function initSentence(jsonixSentence, sentenceIdSet, lexUnitId, annoSetPatternsMap, annotationSets, labels, sentences, validLayers) {
+    var sentenceId = jsonixSentence.id;
+    if(!sentenceIdSet.has(sentenceId)){
+        sentenceIdSet.add(sentenceId);
+        sentences.push(new Sentence({
+            _id: jsonixSentence.id,
+            text: jsonixSentence.text,
+            paragraphNumber: jsonixSentence.paragNo,
+            sentenceNumber: jsonixSentence.sentNo,
+            aPos: jsonixSentence.aPos
+        }).toObject());
     }
+    await initAnnoSets(
+        jsonixUtils.toJsonixSentenceAnnoSetArray(jsonixSentence),
+        lexUnitId,
+        sentenceId,
+        annoSetPatternsMap,
+        annotationSets,
+        labels,
+        validLayers
+    );
 }
 
-function initAnnoSets(jsonixAnnoSets, lexUnit, sentence, annoSetPatternsMap, annotationSets, labels, frameNetLayers) {
-    async.each(jsonixAnnoSets, (jsonixAnnoSet) => {
-        if (isFrameNetSpecific(jsonixUtils.toJsonixLayerArray(jsonixAnnoSet), frameNetLayers)) {
+async function initAnnoSets(jsonixAnnoSets, lexUnitId, sentenceId, annoSetPatternsMap, annotationSets, labels, validLayers) {
+    await Promise.all((jsonixAnnoSets.map((jsonixAnnoSet) => {
+        if (isValidLayer(jsonixUtils.toJsonixLayerArray(jsonixAnnoSet), validLayers)) {
+            var labelIds = getLabels(jsonixAnnoSet, labels).map(x => x._id);
+            var pattern = annoSetPatternsMap.get(jsonixAnnoSet.id);
+            var patternId = pattern !== undefined ? pattern._id : undefined;
             initAnnoSet(
                 jsonixAnnoSet,
-                lexUnit,
-                sentence,
-                annoSetPatternsMap,
                 annotationSets,
-                labels
+                lexUnitId,
+                sentenceId,
+                labelIds,
+                patternId
             );
         }
-    });
+    })));
 }
 
-function isFrameNetSpecific(jsonixLayers, frameNetLayers) {
+function isValidLayer(jsonixLayers, validLayers) {
     for (let jsonixLayer of jsonixLayers) {
-        if (frameNetLayers.includes(jsonixLayer.name)) {
+        if (validLayers.includes(jsonixLayer.name)) {
             return true;
         }
     }
     return false;
 }
 
-function initAnnoSet(jsonixAnnoSet, lexUnit, sentence, annoSetPatternsMap, annotationSets, labels) {
+function initAnnoSet(jsonixAnnoSet, annotationSets, lexUnitId, sentenceId, labelIds, patternId) {
     var annoSet = new AnnotationSet({
         _id: jsonixAnnoSet.id,
-        sentence: sentence,
-        lexUnit: lexUnit,
-        labels: getLabels(jsonixAnnoSet, labels),
-        pattern: annoSetPatternsMap.get(jsonixAnnoSet.id)
+        sentence: sentenceId,
+        lexUnit: lexUnitId,
+        labels: labelIds,
+        pattern: patternId
     });
-    annotationSets.push(annoSet.toObject({depopulate: true})); // there should not be duplicates
+    annotationSets.push(annoSet.toObject()); // there should not be duplicates
 }
 
 function getLabels(jsonixAnnoSet, labels) {

@@ -7,7 +7,8 @@ mongoose.Promise = bluebird;
 
 var semTypeModelSchema = mongoose.Schema({
     _id: {type: Number, unique: true},
-    name: {type: String}
+    name: {type: String},
+    definition: {type: String}
 });
 
 export default mongoose.model('SemType', semTypeModelSchema);
