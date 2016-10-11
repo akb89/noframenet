@@ -30,7 +30,7 @@ const unmarshaller = context.createUnmarshaller();
 const logger = config.logger;
 const startTime = process.hrtime();
 
-if (require.main === module) {
+if(require.main === module) {
     importFrames(config.frameDir, config.dbUri, config.frameChunkSize);
 }
 
