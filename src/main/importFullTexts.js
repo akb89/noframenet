@@ -3,9 +3,9 @@
 import path from "path";
 import jsonix from "jsonix";
 import preProcessor from "./preProcessor";
-import fullTextSchema from "./mapping/FullTextSchema.js";
-import Corpus from "./model/corpusModel";
-import Document from "./model/documentModel";
+import fullTextSchema from "./mappings/FullTextSchema.js";
+import Corpus from "./models/corpus";
+import Document from "./models/document";
 import jsonixUtils from "./utils/jsonixUtils";
 import config from "./config";
 import "./utils/utils";

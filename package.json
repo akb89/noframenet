@@ -1,5 +1,5 @@
 {
-  "name": "valencer",
+  "name": "noframenet",
   "version": "1.0.0",
   "description": "server-side nodejs api to query FrameNet valence patterns",
   "main": "server.js",
@@ -80,8 +80,7 @@
   "homepage": "https://bitbucket.org/akb89/valencer#readme",
   "keywords": [
     "FrameNet",
-    "NodeJS",
-    "Koa2",
+    "NoSQL",
     "MongoDB"
   ]
 }

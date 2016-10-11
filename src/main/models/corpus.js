@@ -7,9 +7,11 @@ mongoose.Promise = bluebird;
 
 var corpusSchema = mongoose.Schema({
     _id: {type: Number, unique: true},
-    name: {type: String},
+    name: {type: String, index: true},
     description: {type: String},
     documents: [{type: Number, ref: 'Document'}]
 });
+
+corpusSchema.index({documents: 1});
 
 export default mongoose.model('Corpus', corpusSchema);

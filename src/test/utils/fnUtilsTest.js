@@ -1,8 +1,8 @@
 'use strict';
 
 import chai from 'chai';
-import Pattern from '../../main/model/patternModel';
-import ValenceUnit from '../../main/model/valenceUnitModel';
+import Pattern from '../../main/models/pattern';
+import ValenceUnit from '../../main/models/valenceUnit';
 import {PatternSet} from '../../main/utils/fnUtils';
 
 const should = chai.should();

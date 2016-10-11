@@ -1,6 +1,7 @@
 'use strict';
 
 import jsonixUtils from "./utils/jsonixUtils";
+import mongoose from 'mongoose';
 import mongodb from "mongodb";
 import filesystem from "fs";
 import config from "./config";
@@ -27,7 +28,10 @@ async function getFilteredArrayOfFiles(dir, chunkSize) {
 async function connectToDatabase(uri) {
     var db;
     try {
-        db = await MongoClient.connect(uri);
+        db = await MongoClient.connect(uri); // db inserts will be performed directly via the mongo driver for
+        // better performances
+        await mongoose.connect(uri); // models (and indexes) will be initialized via the mongoose models for
+        // scalability and readability
     } catch (err) {
         logger.error(err);
         process.exit(1); // TODO : graceful exit?

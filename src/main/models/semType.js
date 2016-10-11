@@ -7,7 +7,7 @@ mongoose.Promise = bluebird;
 
 var semTypeModelSchema = mongoose.Schema({
     _id: {type: Number, unique: true},
-    name: {type: String},
+    name: {type: String, index: true},
     definition: {type: String}
 });
 

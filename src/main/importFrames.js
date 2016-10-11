@@ -7,19 +7,21 @@
 import path from "path";
 import jsonix from "jsonix";
 import preProcessor from "./preProcessor";
-import frameSchema from "./mapping/FrameSchema.js";
-import Frame from "./model/frameModel";
-import FrameElement from "./model/frameElementModel";
-import FrameRelation from "./model/frameRelationModel";
-import FERelation from "./model/frameElementRelationModel";
-import Lexeme from "./model/lexemeModel";
-import LexUnit from "./model/lexUnitModel";
-import SemType from "./model/semTypeModel";
+import frameSchema from "./mappings/FrameSchema.js";
+import Frame from "./models/frame";
+import FrameElement from "./models/frameElement";
+import FrameRelation from "./models/frameRelation";
+import FERelation from "./models/frameElementRelation";
+import Lexeme from "./models/lexeme";
+import LexUnit from "./models/lexUnit";
+import SemType from "./models/semType";
 import jsonixUtils from "./utils/jsonixUtils";
 import Promise from "bluebird";
 import config from "./config";
 import {FrameSet, FrameElementSet, SemTypeSet} from "./utils/fnUtils";
 import "./utils/utils";
+import mongoose from 'mongoose';
+mongoose.set('debug', true);
 
 const Jsonix = jsonix.Jsonix;
 const FrameSchema = frameSchema.FrameSchema;
@@ -46,6 +48,7 @@ async function importFrames(frameDir, dbUri, chunkSize) {
         lexeme: 0,
         lexUnit: 0
     };
+
     for (let batch of batchSet) {
         var feRelations = [];
         var frameRelations = [];
