@@ -29,7 +29,7 @@ function unmarshall(file) {
 }
 
 function getSemTypes(jsonixSemTypes) {
-  return jsonixUtils.toJsonixSemTypeArray(jsonixSemTypes).map((jsonixSemType) => {
+  return jsonixUtils.toJsonixSemTypesSemTypeArray(jsonixSemTypes).map((jsonixSemType) => {
 
   });
 }
