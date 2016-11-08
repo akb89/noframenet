@@ -1,0 +1,51 @@
+{
+  "extends": "airbnb",
+  "env": {
+    "node": true,
+    "mocha": true
+  },
+  "rules": {
+    // TODO: set policy on 'use strict'. Currently: disallowing strict mode directives
+    "strict": "off",
+    // Allow _id on mongo id attributes
+    "no-underscore-dangle": [
+      "error",
+      {
+        "allow": [
+          "_id"
+        ]
+      }
+    ],
+    // Allow devDependencies for tests
+    "import/no-extraneous-dependencies": [
+      "error",
+      {
+        "devDependencies": [
+          "**/*.test.js"
+        ]
+      }
+    ],
+    // Allow comment decoration with ****
+    "spaced-comment": [
+      "error",
+      "always",
+      {
+        "exceptions": ["*"]
+      }
+    ],
+    // Allow uppercase functions with mongoose
+    new-cap: [
+      "error",
+      {
+        "capIsNewExceptions": ["mongoose.Schema", "mongoose.Types.ObjectId"]
+      }
+    ],
+    // Ignore unused-var error message on chai.should()
+    no-unused-vars: [
+      "error",
+      {
+        "varsIgnorePattern": "should"
+      }
+    ]
+  }
+}
