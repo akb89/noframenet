@@ -3,12 +3,12 @@
  */
 
 import {
-  FrameElementRelation,
+  FERelation,
   FrameRelation,
   FrameRelationType,
 } from 'noframenet-core';
 import {
-  toJsonixFrameElementRelationArray,
+  toJsonixFERelationArray,
   toJsonixFrameRelationArray,
   toJsonixFrameRelationTypeArray,
 } from './../utils/jsonixUtils';
@@ -24,14 +24,14 @@ const logger = config.logger;
 const startTime = process.hrtime();
 
 export function convertToFERelations(jsonixFrameRelation) {
-  return toJsonixFrameElementRelationArray(jsonixFrameRelation).map((jsonixFrameElementRelation) => {
-    const frameElementRelation = new FrameElementRelation({
-      _id: jsonixFrameElementRelation.id,
-      subFE: jsonixFrameElementRelation.subID,
-      supFE: jsonixFrameElementRelation.supID,
+  return toJsonixFERelationArray(jsonixFrameRelation).map((jsonixFERelation) => {
+    const feRelation = new FERelation({
+      _id: jsonixFERelation.id,
+      subFE: jsonixFERelation.subID,
+      supFE: jsonixFERelation.supID,
       frameRelation: jsonixFrameRelation.id,
     });
-    return frameElementRelation;
+    return feRelation.toObject();
   });
 }
 
@@ -43,8 +43,8 @@ export function convertToFrameRelations(jsonixFrameRelationType, frameElementRel
       supFrame: jsonixFrameRelation.supID,
       type: jsonixFrameRelationType.id,
     });
-    frameElementRelations.push(convertToFERelations(jsonixFrameRelation));
-    return frameRelation;
+    frameElementRelations.push(...convertToFERelations(jsonixFrameRelation));
+    return frameRelation.toObject();
   });
 }
 
@@ -56,8 +56,8 @@ export function convertToRelationTypes(jsonixFrameRelations, frameRelations, fra
       subFrameName: jsonixFrameRelationType.subFrameName,
       supFrameName: jsonixFrameRelationType.superFrameName,
     });
-    frameRelations.push(convertToFrameRelations(jsonixFrameRelationType, frameElementRelations));
-    return frameRelationType;
+    frameRelations.push(...convertToFrameRelations(jsonixFrameRelationType, frameElementRelations));
+    return frameRelationType.toObject();
   });
 }
 
@@ -65,9 +65,9 @@ function convertToObjects(jsonixFrameRelations) {
   let data = {
     frameRelationTypes: [],
     frameRelations: [],
-    frameElementRelations: [],
+    feRelations: [],
   };
-  data.frameRelationTypes.push(convertToRelationTypes(jsonixFrameRelations, data.frameRelations, data.frameElementRelations));
+  data.frameRelationTypes.push(...convertToRelationTypes(jsonixFrameRelations, data.frameRelations, data.feRelations));
   return data;
 }
 
@@ -82,7 +82,7 @@ async function saveToDb(mongodb, data) {
     j: false,
     ordered: false,
   });
-  await mongodb.collection('frameelementrelations').insertMany(data.frameElementRelations, {
+  await mongodb.collection('ferelations').insertMany(data.feRelations, {
     w: 0,
     j: false,
     ordered: false,
@@ -113,7 +113,7 @@ async function importRelationsOnceConnectedToDb(relationsFilePath, db) {
 async function importRelations(relationsFilePath, dbUri) {
   const db = await connectToDatabase(dbUri);
   logger.info('Importing Relations to database...');
-  await importRelationsOnceConnectedToDb(semTypeFilePath, db);
+  await importRelationsOnceConnectedToDb(relationsFilePath, db);
   db.mongo.close();
   db.mongoose.disconnect();
 }

@@ -124,7 +124,7 @@ function _toJsonixFrameRelationArray(jsonixFrame) {
  * @param jsonixFrameRelation
  * @returns {Array}
  */
-function toJsonixFrameElementRelationArray(jsonixFrameRelation) {
+function toJsonixFERelationArray(jsonixFrameRelation) {
   const feRelations = [];
   let feRelationIterator = 0;
   if ({}.hasOwnProperty.call(jsonixFrameRelation, 'feRelation')) {
@@ -388,7 +388,7 @@ export {
   toJsonixFECoreSetArray,
   toJsonixFECoreSetMemberArray,
   toJsonixFrameElementArray,
-  toJsonixFrameElementRelationArray,
+  toJsonixFERelationArray,
   toJsonixFrameRelationArray,
   toJsonixFrameRelationTypeArray,
   toJsonixLayerArray,

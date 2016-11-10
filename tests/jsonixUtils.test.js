@@ -2,7 +2,7 @@
 
 import chai from 'chai';
 import {
-  toJsonixFrameElementRelationArray,
+  toJsonixFERelationArray,
   toJsonixFrameRelationArray,
   toJsonixFrameRelationTypeArray,
   toJsonixSemTypesSemTypeArray,
@@ -24,9 +24,9 @@ describe('jsonixUtils', () => {
     jsonixFrameRelations = await unmarshall('./tests/resources/frRelations.test.xml');
     jsonixFrameRelationTypeArray = toJsonixFrameRelationTypeArray(jsonixFrameRelations);
     jsonixFrameRelationArray = toJsonixFrameRelationArray(jsonixFrameRelationTypeArray[0]);
-    jsonixFERelationArray = toJsonixFrameElementRelationArray(jsonixFrameRelationArray[0]);
+    jsonixFERelationArray = toJsonixFERelationArray(jsonixFrameRelationArray[0]);
   });
-  it('#toJsonixFrameElementRelationArray should return an array of json objects', () => {
+  it('#toJsonixFERelationArray should return an array of json objects', () => {
     jsonixFERelationArray.length.should.equal(4);
     jsonixFERelationArray[0].id.should.equal(808);
     jsonixFERelationArray[0].subID.should.equal(2921);
