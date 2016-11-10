@@ -28,23 +28,21 @@ describe('importRelations', () => {
   let jsonixFrameRelations;
   let jsonixFrameRelationTypeArray;
   let jsonixFrameRelationArray;
-  let jsonixFERelationArray;
   before(mochAsync(async() => {
     jsonixFrameRelations = await unmarshall('./tests/resources/frRelations.test.xml');
     jsonixFrameRelationTypeArray = toJsonixFrameRelationTypeArray(jsonixFrameRelations);
     jsonixFrameRelationArray = toJsonixFrameRelationArray(jsonixFrameRelationTypeArray[0]);
-    jsonixFERelationArray = toJsonixFrameElementRelationArray(jsonixFrameRelationArray[0]);
   }));
   it('#convertToFERelations should return a properly formatted array of FrameElementRelation objects', () => {
-    const feRelations = convertToFERelations(jsonixFERelationArray);
+    const feRelations = convertToFERelations(jsonixFrameRelationArray[0]);
     feRelations.length.should.equal(4);
     feRelations[0]._id.should.equal(808)
     feRelations[0].subFE.should.equal(2921)
-    feRelations[0].supFE.length.should.equal(1446);
+    feRelations[0].supFE.should.equal(1446);
     feRelations[0].frameRelation.should.equal(2);
   });
   it('#convertToFrameRelations should return a properly formatted array of FrameRelation objects', () => {
-    const frameRelations = convertToFrameRelations(toJsonixFrameRelationArray);
+    const frameRelations = convertToFrameRelations(jsonixFrameRelationTypeArray[0], []);
     frameRelations.length.should.equal(2);
     frameRelations[0]._id.should.equal(2);
     frameRelations[0].subFrame.should.equal(341);
@@ -52,11 +50,11 @@ describe('importRelations', () => {
     frameRelations[0].type.should.equal(1);
   });
   it('#convertToRelationTypes should return a properly formatted array of FrameRelationType objects', () => {
-    const relationTypes = convertToRelationTypes(toJsonixFrameRelationTypeArray);
+    const relationTypes = convertToRelationTypes(jsonixFrameRelations, [], []);
     relationTypes.length.should.equal(3);
-    relationsTypes[0]._id.should.equal(1);
-    relationsTypes[0].name.should.equal('Inheritance');
-    relationsTypes[0].subFrameName.should.equal('Child');
-    relationsTypes[0].supFrameName.should.equal('Parent');
+    relationTypes[0]._id.should.equal(1);
+    relationTypes[0].name.should.equal('Inheritance');
+    relationTypes[0].subFrameName.should.equal('Child');
+    relationTypes[0].supFrameName.should.equal('Parent');
   });
 });
