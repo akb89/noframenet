@@ -24,11 +24,12 @@
     "async": "^2.0.1",
     "bluebird": "^3.4.1",
     "collections": "^5.0.4",
+    "eslint-plugin-jsx-a11y": "^2.2.3",
     "jsonix": "^2.4.1",
     "lodash": "^4.14.1",
     "mongodb": "^2.2.5",
     "mongoose": "^4.5.8",
-    "noframenet-core": "^0.2.0",
+    "noframenet-core": "^0.3.1",
     "path": "^0.12.7",
     "winston": "^2.3.0"
   },
@@ -39,9 +40,9 @@
     "babel-preset-stage-0": "^6.16.0",
     "chai": "^3.5.0",
     "eslint": "^3.8.1",
-    "eslint-config-airbnb": "^12.0.0",
-    "eslint-plugin-import": "^1.16.0",
-    "eslint-plugin-jsx-a11y": "^2.2.3",
+    "eslint-config-airbnb": "^13.0.0",
+    "eslint-plugin-import": "^2.2.0",
+    "eslint-plugin-jsx-a11y": "^3.0.1",
     "eslint-plugin-react": "^6.6.0"
   }
 }

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<frameRelations XMLCreated="07/06/2015 05:24:12 PDT Mon" xsi:schemaLocation="schema/frameRelations.xsd" xmlns="http://framenet.icsi.berkeley.edu" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <frameRelationType subFrameName="Child" superFrameName="Parent" name="Inheritance" ID="1">
+        <frameRelation subID="341" supID="187" subFrameName="Change_of_consistency" superFrameName="Event" ID="2">
+            <FERelation subID="2921" supID="1446" subFEName="Time" superFEName="Time" ID="808"/>
+            <FERelation subID="2922" supID="1445" subFEName="Explanation" superFEName="Explanation" ID="818"/>
+            <FERelation subID="2920" supID="1444" subFEName="Place" superFEName="Place" ID="819"/>
+            <FERelation subID="2987" supID="4961" subFEName="Manner" superFEName="Manner" ID="4134"/>
+        </frameRelation>
+        <frameRelation subID="2196" supID="187" subFrameName="Losing_someone" superFrameName="Event" ID="5141">
+        </frameRelation>
+    </frameRelationType>
+    <frameRelationType subFrameName="Target" superFrameName="Source" name="ReFraming_Mapping" ID="5">
+    </frameRelationType>
+    <frameRelationType subFrameName="Stative" superFrameName="Inchoative" name="Inchoative_of" ID="9">
+    </frameRelationType>
+</frameRelations>

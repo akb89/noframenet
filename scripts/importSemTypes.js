@@ -1,13 +1,15 @@
 /**
- * Standalone script to import FrameNet semtypes to MongoDB
+ * Standalone script to import the content of semTypes.xml to MongoDB
  */
 
 import {
   SemType,
-  Set,
 } from 'noframenet-core';
 import config from './../config';
-import jsonixUtils from './../utils/jsonixUtils';
+import {
+  toJsonixSemTypesSemTypeArray,
+  toJsonixSuperTypeArray,
+} from './../utils/jsonixUtils';
 import {
   connectToDatabase,
 } from './../db/mongo.js';
@@ -19,14 +21,13 @@ const logger = config.logger;
 const startTime = process.hrtime();
 
 function getSuperTypes(jsonixSemType) {
-  return jsonixUtils
-    .toJsonixSuperTypeArray(jsonixSemType)
+  return toJsonixSuperTypeArray(jsonixSemType)
     .map(jsonixSuperType => jsonixSuperType.supID);
 }
 
 // Export for testing
 export function getSemTypes(jsonixSemTypes) {
-  return jsonixUtils.toJsonixSemTypesSemTypeArray(jsonixSemTypes).map((jsonixSemType) => {
+  return toJsonixSemTypesSemTypeArray(jsonixSemTypes).map((jsonixSemType) => {
     const semType = new SemType({
       _id: jsonixSemType.id,
       name: jsonixSemType.name,
@@ -37,8 +38,8 @@ export function getSemTypes(jsonixSemTypes) {
   });
 }
 
-async function saveToDb(db, semTypes) {
-  await db.collection('semtypes').insertMany(semTypes, {
+async function saveToDb(mongodb, semTypes) {
+  await mongodb.collection('semtypes').insertMany(semTypes, {
     w: 0,
     j: false,
     ordered: false,
@@ -61,19 +62,19 @@ async function importUnmarshalledSemTypes(jsonixSemTypes, db) {
   await importSemTypeObjects(semTypes, db)
 }
 
-async function importSemTypesOnceConnectedToDb(semTypeFilePath, db) {
-  const jsonixSemTypes = await unmarshall(semTypeFilePath);
+async function importSemTypesOnceConnectedToDb(semTypesFilePath, db) {
+  const jsonixSemTypes = await unmarshall(semTypesFilePath);
   await importUnmarshalledSemTypes(jsonixSemTypes, db)
 }
 
-async function importSemTypes(semTypeFilePath, dbUri) {
+async function importSemTypes(semTypesFilePath, dbUri) {
   const db = await connectToDatabase(dbUri);
   logger.info('Importing SemTypes to database...');
-  await importSemTypesOnceConnectedToDb(semTypeFilePath, db);
+  await importSemTypesOnceConnectedToDb(semTypesFilePath, db);
   db.mongo.close();
   db.mongoose.disconnect();
 }
 
 if (require.main === module) {
-  importSemTypes(config.semTypeFilePath, config.dbUri);
+  importSemTypes(config.semTypesFilePath, config.dbUri);
 }

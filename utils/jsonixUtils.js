@@ -103,11 +103,11 @@ function toJsonixFrameElementArray(jsonixFrame) {
 }
 
 /**
- * Extract all frameRelation elements from a Jsonix unmarshalled <frame>
+ * Extract all frameRelation elements from a Jsonix unmarshalled <frame> TODO: remove?
  * @param jsonixFrame
  * @returns {Array}
  */
-function toJsonixFrameRelationArray(jsonixFrame) {
+function _toJsonixFrameRelationArray(jsonixFrame) {
   const frameRelations = [];
   let frameRelationIterator = 0;
   if ({}.hasOwnProperty.call(jsonixFrame.value, 'frameRelation')) {
@@ -117,6 +117,33 @@ function toJsonixFrameRelationArray(jsonixFrame) {
     }
   }
   return frameRelations;
+}
+
+/**
+ * Extract all feRelation elements from a Jsonix unmarshalled <frameRelation>
+ * @param jsonixFrameRelation
+ * @returns {Array}
+ */
+function toJsonixFrameElementRelationArray(jsonixFrameRelation) {
+
+}
+
+/**
+ * Extract all frameRelation elements from a Jsonix unmarshalled <frameRelationType>
+ * @param jsonixFrameRelationType
+ * @returns {Array}
+ */
+function toJsonixFrameRelationArray(jsonixFrameRelationType) {
+
+}
+
+/**
+ * Extract all frameRelationType elements from a Jsonix unmarshalled <frameRelations>
+ * @param jsonixFrameRelations
+ * @returns {Array}
+ */
+function toJsonixFrameRelationTypeArray(jsonixFrameRelations) {
+
 }
 
 /**
@@ -330,14 +357,16 @@ function toJsonixValenceUnitArray(jsonixPattern) {
   return valenceUnits;
 }
 
-export default {
+export {
   toJsonixPatternAnnoSetArray,
   toJsonixSentenceAnnoSetArray,
   toJsonixDocumentArray,
   toJsonixFECoreSetArray,
   toJsonixFECoreSetMemberArray,
   toJsonixFrameElementArray,
+  toJsonixFrameElementRelationArray,
   toJsonixFrameRelationArray,
+  toJsonixFrameRelationTypeArray,
   toJsonixLayerArray,
   toJsonixLabelArray,
   toJsonixLexemeArray,
