@@ -7,7 +7,6 @@ import {
   FrameRelation,
   FrameRelationType,
 } from 'noframenet-core';
-import config from './../config';
 import {
   toJsonixFrameElementRelationArray,
   toJsonixFrameRelationArray,
@@ -19,11 +18,12 @@ import {
 import {
   unmarshall,
 } from './../marshalling/unmarshaller';
+import config from './../config';
 
 const logger = config.logger;
 const startTime = process.hrtime();
 
-function convertToFERelations(data, jsonixFrameRelation) {
+export function convertToFERelations(data, jsonixFrameRelation) {
   data.frameElementRelations.push(toJsonixFrameElementRelationArray(jsonixFrameRelation).map((jsonixFrameElementRelation) => {
     const frameElementRelation = new FrameElementRelation({
       _id: jsonixFrameElementRelation.id,
@@ -35,7 +35,7 @@ function convertToFERelations(data, jsonixFrameRelation) {
   }));
 }
 
-function convertToFrameRelations(data, jsonixFrameRelationType) {
+export function convertToFrameRelations(data, jsonixFrameRelationType) {
   data.frameRelations.push(toJsonixFrameRelationArray(jsonixFrameRelationType).map((jsonixFrameRelation) => {
     const frameRelation = new FrameRelation({
       _id: jsonixFrameRelation.id,
@@ -48,8 +48,8 @@ function convertToFrameRelations(data, jsonixFrameRelationType) {
   }));
 }
 
-function convertToRelationTypes(data, jsonixFrameRelations) {
-  data.frameRelationsTypes.push(toJsonixFrameRelationTypeArray(jsonixFrameRelations).map((jsonixFrameRelationType) => {
+export function convertToRelationTypes(data, jsonixFrameRelations) {
+  data.frameRelationTypes.push(toJsonixFrameRelationTypeArray(jsonixFrameRelations).map((jsonixFrameRelationType) => {
     const frameRelationType = new FrameRelationType({
       _id: jsonixFrameRelationType.id,
       name: jsonixFrameRelationType.name,
