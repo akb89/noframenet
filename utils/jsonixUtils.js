@@ -120,12 +120,20 @@ function _toJsonixFrameRelationArray(jsonixFrame) {
 }
 
 /**
- * Extract all feRelation elements from a Jsonix unmarshalled <frameRelation>
+ * Extract all FERelation elements from a Jsonix unmarshalled <frameRelation>
  * @param jsonixFrameRelation
  * @returns {Array}
  */
 function toJsonixFrameElementRelationArray(jsonixFrameRelation) {
-
+  const feRelations = [];
+  let feRelationIterator = 0;
+  if ({}.hasOwnProperty.call(jsonixFrameRelation, 'feRelation')) {
+    while (jsonixFrameRelation.feRelation[feRelationIterator] !== undefined) {
+      feRelations.push(jsonixFrameRelation.feRelation[feRelationIterator]);
+      feRelationIterator += 1;
+    }
+  }
+  return feRelations;
 }
 
 /**
@@ -134,7 +142,15 @@ function toJsonixFrameElementRelationArray(jsonixFrameRelation) {
  * @returns {Array}
  */
 function toJsonixFrameRelationArray(jsonixFrameRelationType) {
-
+  const frameRelations = [];
+  let frameRelationIterator = 0;
+  if ({}.hasOwnProperty.call(jsonixFrameRelationType, 'frameRelation')) {
+    while (jsonixFrameRelationType.frameRelation[frameRelationIterator] !== undefined) {
+      frameRelations.push(jsonixFrameRelationType.frameRelation[frameRelationIterator]);
+      frameRelationIterator += 1;
+    }
+  }
+  return frameRelations;
 }
 
 /**
@@ -143,7 +159,15 @@ function toJsonixFrameRelationArray(jsonixFrameRelationType) {
  * @returns {Array}
  */
 function toJsonixFrameRelationTypeArray(jsonixFrameRelations) {
-
+  const frameRelationTypes = [];
+  let frameRelationTypeIterator = 0;
+  if ({}.hasOwnProperty.call(jsonixFrameRelations.value, 'frameRelationType')) {
+    while (jsonixFrameRelations.value.frameRelationType[frameRelationTypeIterator] !== undefined) {
+      frameRelationTypes.push(jsonixFrameRelations.value.frameRelationType[frameRelationTypeIterator]);
+      frameRelationTypeIterator += 1;
+    }
+  }
+  return frameRelationTypes;
 }
 
 /**
