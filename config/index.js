@@ -3,7 +3,7 @@
 import Logger from './../logger';
 
 const config = {
-  dbUri: 'mongodb://localhost:27017/valencer',
+  dbUri: 'mongodb://localhost:27017/dev',
   port: 3030,
   logger: Logger.info,
   lexUnitDir: '/Users/AKB/Desktop/fndata-1.6/lu',

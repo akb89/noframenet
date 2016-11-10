@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<semTypes XMLCreated="07/06/2015 05:24:23 PDT Mon" xsi:schemaLocation="schema/semTypes.xsd" xmlns="http://framenet.icsi.berkeley.edu" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <semType abbrev="Body-of-water" name="Body_of_water" ID="2">
+        <definition>Labels LU's which designate bodies of water.  The limits of a body of water are defined in terms of the land that borders the water.  Equivlent to WN Body of water.
+(Appropriate for LU's in Locale frame and its descendants.)</definition>
+        <superType supID="17" superTypeName="Region"/>
+    </semType>
+    <semType abbrev="Running-water" name="Running-water" ID="3">
+        <definition>Labels LU's that designate geographical features of running water.  Equivalent to WN watercourse.
+(Appropriate for LU's in Locale and descendants of Locale.)</definition>
+        <superType supID="2" superTypeName="Body_of_water"/>
+    </semType>
+    <semType abbrev="Sentient" name="Sentient" ID="5">
+        <definition>Marks FEs whose fillers are sentient beings; dogs, definitely; bacteria, probably not; comatose people, planeria, maybe.  This is a common-sense type, with fuzzy boundaries, not a precise bio-medical category.</definition>
+        <superType supID="65" superTypeName="Animate_being"/>
+    </semType>
+    <semType abbrev="Landform" name="Landform" ID="7">
+        <definition>Labels LU's which designate land geography/topography.  Such LU's give some information about the 3-D shape of the land.
+(Appropriate for LU's in Locale frame and its descendants.)</definition>
+        <superType supID="17" superTypeName="Region"/>
+    </semType>
+    <semType abbrev="Activity" name="Activity" ID="8">
+        <definition>Labels Activity Aktionsart.  Used for events that fundamentally denote the 'Ongoing' subpart of an X-schema.  E.g. We walked _for an hour_.  Note that most verbs which inherently denote an Activity can be used as Accomplishments when a distinct goal is mentioned:  We walked to the </definition>
+        <superType supID="75" superTypeName="Event"/>
+    </semType>
+    <semType abbrev="Transparent Noun" name="Transparent Noun" ID="9">
+        <definition>Transparent noun.</definition>
+        <superType supID="180" superTypeName="Lexical_type"/>
+    </semType>
+</semTypes>

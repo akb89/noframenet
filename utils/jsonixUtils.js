@@ -1,9 +1,5 @@
 'use strict';
 
-function isValidXml(file) {
-  return file.endsWith('.xml');
-}
-
 /**
  * Extract all annotationSet elements from a Jsonix unmarshalled <pattern>
  * @param jsonixPattern
@@ -220,15 +216,15 @@ function toJsonixPatternArray(jsonixLexUnit) {
 
 /**
  * Extract all semType elements from a Jsonix unmarshalled <semTypes>
- * @param  jsonixElement
+ * @param  jsonixSemTypes
  * @return {Array}                     [description]
  */
-function toJsonixSemTypesSemTypeArray(jsonixElement) {
+function toJsonixSemTypesSemTypeArray(jsonixSemTypes) {
   const semTypes = [];
   let semTypeIterator = 0;
-  if ({}.hasOwnProperty.call(jsonixElement.value, 'semType')) {
-    while (jsonixElement.value.semType[semTypeIterator] !== undefined) {
-      semTypes.push(jsonixElement.value.semType[semTypeIterator]);
+  if ({}.hasOwnProperty.call(jsonixSemTypes.value, 'semType')) {
+    while (jsonixSemTypes.value.semType[semTypeIterator] !== undefined) {
+      semTypes.push(jsonixSemTypes.value.semType[semTypeIterator]);
       semTypeIterator += 1;
     }
   }
@@ -255,6 +251,24 @@ function toJsonixSemTypeArray(jsonixElement) {
     }
   }
   return semTypes;
+}
+
+/**
+ * Extract all superType elements from a Jsonix unmarshalled <semType>
+ * @method toJsonixSuperTypeArray
+ * @param  jsonixSemType
+ * @return {Array}
+ */
+function toJsonixSuperTypeArray(jsonixSemType) {
+  const superTypes = [];
+  let superTypeIterator = 0;
+  if ({}.hasOwnProperty.call(jsonixSemType, 'superType')) {
+    while (jsonixSemType.superType[superTypeIterator] !== undefined) {
+      superTypes.push(jsonixSemType.superType[superTypeIterator]);
+      superTypeIterator += 1;
+    }
+  }
+  return superTypes;
 }
 
 /**
@@ -317,7 +331,6 @@ function toJsonixValenceUnitArray(jsonixPattern) {
 }
 
 export default {
-  isValidXml,
   toJsonixPatternAnnoSetArray,
   toJsonixSentenceAnnoSetArray,
   toJsonixDocumentArray,
@@ -332,6 +345,7 @@ export default {
   toJsonixPatternArray,
   toJsonixSemTypesSemTypeArray,
   toJsonixSemTypeArray,
+  toJsonixSuperTypeArray,
   toJsonixDocumentSentenceArray,
   toJsonixLexUnitSentenceArray,
   toJsonixValenceUnitArray,
