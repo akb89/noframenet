@@ -29,7 +29,7 @@ describe('jsonixUtils', () => {
   before(async() => {
     jsonixSemTypes = await unmarshall('./tests/resources/semTypes.test.xml');
   });
-  it('#toJsonixSemTypesSemTypeArray should correctly unmarshall semTypes xml data', () => {
+  it('#toJsonixSemTypesSemTypeArray should return an array of json objects', () => {
     const jsonixSemTypeArray = jsonixUtils.toJsonixSemTypesSemTypeArray(jsonixSemTypes);
     jsonixSemTypeArray.length.should.equal(6);
     jsonixSemTypeArray[0].id.should.equal(2);

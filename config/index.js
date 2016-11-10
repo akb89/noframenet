@@ -9,7 +9,7 @@ const config = {
   lexUnitDir: '/Users/AKB/Desktop/fndata-1.6/lu',
   frameDir: '/Users/AKB/Desktop/fndata-1.6/frame',
   fullTextDir: '/Users/AKB/Desktop/fndata-1.6/fulltext',
-  semTypeFile: '/Users/AKB/Desktop/fndata-1.6/semTypes.xml',
+  semTypeFilePath: '/Users/AKB/Desktop/fndata-1.6/semTypes.xml',
   validLayers: ['FE', 'PT', 'GF'], // Configured this way for scalability, as
   // other languages may use additional specific layers
   // validLayers: ['FE', 'PT', 'GF', 'Target', 'PENN', 'NER', 'WSL', 'Other',
