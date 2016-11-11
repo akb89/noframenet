@@ -114,6 +114,7 @@ async function importRelations(relationsFilePath, dbUri) {
   const db = await connectToDatabase(dbUri);
   logger.info('Importing Relations to database...');
   await importRelationsOnceConnectedToDb(relationsFilePath, db);
+  // TODO revise this in case of pipeline script execution?
   db.mongo.close();
   db.mongoose.disconnect();
 }
