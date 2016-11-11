@@ -17,7 +17,7 @@ const config = {
   //  'Sent', 'Noun']
   frameChunkSize: 100,
   lexUnitChunkSize: 200,
-  fullTextChunkSize: 100,
+  fullTextChunkSize: 20,
 };
 
 export default config;

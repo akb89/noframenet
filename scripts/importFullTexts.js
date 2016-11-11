@@ -54,6 +54,7 @@ function processCorpus(jsonixFullText, documents, sets) {
     corpus.name = jsonixFullText.value.header.corpus[0].name;
     corpus.description = jsonixFullText.value.header.corpus[0].description;
     corpus.documents = [];
+    sets.corpora.add(corpus);
   } else {
     corpus = sets.corpora.get(corpus);
   }
@@ -98,7 +99,7 @@ async function importBatchSet(batchSet, db) {
   let counter = 1;
   let sets = {
     corpora: new Set(),
-  }
+  };
   for (let batch of batchSet) {
     logger.info(`Importing fullText batch ${counter} out of ${batchSet.length}...`);
     const data = await convertToObjects(batch, sets);
@@ -111,7 +112,7 @@ async function importBatchSet(batchSet, db) {
     counter += 1;
   }
   try {
-    //await saveSetsToDb(db.mongo, sets);
+    await saveSetsToDb(db.mongo, sets);
   } catch (err) {
     logger.error(err);
     process.exit(1);
