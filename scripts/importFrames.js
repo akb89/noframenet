@@ -16,6 +16,9 @@ import {
   toJsonixSemTypeArray,
 } from './../utils/jsonixUtils';
 import {
+  filterAndChunk,
+} from './../utils/filesUtils';
+import {
   connectToDatabase,
 } from './../db/mongo';
 import {
@@ -39,17 +42,14 @@ function convertToFrameElements(jsonixFrame) {
       bgColor: jsonixFE.bgColor,
       abbrev: jsonixFE.abbrev,
     });
-    frameElement.requires = toJsonixRequiresFEArray(jsonixFE).map((jsonixRequiresFE) => {
-      return jsonixRequiresFE.id;
-    });
-    frameElement.excludes = toJsonixExcludesFEArray(jsonixFE).map((jsonixExcludesFE) => {
-      return jsonixExcludesFE.id;
-    });
-    frameElement.semTypes = toJsonixSemTypeArray(jsonixFE).map((jsonixSemType) => {
-      return jsonixSemType.id;
-    });
+    frameElement.requires = toJsonixRequiresFEArray(jsonixFE)
+      .map(jsonixRequiresFE => jsonixRequiresFE.id);
+    frameElement.excludes = toJsonixExcludesFEArray(jsonixFE)
+      .map(jsonixExcludesFE => jsonixExcludesFE.id);
+    frameElement.semTypes = toJsonixSemTypeArray(jsonixFE)
+      .map(jsonixSemType => jsonixSemType.id);
     return frameElement.toObject();
-  })
+  });
 }
 
 function convertToFrame(jsonixFrame, frameElements) {
@@ -63,28 +63,24 @@ function convertToFrame(jsonixFrame, frameElements) {
   const fes = convertToFrameElements(jsonixFrame, frameElements);
   frameElements.push(...fes);
   frame.frameElements = fes.map(fe => fe._id);
-  frame.feCoreSets = toJsonixFECoreSetArray(jsonixFrame).map((jsonixFECoreSet) => {
-    return toJsonixFECoreSetMemberArray(jsonixFECoreSet).map((jsonixFE) => {
-      return jsonixFE.id;
-    });
-  });
-  frame.lexUnits = toJsonixLexUnitArray(jsonixFrame).map((jsonixLexUnit) => {
-    return jsonixLexUnit.id;
-  });
-  frame.semTypes = toJsonixSemTypeArray(jsonixFrame).map((jsonixSemType) => {
-    return jsonixSemType.id;
-  });
+  frame.feCoreSets = toJsonixFECoreSetArray(jsonixFrame)
+    .map(jsonixFECoreSet => toJsonixFECoreSetMemberArray(jsonixFECoreSet)
+      .map(jsonixFE => jsonixFE.id));
+  frame.lexUnits = toJsonixLexUnitArray(jsonixFrame)
+    .map(jsonixLexUnit => jsonixLexUnit.id);
+  frame.semTypes = toJsonixSemTypeArray(jsonixFrame)
+    .map(jsonixSemType => jsonixSemType.id);
   return frame.toObject();
 }
 
-async function convertToObjects(batch, sets) {
-  let data = {
+async function convertToObjects(batch) {
+  const data = {
     frames: [],
     frameElements: [],
   };
   await Promise.all(batch.map(async(file) => {
     const jsonixFrame = await unmarshall(file);
-    frames.push(convertToFrame(jsonixFrame, data.frameElements));
+    data.frames.push(convertToFrame(jsonixFrame, data.frameElements));
   }));
   return data;
 }
@@ -93,12 +89,12 @@ async function saveToDb(mongodb, data) {
   await mongodb.collection('frames').insertMany(data.frames, {
     writeConcern: 0,
     j: false,
-    ordered: false
+    ordered: false,
   });
   await mongodb.collection('frameelements').insertMany(data.frameElements, {
     writeConcern: 0,
     j: false,
-    ordered: false
+    ordered: false,
   });
 }
 
@@ -108,8 +104,8 @@ async function saveToDb(mongodb, data) {
  */
 async function importBatchSet(batchSet, db) {
   let counter = 1;
-  for (let batch of batchSet) {
-    logger.info(`Importing frame batch ${counter.batch} out of ${batchSet.length}...`);
+  for (const batch of batchSet) {
+    logger.info(`Importing frame batch ${counter} out of ${batchSet.length}...`);
     const data = await convertToObjects(batch);
     try {
       await saveToDb(db.mongo, data);

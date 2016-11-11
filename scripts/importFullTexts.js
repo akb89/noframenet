@@ -3,7 +3,6 @@
  */
 
 import {
-  Set,
   Corpus,
   Document,
 } from 'noframenet-core';
@@ -36,39 +35,38 @@ function convertToDocuments(jsonixFullText) {
       name: jsonixDocument.name,
       description: jsonixDocument.description,
     });
-    document.sentences = toJsonixDocumentSentenceArray(jsonixFullText).map((jsonixSentence) => {
-      return jsonixSentence.id;
-    });
+    document.sentences = toJsonixDocumentSentenceArray(jsonixFullText)
+      .map(jsonixSentence => jsonixSentence.id);
     return document.toObject();
-  })
-}
-
-function processCorpus(jsonixFullText, documents, sets) {
-  //logger.info(
-  //  `Processing fullText with id = ${jsonixFullText.value.header.corpus[0].id} and name =
-  // ${jsonixFullText.value.header.corpus[0].name}`);
-  let corpus = new Corpus({
-    _id: jsonixFullText.value.header.corpus[0].id,
   });
-  if (sets.corpora.get(corpus) == undefined) {
-    corpus.name = jsonixFullText.value.header.corpus[0].name;
-    corpus.description = jsonixFullText.value.header.corpus[0].description;
-    corpus.documents = [];
-    sets.corpora.add(corpus);
-  } else {
-    corpus = sets.corpora.get(corpus);
-  }
-  corpus.documents.push(jsonixFullText.value.header.corpus[0].document[0].id);
-  documents.push(...convertToDocuments(jsonixFullText));
 }
 
-async function convertToObjects(batch, sets) {
-  let data = {
+function processCorpus(jsonixFullText, documents, uniques) {
+  const corpusId = jsonixFullText.value.header.corpus[0].id;
+  let corpus;
+  if (uniques.corpora.has(corpusId)) {
+    corpus = uniques.corpora.get(corpusId);
+  } else {
+    corpus = new Corpus({
+      _id: corpusId,
+      name: jsonixFullText.value.header.corpus[0].name,
+      description: jsonixFullText.value.header.corpus[0].description,
+      documents: [],
+    });
+    uniques.corpora.set(corpusId, corpus.toObject());
+  }
+  const docs = convertToDocuments(jsonixFullText);
+  corpus.documents.push(...docs.map(doc => doc._id));
+  documents.push(...docs);
+}
+
+async function convertToObjects(batch, uniques) {
+  const data = {
     documents: [],
   };
   await Promise.all(batch.map(async(file) => {
     const jsonixFullText = await unmarshall(file);
-    processCorpus(jsonixFullText, data.documents, sets);
+    processCorpus(jsonixFullText, data.documents, uniques);
   }));
   return data;
 }
@@ -81,14 +79,13 @@ async function saveArraysToDb(mongodb, data) {
   });
 }
 
-async function saveSetsToDb(mongodb, sets) {
-  await mongodb.collection('corpus').insertMany(sets.corpora.map((corpus) => {
-    return corpus.toObject()
-  }), {
-    w: 0,
-    j: false,
-    ordered: false,
-  });
+async function saveMapsToDb(mongodb, maps) {
+  await mongodb.collection('corpus')
+    .insertMany(Array.from(maps.corpora), {
+      w: 0,
+      j: false,
+      ordered: false,
+    });
 }
 
 /**
@@ -97,12 +94,12 @@ async function saveSetsToDb(mongodb, sets) {
  */
 async function importBatchSet(batchSet, db) {
   let counter = 1;
-  let sets = {
-    corpora: new Set(),
+  const uniques = {
+    corpora: new Map(),
   };
-  for (let batch of batchSet) {
+  for (const batch of batchSet) {
     logger.info(`Importing fullText batch ${counter} out of ${batchSet.length}...`);
-    const data = await convertToObjects(batch, sets);
+    const data = await convertToObjects(batch, uniques);
     try {
       await saveArraysToDb(db.mongo, data);
     } catch (err) {
@@ -112,7 +109,7 @@ async function importBatchSet(batchSet, db) {
     counter += 1;
   }
   try {
-    await saveSetsToDb(db.mongo, sets);
+    await saveMapsToDb(db.mongo, uniques);
   } catch (err) {
     logger.error(err);
     process.exit(1);
