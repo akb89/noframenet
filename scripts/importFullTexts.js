@@ -42,7 +42,7 @@ function convertToDocuments(jsonixFullText) {
 function processCorpus(jsonixFullText, documents, sets) {
   logger.info(
     `Processing fullText with id = ${jsonixFullText.value.header.corpus[0].id} and name = ${jsonixFullText.value.header.corpus[0].name}`);
-  const corpus = new Corpus({
+  let corpus = new Corpus({
     _id: jsonixFullText.value.header.corpus[0].id,
   });
   if (sets.corpora.get(corpus) == undefined) {

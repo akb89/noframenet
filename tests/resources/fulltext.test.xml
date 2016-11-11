@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<?xml-stylesheet type="text/xsl" href="fullText.xsl"?>
+<fullTextAnnotation xsi:schemaLocation="../schema/fullText.xsd" xmlns="http://framenet.icsi.berkeley.edu" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <header>
+        <corpus description="American National Corpus Texts" name="ANC" ID="195">
+            <document description="Children's home fund-raising letter" name="112C-L012" ID="23802"/>
+        </corpus>
+    </header>
+    <sentence corpID="195" docID="23802" sentNo="1" paragNo="1" aPos="0" ID="4106532">
+    </sentence>
+    <sentence corpID="195" docID="23802" sentNo="1" paragNo="2" aPos="0" ID="4106533">
+    </sentence>
+    <sentence corpID="195" docID="23802" sentNo="1" paragNo="3" aPos="0" ID="4106534">
+    </sentence>
+</fullTextAnnotation>

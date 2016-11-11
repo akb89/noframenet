@@ -21,18 +21,27 @@ describe('jsonixUtils', () => {
   let jsonixFrameRelationTypeArray;
   let jsonixFrameRelationArray;
   let jsonixFERelationArray;
+  let jsonixFullText;
+  let jsonixDocuments;
+  let jsonixSentences;
   before(async() => {
     jsonixSemTypes = await unmarshall('./tests/resources/semTypes.test.xml');
     jsonixFrameRelations = await unmarshall('./tests/resources/frRelations.test.xml');
+    jsonixFullText = await unmarshall('./tests/resources/fulltext.test.xml');
+    jsonixDocuments = toJsonixDocumentArray(jsonixFullText.value.header.corpus[0]);
     jsonixFrameRelationTypeArray = toJsonixFrameRelationTypeArray(jsonixFrameRelations);
     jsonixFrameRelationArray = toJsonixFrameRelationArray(jsonixFrameRelationTypeArray[0]);
     jsonixFERelationArray = toJsonixFERelationArray(jsonixFrameRelationArray[0]);
+    jsonixSentences = toJsonixDocumentSentenceArray(jsonixFullText);
   });
   it('#toJsonixDocumentArray should return an array of json objects', () => {
-
+    jsonixDocuments.length.should.equal(1);
+    jsonixDocuments[0].id.should.equal(23802);
+    jsonixDocuments[0].name.should.equal('112C-L012');
   });
   it('#toJsonixDocumentSentenceArray should return an array of json objects', () => {
-
+    jsonixSentences.length.should.equal(3);
+    jsonixSentences[0].id.should.equal(4106532);
   });
   it('#toJsonixFERelationArray should return an array of json objects', () => {
     jsonixFERelationArray.length.should.equal(4);
