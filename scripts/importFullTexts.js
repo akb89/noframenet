@@ -1,140 +1,131 @@
-'use strict';
+/**
+ * Standalone script to import the content of the fulltext directory to MongoDB
+ */
 
-import path from "path";
-import jsonix from "jsonix";
-import preProcessor from "./preProcessor";
-import fullTextSchema from "./mappings/FullTextSchema.js";
-import Corpus from "./models/corpus";
-import Document from "./models/document";
-import jsonixUtils from "./utils/jsonixUtils";
-import config from "./config";
-import "./utils/utils";
+import {
+  Set,
+  Corpus,
+  Document,
+} from 'noframenet-core';
+import {
+  connectToDatabase
+} from './../db/mongo';
+import {
+  filterAndChunk
+} from './../utils/filesUtils';
+import {
+  toJsonixDocumentArray,
+  toJsonixDocumentSentenceArray,
+} from './../utils/jsonixUtils';
 
-const Jsonix = jsonix.Jsonix;
-const FullTextSchema = fullTextSchema.FullTextSchema;
-const context = new Jsonix.Context([FullTextSchema]);
-const unmarshaller = context.createUnmarshaller();
 const logger = config.logger;
 const startTime = process.hrtime();
 
-
-
-function logOutputStats(corpora, documents, counter) {
-  logger.info(`Import process completed in ${process.hrtime(startTime)[0]}s`);
-
-}
-
-async function importAll(files, fullTextDir, db, corpora, documents) {
-  await Promise.all(files.map(async(file) => {
-    var unmarshalledFile = await initFile(file, fullTextDir, db, corpora, documents);
-    await initFullText(unmarshalledFile, db);
-  }));
-}
-
-function initFile(file, fullTextDir, db, corpora, documents) {
-  return new Promise((resolve, reject) => {
-    try {
-      unmarshaller.unmarshalFile(path.join(fullTextDir, file), (unmarshalledFile) => {
-        return resolve(unmarshalledFile);
-      });
-    } catch (err) {
-      return reject(err);
-    }
-  });
-}
-
-async function initFullText(jsonixFullText, db) {
-  logger.info(
-    `Processing fullText with id = ${jsonixFullText.value.header.corpus[0].id} and name = ${jsonixFullText.value.header.corpus[0].name}`);
-  var corpus = await db.collection('corpus').findOne({
-    _id: jsonixFullText.value.header.corpus[0].id
-  });
-  if (corpus !== null) {
-    corpus.documents.push(await getDocuments(jsonixFullText, db));
-  } else {
-    corpus = new Corpus({
-      _id: jsonixFullText.value.header.corpus[0].id,
-      name: jsonixFullText.value.header.corpus[0].name,
-      description: jsonixFullText.value.header.corpus[0].description,
-      documents: await getDocuments(jsonixFullText, db)
-    });
-  }
-};
-
-async function getDocuments(jsonixFullText, db) {
-  var documents = [];
-  for (let jsonixDocument of jsonixUtils.toJsonixDocumentArray(jsonixFullText.value.header.corpus[0])) {
-    var document = new Document({
+/**
+ * Theoretically (in header.xsd), maxOccurs="unbounded" for
+ *  document so it is processed as an array here
+ */
+function convertToDocuments(jsonixFullText) {
+  return toJsonixDocumentArray(jsonixFullText.value.header.corpus[0]).map((jsonixDocument) => {
+    const document = new Document({
       _id: jsonixDocument.id,
       name: jsonixDocument.name,
       description: jsonixDocument.description,
     });
-    document.sentences = await getSentences(jsonixFullText, db);
-    documents.push(document);
-  }
-  return documents;
-}
-
-async function getSentences(jsonixFullText, db) {
-  var sentences = [];
-  for (let jsonixSentence of jsonixUtils.toJsonixDocumentSentenceArray(jsonixFullText)) {
-    var sentence = await db.collection('sentences').findOne({
-      _id: jsonixSentence.id
+    document.sentences = toJsonixDocumentSentenceArray(jsonixFullText).map((jsonixSentence) => {
+      return jsonixSentence.id;
     });
-    if (sentence !== null) {
-      //logger.error(`Sentence found: ${jsonixSentence.id}`);
-      for (let jsonixAnnoSet of jsonixUtils.toJsonixSentenceAnnoSetArray(jsonixSentence)) {
-        var annoSet = await db.collection('annotationsets').findOne({
-          _id: jsonixAnnoSet.id
-        });
-        if (annoSet === null) {
-          logger.error(`AnnotationSet not found: ${jsonixAnnoSet.id}`);
-        } else {
-          //logger.error('AnnoSet is found');
-        }
-      }
-    } else {
-      //logger.error(`Sentence NOT found: ${jsonixSentence.id}`);
-
-      /*
-       sentence = new Sentence({
-       _id: jsonixSentence.id,
-       text: jsonixSentence.text,
-       paragraphNumber: jsonixSentence.paragNo,
-       sentenceNumber: jsonixSentence.sentNo,
-       aPos: jsonixSentence.aPos
-       });
-       */
-    }
-    /*
-    for (let jsonixAnnoSet of jsonixUtils.toJsonixSentenceAnnoSetArray(jsonixSentence)) {
-        var annoSet = await db.collection('annotationsets').findOne({_id: jsonixAnnoSet.id});
-        if (annoSet === null) {
-            //logger.error(`AnnotationSet not found: ${jsonixAnnoSet.id}`);
-        } else {
-            //logger.error('AnnoSet is found');
-        }
-    }
-    sentences.push(sentence);
-    */
-  }
-  return sentences;
+    return document;
+  })
 }
 
-async function importFullText(fullTextDir, dbUri, chunkSize) {
-  var batchSet = await preProcessor.getFilteredArrayOfFiles(fullTextDir, chunkSize);
-  var db = await preProcessor.connectToDatabase(dbUri);
-  var counter = {
-    batch: 1
-  };
-  for (let batch of batchSet) {
-    var corpora = [];
-    var documents = [];
-    logger.info(`Importing fullText batch ${counter.batch} out of ${batchSet.length}...`);
-    counter.batch++;
-    await importAll(batch, fullTextDir, db, corpora, documents);
+function processCorpus(jsonixFullText, documents, sets) {
+  logger.info(
+    `Processing fullText with id = ${jsonixFullText.value.header.corpus[0].id} and name = ${jsonixFullText.value.header.corpus[0].name}`);
+  const corpus = new Corpus({
+    _id: jsonixFullText.value.header.corpus[0].id,
+  });
+  if (sets.corpora.get(corpus) == undefined) {
+    corpus.name = jsonixFullText.value.header.corpus[0].name;
+    corpus.description = jsonixFullText.value.header.corpus[0].description;
+    corpus.documents = [];
+  } else {
+    corpus = sets.corpora.get(corpus);
   }
+  corpus.documents.push(jsonixFullText.value.header.corpus[0].document[0].id);
+  documents.push(...convertToDocuments(jsonixFullText));
+}
+
+async function convertToObjects(batch, sets) {
+  let documents = [];
+  await Promise.all(batch.map(async(file) => {
+    const jsonixFullText = await unmarshall(file);
+    processCorpus(jsonixFullText, documents, sets);
+  }));
+  return data;
+}
+
+async function saveArraysToDb(mongodb, data) {
+  await mongodb.collection('documents').insertMany(data.documents, {
+    w: 0,
+    j: false,
+    ordered: false,
+  });
+}
+
+async function saveSetsToDb(sets) {
+  await mongodb.collection('corpus').insertMany(sets.corpora.map((corpus) => {
+    return corpus.toObject()
+  }), {
+    w: 0,
+    j: false,
+    ordered: false,
+  });
+}
+
+/**
+ * Sentences, AnnotationSets and Labels will be imported with the
+ * importLexUnits script.
+ */
+async function importBatchSet(batchSet, db) {
+  let counter = 1;
+  let sets = {
+    corpora: new Set(),
+  }
+  for (let batch of batchSet) {
+    logger.info(`Importing fullText batch ${counter} out of ${batchSet.length}...`);
+    const data = convertToObjects(batch, sets);
+    try {
+      await saveArraysToDb(db.mongo, data);
+    } catch (err) {
+      logger.error(err);
+      process.exit(1);
+    }
+    counter += 1;
+  }
+  try {
+    await saveSetsToDb(db.mongo, sets);
+  } catch (err) {
+    logger.error(err);
+    process.exit(1);
+  }
+}
+
+function logOutputStats() {
+  logger.info(`Import process completed in ${process.hrtime(startTime)[0]}s`);
+}
+
+async function importFullTextOnceConnectedToDb(fullTextDir, chunkSize, db) {
+  const batchSet = await filterAndChunk(fullTextDir, chunkSize);
+  await importBatchSet(batchSet, db);
   logOutputStats(corpora, documents, counter);
+}
+
+async function importFullText(fullTextDir, chunkSize, dbUri) {
+  const db = await connectToDatabase(dbUri);
+  await importFullTextOnceConnectedToDb(fullTextDir, chunkSize, db);
+  db.mongo.close();
+  db.mongoose.disconnect();
 }
 
 if (require.main === module) {

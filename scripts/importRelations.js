@@ -14,7 +14,7 @@ import {
 } from './../utils/jsonixUtils';
 import {
   connectToDatabase,
-} from './../db/mongo.js';
+} from './../db/mongo';
 import {
   unmarshall,
 } from './../marshalling/unmarshaller';
@@ -96,8 +96,6 @@ async function importDataObjects(data, db) {
     logger.error(err);
     process.exit(1);
   }
-  logger.info(`Import completed in ${process.hrtime(startTime)[0]}s`);
-  //logger.info(`SemTypes = ${semTypes.length}`);
 }
 
 async function importUnmarshalledFrameRelations(jsonixFrameRelations, db) {
@@ -108,6 +106,8 @@ async function importUnmarshalledFrameRelations(jsonixFrameRelations, db) {
 async function importRelationsOnceConnectedToDb(relationsFilePath, db) {
   const jsonixFrameRelations = await unmarshall(relationsFilePath);
   await importUnmarshalledFrameRelations(jsonixFrameRelations, db);
+  logger.info(`Import completed in ${process.hrtime(startTime)[0]}s`);
+  //logger.info(`SemTypes = ${semTypes.length}`);
 }
 
 async function importRelations(relationsFilePath, dbUri) {

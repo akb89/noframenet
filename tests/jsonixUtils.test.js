@@ -2,6 +2,8 @@
 
 import chai from 'chai';
 import {
+  toJsonixDocumentArray,
+  toJsonixDocumentSentenceArray,
   toJsonixFERelationArray,
   toJsonixFrameRelationArray,
   toJsonixFrameRelationTypeArray,
@@ -25,6 +27,12 @@ describe('jsonixUtils', () => {
     jsonixFrameRelationTypeArray = toJsonixFrameRelationTypeArray(jsonixFrameRelations);
     jsonixFrameRelationArray = toJsonixFrameRelationArray(jsonixFrameRelationTypeArray[0]);
     jsonixFERelationArray = toJsonixFERelationArray(jsonixFrameRelationArray[0]);
+  });
+  it('#toJsonixDocumentArray should return an array of json objects', () => {
+
+  });
+  it('#toJsonixDocumentSentenceArray should return an array of json objects', () => {
+
   });
   it('#toJsonixFERelationArray should return an array of json objects', () => {
     jsonixFERelationArray.length.should.equal(4);
