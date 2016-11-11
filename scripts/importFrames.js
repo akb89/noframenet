@@ -2,382 +2,138 @@
  * Standalone script to import FrameNet frames to MongoDB.
  */
 
-'use strict';
-
-import Promise from 'bluebird';
-import path from 'path';
-import jsonix from 'jsonix';
-import mongoose from 'mongoose';
-import preProcessor from './preProcessor';
-import frameSchema from './mappings/FrameSchema.js';
-import Frame from './models/frame';
-import FrameElement from './models/frameElement';
-import FrameRelation from './models/frameRelation';
-import FERelation from './models/frameElementRelation';
-import Lexeme from './models/lexeme';
-import LexUnit from './models/lexUnit';
-import SemType from './models/semType';
-import jsonixUtils from './utils/jsonixUtils';
-import config from './config';
 import {
-  FrameSet,
-  FrameElementSet,
-  SemTypeSet
-} from './utils/fnUtils';
-import './utils/utils';
+  Frame,
+  FrameElement,
+} from 'noframenet-core';
+import {
+  toJsonixExcludesFEArray,
+  toJsonixFECoreSetArray,
+  toJsonixFECoreSetMemberArray,
+  toJsonixFrameElementArray,
+  toJsonixLexUnitArray,
+  toJsonixRequiresFEArray,
+  toJsonixSemTypeArray,
+} from './../utils/jsonixUtils';
+import {
+  connectToDatabase,
+} from './../db/mongo';
+import {
+  unmarshall,
+} from './../marshalling/unmarshaller';
+import config from './../config';
 
-mongoose.set('debug', true);
-
-const Jsonix = jsonix.Jsonix;
-const FrameSchema = frameSchema.FrameSchema;
-const context = new Jsonix.Context([FrameSchema]);
-const unmarshaller = context.createUnmarshaller();
 const logger = config.logger;
 const startTime = process.hrtime();
 
-if (require.main === module) {
-  importFrames(config.frameDir, config.dbUri, config.frameChunkSize);
-}
-
-// TODO add error and exit on invalid directory
-async function importFrames(frameDir, dbUri, chunkSize) {
-  var batchSet = await preProcessor.getFilteredArrayOfFiles(frameDir, chunkSize);
-  var db = await preProcessor.connectToDatabase(dbUri);
-  var frameSet = new FrameSet();
-  var frameElementSet = new FrameElementSet();
-  var semTypeSet = new SemTypeSet();
-  var counter = {
-    batch: 1,
-    feRelation: 0,
-    frameRelation: 0,
-    lexeme: 0,
-    lexUnit: 0
-  };
-
-  for (let batch of batchSet) {
-    var feRelations = [];
-    var frameRelations = [];
-    var lexemes = [];
-    var lexUnits = [];
-    logger.info(`Importing frame batch ${counter.batch} out of ${batchSet.length}...`);
-    counter.batch++;
-    await importAll(
-      batch,
-      db,
-      frameDir,
-      frameSet,
-      frameElementSet,
-      feRelations,
-      frameRelations,
-      lexemes,
-      lexUnits,
-      semTypeSet,
-      counter
-    );
-  }
-  await saveSetToDb(db, frameSet, frameElementSet, semTypeSet);
-  logOutputStats(frameSet, frameElementSet, semTypeSet, counter);
-}
-
-async function saveSetToDb(db, frameSet, frameElementSet, semTypeSet) {
-  await db.collection('frames').insertMany(frameSet.map((frame) => {
-    return frame.toObject({
-      depopulate: true
-    })
-  }), {
-    writeConcern: 0,
-    j: false,
-    ordered: false
-  });
-  await db.collection('frameelements').insertMany(frameElementSet.map((frameElement) => {
-    return frameElement.toObject()
-  }), {
-    writeConcern: 0,
-    j: false,
-    ordered: false
-  });
-  await db.collection('semtypes').insertMany(semTypeSet.map((semType) => {
-    return semType.toObject()
-  }), {
-    writeConcern: 0,
-    j: false,
-    ordered: false
-  });
-}
-
-function logOutputStats(frameSet, frameElementSet, semTypeSet, counter) {
-  logger.info(`Import completed in ${process.hrtime(startTime)[0]}s`);
-  logger.info('Total inserted to MongoDB: ');
-  logger.info(`Frames = ${frameSet.length}`);
-  logger.info(`FrameElements = ${frameElementSet.length}`);
-  logger.info(`FERelations = ${counter.feRelation}`);
-  logger.info(`FrameRelations = ${counter.frameRelation}`);
-  logger.info(`Lexemes = ${counter.lexeme}`);
-  logger.info(`LexUnits = ${counter.lexUnit}`);
-  logger.info(`SemTypes = ${semTypeSet.length}`);
-}
-
-async function importAll(files, db, frameDir, frameSet, frameElementSet, feRelations, frameRelations, lexemes, lexUnits,
-  semTypeSet, counter) {
-
-  await Promise.all(files.map((file) =>
-    initFile(file, frameDir, frameSet, frameElementSet, feRelations, frameRelations, lexemes, lexUnits, semTypeSet)
-  )); //FIXME weird bug here: curly brackets break the code...
-
-  counter.feRelation += feRelations.length;
-  counter.frameRelation += frameRelations.length;
-  counter.lexeme += lexemes.length;
-  counter.lexUnit += lexUnits.length;
-
-  await saveArraysToDb(db, feRelations, frameRelations, lexemes, lexUnits);
-}
-
-async function saveArraysToDb(db, feRelations, frameRelations, lexemes, lexUnits) {
-  await db.collection('ferelations').insertMany(feRelations, {
-    w: 0,
-    j: false,
-    ordered: false
-  });
-  await db.collection('framerelations').insertMany(frameRelations, {
-    w: 0,
-    j: false,
-    ordered: false
-  });
-  await db.collection('lexemes').insertMany(lexemes, {
-    w: 0,
-    j: false,
-    ordered: false
-  });
-  await db.collection('lexunits').insertMany(lexUnits, {
-    w: 0,
-    j: false,
-    ordered: false
-  });
-}
-
-function initFile(file, frameDir, frameSet, frameElementSet, feRelations, frameRelations, lexemes, lexUnits,
-  semTypeSet) {
-  return new Promise((resolve, reject) => {
-    try {
-      unmarshaller.unmarshalFile(path.join(frameDir, file), (unmarshalledFile) => {
-        return resolve(
-          initFrame(unmarshalledFile, frameSet, frameElementSet, feRelations, frameRelations, lexemes,
-            lexUnits, semTypeSet));
-      });
-    } catch (err) {
-      return reject(err);
-    }
-  });
-}
-
-function initFrame(jsonixFrame, frameSet, frameElementSet, feRelations, frameRelations, lexemes, lexUnits, semTypeSet) {
-  logger.debug(`Processing frame with id = ${jsonixFrame.value.id} and name = ${jsonixFrame.value.name}`);
-  var _frame = new Frame({
-    _id: jsonixFrame.value.id
-  });
-  var frame = frameSet.get(_frame);
-  if (frame !== undefined) { // This is only possible if the frame was already created via a frame relation. The
-    // frameName.xml file is parsed only once.
-    frame.name = jsonixFrame.value.name;
-    frame.definition = jsonixFrame.value.definition;
-    frame.cDate = jsonixFrame.value.cDate;
-    frame.cBy = jsonixFrame.value.cBy;
-    frame.frameElements = getFrameElements(jsonixFrame, frameElementSet, feRelations, semTypeSet);
-    frame.frameRelations = getFrameRelations(jsonixFrame, frameSet, frameRelations);
-    frame.feCoreSets = getFECoreSets(jsonixFrame, frameElementSet);
-    frame.lexUnits = getLexUnits(jsonixFrame, frame, lexemes, lexUnits, semTypeSet);
-    frame.semTypes = getSemTypes(jsonixFrame, semTypeSet);
-  } else {
-    _frame.name = jsonixFrame.value.name;
-    _frame.definition = jsonixFrame.value.definition;
-    _frame.cDate = jsonixFrame.value.cDate;
-    _frame.cBy = jsonixFrame.value.cBy;
-    _frame.frameElements = getFrameElements(jsonixFrame, frameElementSet, feRelations, semTypeSet);
-    _frame.frameRelations = getFrameRelations(jsonixFrame, frameSet, frameRelations);
-    _frame.feCoreSets = getFECoreSets(jsonixFrame, frameElementSet);
-    _frame.lexUnits = getLexUnits(jsonixFrame, _frame, lexemes, lexUnits, semTypeSet);
-    _frame.semTypes = getSemTypes(jsonixFrame, semTypeSet);
-    frameSet.add(_frame);
-  }
-}
-
-function getFrameElements(jsonixFrame, frameElementSet, feRelations, semTypeSet) {
-  return jsonixUtils.toJsonixFrameElementArray(jsonixFrame).map((jsonixFrameElement) => {
-    logger.debug(
-      `Processing frame element with id = ${jsonixFrameElement.id} and name = ${jsonixFrameElement.name}`);
-    var _frameElement = new FrameElement({
-      _id: jsonixFrameElement.id
+function convertToFrameElements(jsonixFrame) {
+  return toJsonixFrameElementArray(jsonixFrame).map((jsonixFE) => {
+    const frameElement = new FrameElement({
+      _id: jsonixFE.id,
+      name: jsonixFE.name,
+      definition: jsonixFE.definition,
+      coreType: jsonixFE.coreType,
+      cDate: jsonixFE.cDate,
+      cBy: jsonixFE.cBy,
+      fgColor: jsonixFE.fgColor,
+      bgColor: jsonixFE.bgColor,
+      abbrev: jsonixFE.abbrev,
     });
-    var frameElement = frameElementSet.get(_frameElement);
-    if (frameElement !== undefined && frameElement.coreType !== undefined) {
-      return frameElement;
-    } else if (frameElement !== undefined) {
-      // name should already be set
-      frameElement.definition = jsonixFrameElement.definition;
-      frameElement.coreType = jsonixFrameElement.coreType;
-      frameElement.cDate = jsonixFrameElement.cDate;
-      frameElement.cBy = jsonixFrameElement.cBy;
-      frameElement.fgColor = jsonixFrameElement.fgColor;
-      frameElement.bgColor = jsonixFrameElement.bgColor;
-      frameElement.abbrev = jsonixFrameElement.abbrev;
-      frameElement.feRelations = getFERelations(jsonixFrameElement, frameElementSet, feRelations);
-      frameElement.semType = getSemTypes(jsonixFrameElement, semTypeSet);
-      return frameElement;
-    } else {
-      _frameElement.name = jsonixFrameElement.name;
-      _frameElement.definition = jsonixFrameElement.definition;
-      _frameElement.coreType = jsonixFrameElement.coreType;
-      _frameElement.cDate = jsonixFrameElement.cDate;
-      _frameElement.cBy = jsonixFrameElement.cBy;
-      _frameElement.fgColor = jsonixFrameElement.fgColor;
-      _frameElement.bgColor = jsonixFrameElement.bgColor;
-      _frameElement.abbrev = jsonixFrameElement.abbrev;
-      _frameElement.feRelations = getFERelations(jsonixFrameElement, frameElementSet, feRelations);
-      _frameElement.semType = getSemTypes(jsonixFrameElement, semTypeSet);
-      frameElementSet.add(_frameElement);
-      return _frameElement;
-    }
-  });
+    frameElement.requires = toJsonixRequiresFEArray(jsonixFE).map((jsonixRequiresFE) => {
+      return jsonixRequiresFE.id;
+    });
+    frameElement.excludes = toJsonixExcludesFEArray(jsonixFE).map((jsonixExcludesFE) => {
+      return jsonixExcludesFE.id;
+    });
+    frameElement.semTypes = toJsonixSemTypeArray(jsonixFE).map((jsonixSemType) => {
+      return jsonixSemType.id;
+    });
+    return frameElement.toObject();
+  })
 }
 
-function getFERelations(jsonixFrameElement, frameElementSet, feRelations) {
-  return config.feRelations.map((feRelation) => {
-    if (jsonixFrameElement.hasOwnProperty(feRelation.tag)) {
-      var _feRelation = new FERelation({
-        type: feRelation.name,
-        frameElements: []
-      });
-      var feRelationIterator = 0;
-      while (jsonixFrameElement[feRelation.tag][feRelationIterator] !== undefined) {
-        var _frameElement = new FrameElement({
-          _id: jsonixFrameElement[feRelation.tag][feRelationIterator].id
-        });
-        var frameElement = frameElementSet.get(_frameElement);
-        if (frameElement !== undefined) {
-          _feRelation.frameElements.push(frameElement);
-        } else {
-          _frameElement.name = jsonixFrameElement[feRelation.tag][feRelationIterator].name;
-          frameElementSet.add(_frameElement);
-          _feRelation.frameElements.push(_frameElement);
-        }
-        feRelationIterator++;
-      }
-      feRelations.push(_feRelation.toObject({
-        depopulate: true
-      }));
-      return _feRelation.toObject({
-        depopulate: true
-      }); // bug in Mongoose?
-    }
-  }).filter(isNotUndefined);
+function convertToFrame(jsonixFrame, frameElements) {
+  const frame = new Frame({
+    _id: jsonixFrame.value.id,
+    name: jsonixFrame.value.name,
+    definition: jsonixFrame.value.definition,
+    cDate: jsonixFrame.value.cDate,
+    cBy: jsonixFrame.value.cBy,
+  });
+  const fes = convertToFrameElements(jsonixFrame, frameElements);
+  frameElements.push(...fes);
+  frame.frameElements = fes.map(fe => fe._id);
+  frame.feCoreSets = toJsonixFECoreSetArray(jsonixFrame).map((jsonixFECoreSet) => {
+    return toJsonixFECoreSetMemberArray(jsonixFECoreSet).map((jsonixFE) => {
+      return jsonixFE.id;
+    });
+  });
+  frame.lexUnits = toJsonixLexUnitArray(jsonixFrame).map((jsonixLexUnit) => {
+    return jsonixLexUnit.id;
+  });
+  frame.semTypes = toJsonixSemTypeArray(jsonixFrame).map((jsonixSemType) => {
+    return jsonixSemType.id;
+  });
+  return frame.toObject();
+}
+
+async function convertToObjects(batch, sets) {
+  let data = {
+    frames: [],
+    frameElements: [],
+  };
+  await Promise.all(batch.map(async(file) => {
+    const jsonixFrame = await unmarshall(file);
+    frames.push(convertToFrame(jsonixFrame, data.frameElements));
+  }));
+  return data;
+}
+
+async function saveToDb(mongodb, data) {
+  await mongodb.collection('frames').insertMany(data.frames, {
+    writeConcern: 0,
+    j: false,
+    ordered: false
+  });
+  await mongodb.collection('frameelements').insertMany(data.frameElements, {
+    writeConcern: 0,
+    j: false,
+    ordered: false
+  });
 }
 
 /**
- *
- * @param jsonixElement can be either a jsonixFrame, a jsonixFrameElement or a jsonixLexUnit
- * @param semTypeSet
- * @returns {Array}
+ * Only import info related to Frames and FEs. Info regarding LexUnits and
+ * relations will be imported in separate scripts.
  */
-function getSemTypes(jsonixElement, semTypeSet) {
-  return jsonixUtils.toJsonixSemTypeArray(jsonixElement).map((jsonixSemType) => {
-    var _semType = new SemType({
-      _id: jsonixSemType.id
-    });
-    var semType = semTypeSet.get(_semType);
-    if (semType !== undefined) {
-      return semType;
-    } else {
-      _semType.name = jsonixSemType.name;
-      semTypeSet.add(_semType);
-      return _semType;
+async function importBatchSet(batchSet, db) {
+  let counter = 1;
+  for (let batch of batchSet) {
+    logger.info(`Importing frame batch ${counter.batch} out of ${batchSet.length}...`);
+    const data = await convertToObjects(batch);
+    try {
+      await saveToDb(db.mongo, data);
+    } catch (err) {
+      logger.error(err);
+      process.exit(1);
     }
-  });
+    counter += 1;
+  }
 }
 
-function getFrameRelations(jsonixFrame, frameSet, frameRelations) {
-  return jsonixUtils.toJsonixFrameRelationArray(jsonixFrame).map((jsonixFrameRelation) => {
-    if (jsonixFrameRelation.hasOwnProperty('relatedFrame')) {
-      var frameRelation = new FrameRelation({
-        type: jsonixFrameRelation.type,
-        frames: []
-      });
-      var relatedFrameIterator = 0;
-      while (jsonixFrameRelation.relatedFrame[relatedFrameIterator] !== undefined) {
-        var _frame = new Frame({
-          _id: jsonixFrameRelation.relatedFrame[relatedFrameIterator].id
-        });
-        var frame = frameSet.get(_frame);
-        if (frame !== undefined) {
-          frameRelation.frames.push(frame);
-        } else {
-          frameSet.add(_frame);
-          frameRelation.frames.push(_frame);
-        }
-        relatedFrameIterator++;
-      }
-      frameRelations.push(frameRelation.toObject({
-        depopulate: true
-      }));
-      return frameRelation.toObject({
-        depopulate: true
-      }); // bug in Mongoose?
-    }
-  }).filter(isNotUndefined);
+async function importFramesOnceConnectedToDb(frameDir, chunkSize, db) {
+  const batchSet = await filterAndChunk(frameDir, chunkSize);
+  await importBatchSet(batchSet, db);
+  logger.info(`Import process completed in ${process.hrtime(startTime)[0]}s`);
 }
 
-function isNotUndefined(value) {
-  return value !== undefined;
+async function importFrames(frameDir, chunkSize, dbUri) {
+  const db = await connectToDatabase(dbUri);
+  await importFramesOnceConnectedToDb(frameDir, chunkSize, db);
+  db.mongo.close();
+  db.mongoose.disconnect();
 }
 
-function getFECoreSets(jsonixFrame, frameElementSet) {
-  return jsonixUtils.toJsonixFECoreSetArray(jsonixFrame).map((jsonixFECoreSet) => {
-    return jsonixUtils.toJsonixFECoreSetMemberArray(jsonixFECoreSet).map((jsonixMemberFe) => {
-      var _frameElement = new FrameElement({
-        _id: jsonixMemberFe.id
-      });
-      var frameElement = frameElementSet.get(_frameElement);
-      if (frameElement !== undefined) {
-        return frameElement;
-      } else {
-        _frameElement.name = jsonixMemberFe.name;
-        frameElementSet.add(_frameElement);
-        return _frameElement;
-      }
-    });
-  });
-}
-
-function getLexUnits(jsonixFrame, frame, lexemes, lexUnits, semTypeSet) {
-  return jsonixUtils.toJsonixLexUnitArray(jsonixFrame).map((jsonixLexUnit) => {
-    var lexUnit = new LexUnit({
-      _id: jsonixLexUnit.id,
-      name: jsonixLexUnit.name,
-      pos: jsonixLexUnit.pos,
-      definition: jsonixLexUnit.definition,
-      frame: frame.toObject(),
-      status: jsonixLexUnit.status,
-      totalAnnotated: jsonixLexUnit.sentenceCount.annotated,
-      lemma_id: jsonixLexUnit.lemmaID,
-      lexemes: getLexemes(jsonixLexUnit, lexemes),
-      semTypes: getSemTypes(jsonixLexUnit, semTypeSet)
-    });
-    lexUnits.push(lexUnit.toObject({
-      depopulate: true
-    }));
-    return lexUnit;
-  });
-}
-
-function getLexemes(jsonixLexUnit, lexemes) {
-  return jsonixUtils.toJsonixLexemeArray(jsonixLexUnit).map((jsonixLexeme) => {
-    var lexeme = new Lexeme({
-      name: jsonixLexeme.name,
-      pos: jsonixLexeme.pos,
-      headword: jsonixLexeme.headword,
-      order: jsonixLexeme.order,
-      breakBefore: jsonixLexeme.breakBefore
-    });
-    lexemes.push(lexeme.toObject());
-    return lexeme;
-  });
+if (require.main === module) {
+  importFrames(config.frameDir, config.frameChunkSize, config.dbUri);
 }

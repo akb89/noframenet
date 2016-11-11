@@ -119,10 +119,6 @@ async function importBatchSet(batchSet, db) {
   }
 }
 
-function logOutputStats() {
-  logger.info(`Import process completed in ${process.hrtime(startTime)[0]}s`);
-}
-
 async function importFullTextOnceConnectedToDb(fullTextDir, chunkSize, db) {
   const batchSet = await filterAndChunk(fullTextDir, chunkSize);
   await importBatchSet(batchSet, db);

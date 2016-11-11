@@ -8,6 +8,13 @@ import {
   toJsonixFrameRelationArray,
   toJsonixFrameRelationTypeArray,
   toJsonixSemTypesSemTypeArray,
+  toJsonixExcludesFEArray,
+  toJsonixFECoreSetArray,
+  toJsonixFECoreSetMemberArray,
+  toJsonixFrameElementArray,
+  toJsonixLexUnitArray,
+  toJsonixRequiresFEArray,
+  toJsonixSemTypeArray,
 } from './../utils/jsonixUtils';
 import {
   unmarshall,
@@ -34,6 +41,9 @@ describe('jsonixUtils', () => {
     jsonixFERelationArray = toJsonixFERelationArray(jsonixFrameRelationArray[0]);
     jsonixSentences = toJsonixDocumentSentenceArray(jsonixFullText);
   });
+  it('#toJsonixExcludesFEArray', () => {
+
+  });
   it('#toJsonixDocumentArray should return an array of json objects', () => {
     jsonixDocuments.length.should.equal(1);
     jsonixDocuments[0].id.should.equal(23802);
@@ -43,11 +53,20 @@ describe('jsonixUtils', () => {
     jsonixSentences.length.should.equal(3);
     jsonixSentences[0].id.should.equal(4106532);
   });
+  it('#toJsonixFECoreSetArray', () => {
+
+  });
+  it('#toJsonixFECoreSetMemberArray', () => {
+
+  });
   it('#toJsonixFERelationArray should return an array of json objects', () => {
     jsonixFERelationArray.length.should.equal(4);
     jsonixFERelationArray[0].id.should.equal(808);
     jsonixFERelationArray[0].subID.should.equal(2921);
     jsonixFERelationArray[0].supID.should.equal(1446);
+  });
+  it('#toJsonixFrameElementArray', () => {
+
   });
   it('#toJsonixFrameRelationArray should return an array of json objects', () => {
     jsonixFrameRelationArray.length.should.equal(2);
@@ -60,6 +79,15 @@ describe('jsonixUtils', () => {
     jsonixFrameRelationTypeArray[0].id.should.equal(1);
     jsonixFrameRelationTypeArray[0].subFrameName.should.equal('Child');
     jsonixFrameRelationTypeArray[0].superFrameName.should.equal('Parent');
+  });
+  it('#toJsonixLexUnitArray', () => {
+
+  });
+  it('#toJsonixRequiresFEArray', () => {
+
+  });
+  it('#toJsonixSemTypeArray', () => {
+
   });
   it('#toJsonixSemTypesSemTypeArray should return an array of json objects', () => {
     const jsonixSemTypeArray = toJsonixSemTypesSemTypeArray(jsonixSemTypes);
