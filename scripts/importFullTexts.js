@@ -8,15 +8,19 @@ import {
   Document,
 } from 'noframenet-core';
 import {
-  connectToDatabase
-} from './../db/mongo';
-import {
-  filterAndChunk
+  filterAndChunk,
 } from './../utils/filesUtils';
 import {
   toJsonixDocumentArray,
   toJsonixDocumentSentenceArray,
 } from './../utils/jsonixUtils';
+import {
+  connectToDatabase,
+} from './../db/mongo';
+import {
+  unmarshall,
+} from './../marshalling/unmarshaller';
+import config from './../config';
 
 const logger = config.logger;
 const startTime = process.hrtime();
@@ -35,13 +39,14 @@ function convertToDocuments(jsonixFullText) {
     document.sentences = toJsonixDocumentSentenceArray(jsonixFullText).map((jsonixSentence) => {
       return jsonixSentence.id;
     });
-    return document;
+    return document.toObject();
   })
 }
 
 function processCorpus(jsonixFullText, documents, sets) {
-  logger.info(
-    `Processing fullText with id = ${jsonixFullText.value.header.corpus[0].id} and name = ${jsonixFullText.value.header.corpus[0].name}`);
+  //logger.info(
+  //  `Processing fullText with id = ${jsonixFullText.value.header.corpus[0].id} and name =
+  // ${jsonixFullText.value.header.corpus[0].name}`);
   let corpus = new Corpus({
     _id: jsonixFullText.value.header.corpus[0].id,
   });
@@ -57,10 +62,12 @@ function processCorpus(jsonixFullText, documents, sets) {
 }
 
 async function convertToObjects(batch, sets) {
-  let documents = [];
+  let data = {
+    documents: [],
+  };
   await Promise.all(batch.map(async(file) => {
     const jsonixFullText = await unmarshall(file);
-    processCorpus(jsonixFullText, documents, sets);
+    processCorpus(jsonixFullText, data.documents, sets);
   }));
   return data;
 }
@@ -73,7 +80,7 @@ async function saveArraysToDb(mongodb, data) {
   });
 }
 
-async function saveSetsToDb(sets) {
+async function saveSetsToDb(mongodb, sets) {
   await mongodb.collection('corpus').insertMany(sets.corpora.map((corpus) => {
     return corpus.toObject()
   }), {
@@ -94,7 +101,7 @@ async function importBatchSet(batchSet, db) {
   }
   for (let batch of batchSet) {
     logger.info(`Importing fullText batch ${counter} out of ${batchSet.length}...`);
-    const data = convertToObjects(batch, sets);
+    const data = await convertToObjects(batch, sets);
     try {
       await saveArraysToDb(db.mongo, data);
     } catch (err) {
@@ -104,7 +111,7 @@ async function importBatchSet(batchSet, db) {
     counter += 1;
   }
   try {
-    await saveSetsToDb(db.mongo, sets);
+    //await saveSetsToDb(db.mongo, sets);
   } catch (err) {
     logger.error(err);
     process.exit(1);
@@ -118,7 +125,7 @@ function logOutputStats() {
 async function importFullTextOnceConnectedToDb(fullTextDir, chunkSize, db) {
   const batchSet = await filterAndChunk(fullTextDir, chunkSize);
   await importBatchSet(batchSet, db);
-  logOutputStats(corpora, documents, counter);
+  logger.info(`Import process completed in ${process.hrtime(startTime)[0]}s`);
 }
 
 async function importFullText(fullTextDir, chunkSize, dbUri) {
@@ -129,5 +136,5 @@ async function importFullText(fullTextDir, chunkSize, dbUri) {
 }
 
 if (require.main === module) {
-  importFullText(config.fullTextDir, config.dbUri, config.fullTextChunkSize);
+  importFullText(config.fullTextDir, config.fullTextChunkSize, config.dbUri);
 }

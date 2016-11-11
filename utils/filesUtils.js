@@ -1,8 +1,7 @@
-'use strict';
-
-import filesystem from "fs";
-import path from "path";
-import config from "./../config";
+import filesystem from 'fs';
+import path from 'path';
+import config from './../config';
+import './utils'; // For chunk()
 
 const logger = config.logger;
 
@@ -24,5 +23,5 @@ export async function filterAndChunk(dir, chunkSize) {
     return chunk.map((file) => {
       return path.join(dir, file);
     })
-  })
+  });
 }

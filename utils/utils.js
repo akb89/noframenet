@@ -1,5 +1,3 @@
-'use strict';
-
 import _ from 'lodash';
 
 if (!Array.prototype.flatten) {
@@ -9,7 +7,7 @@ if (!Array.prototype.flatten) {
 }
 
 if (!Array.prototype.chunk) {
-  Array.prototype.chunk = (chunkLength) => {
+  Array.prototype.chunk = function(chunkLength) {
     var chunks = [];
     if (this.length <= chunkLength) {
       chunks.push(this);

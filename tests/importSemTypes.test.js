@@ -1,5 +1,5 @@
 /**
- * Behavior test for importSemTypes script
+ * Behavior tests for importSemTypes script
  */
 import {
   SemType,

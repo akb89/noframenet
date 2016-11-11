@@ -1,5 +1,5 @@
 /**
- * Behavior test for importRelations script
+ * Behavior tests for importRelations script
  */
 import {
   FERelation,
@@ -10,7 +10,7 @@ import {
   toJsonixFrameElementRelationArray,
   toJsonixFrameRelationArray,
   toJsonixFrameRelationTypeArray,
-} from './../utils//jsonixUtils';
+} from './../utils/jsonixUtils';
 import {
   convertToFERelations,
   convertToFrameRelations,
