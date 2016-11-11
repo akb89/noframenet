@@ -10,18 +10,17 @@ function isValidXml(file) {
 }
 
 export async function filterAndChunk(dir, chunkSize) {
-  logger.info('Processing directory: ' + dir);
+  logger.info(`Processing directory: ${dir}`);
   const filesPromise = new Promise((resolve, reject) => {
     filesystem.readdir(dir, (error, files) => {
       if (error) return reject(error);
       return resolve(files);
-    })
+    });
   });
   const files = await filesPromise;
   logger.info(`Total number of files = ${files.filter(isValidXml).length}`);
-  return files.filter(isValidXml).chunk(chunkSize).map((chunk) => {
-    return chunk.map((file) => {
-      return path.join(dir, file);
-    })
-  });
+  return files
+    .filter(isValidXml)
+    .chunk(chunkSize)
+    .map(chunk => chunk.map(file => path.join(dir, file)));
 }

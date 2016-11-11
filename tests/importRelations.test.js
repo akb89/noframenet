@@ -6,6 +6,7 @@ import {
   FrameRelation,
   FrameRelationType,
 } from 'noframenet-core';
+import chai from 'chai';
 import {
   toJsonixFrameElementRelationArray,
   toJsonixFrameRelationArray,
@@ -19,7 +20,6 @@ import {
 import {
   unmarshall,
 } from './../marshalling/unmarshaller';
-import chai from 'chai';
 import mochAsync from './async.test';
 
 const should = chai.should();
@@ -36,8 +36,8 @@ describe('importRelations', () => {
   it('#convertToFERelations should return a properly formatted array of FrameElementRelation objects', () => {
     const feRelations = convertToFERelations(jsonixFrameRelationArray[0]);
     feRelations.length.should.equal(4);
-    feRelations[0]._id.should.equal(808)
-    feRelations[0].subFE.should.equal(2921)
+    feRelations[0]._id.should.equal(808);
+    feRelations[0].subFE.should.equal(2921);
     feRelations[0].supFE.should.equal(1446);
     feRelations[0].frameRelation.should.equal(2);
   });

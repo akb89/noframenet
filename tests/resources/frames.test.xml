@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<?xml-stylesheet type="text/xsl" href="frame.xsl"?>
+<frame cBy="MJE" cDate="08/15/2003 06:31:20 PDT Fri" name="Amalgamation" ID="790" xsi:schemaLocation="../schema/frame.xsd" xmlns="http://framenet.icsi.berkeley.edu" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <definition>&lt;def-root&gt;These words refer to &lt;fen&gt;Parts&lt;/fen&gt;</definition>
+    <FE bgColor="008000" fgColor="FFFFFF" coreType="Core" cBy="MJE" cDate="08/15/2003 06:41:07 PDT Fri" abbrev="" name="Part_2" ID="4929">
+        <definition>&lt;def-root&gt;The less focussed-upon</definition>
+        <requiresFE name="Part_1" ID="4928"/>
+        <excludesFE name="Parts" ID="4926"/>
+        <requiresFE name="Part_2" ID="4929"/>
+        <excludesFE name="Parts" ID="4926"/>
+        <semType name="Degree" ID="172"/>
+    </FE>
+    <FE bgColor="006400" fgColor="FFFFFF" coreType="Extra-Thematic" cBy="MJE" cDate="09/23/2003 04:25:07 PDT Tue" abbrev="" name="Depictive" ID="5113">
+        <definition>&lt;def-root&gt;The state of &lt;fen&gt;Part_1&lt;/fen&gt; or &lt;fen&gt;Parts&lt;/fen&gt;.&lt;/def-root&gt;</definition>
+    </FE>
+    <FE bgColor="FFA500" fgColor="000000" coreType="Extra-Thematic" cBy="PKe" cDate="05/29/2012 04:09:45 PDT Tue" abbrev="" name="Descriptor" ID="15720">
+        <definition>&lt;def-root&gt;</definition>
+    </FE>
+    <FEcoreSet>
+        <memberFE name="State" ID="12492"/>
+        <memberFE name="Expressor" ID="12489"/>
+        <memberFE name="Experiencer" ID="12484"/>
+    </FEcoreSet>
+    <FEcoreSet>
+        <memberFE name="Stimulus" ID="12486"/>
+        <memberFE name="Topic" ID="12485"/>
+    </FEcoreSet>
+    <frameRelation type="Inherits from">
+        <relatedFrame ID="9">Reciprocality</relatedFrame>
+    </frameRelation>
+    <lexUnit status="Created" POS="N" name="merger.n" ID="9291" lemmaID="24026" cBy="MJE" cDate="08/15/2003 07:00:44 PDT Fri">
+        <definition>COD:   the combining of two things, especially companies, into one.</definition>
+        <sentenceCount annotated="0" total="0"/>
+        <lexeme order="1" headword="false" breakBefore="false" POS="N" name="merger"/>
+    </lexUnit>
+    <lexUnit status="Created" POS="V" name="amalgamate.v" ID="9490" lemmaID="1171" cBy="MJE" cDate="09/19/2003 07:37:48 PDT Fri">
+        <definition>COD: combine or unite to form one organization or structure.</definition>
+        <sentenceCount annotated="7" total="90"/>
+        <lexeme order="1" headword="false" breakBefore="false" POS="V" name="amalgamate"/>
+    </lexUnit>
+    <lexUnit status="Created" POS="V" name="blend.v" ID="9500" lemmaID="3817" cBy="MJE" cDate="09/22/2003 02:07:47 PDT Mon">
+        <definition>FN: to mix with something else</definition>
+        <sentenceCount annotated="4" total="258"/>
+        <lexeme order="1" headword="false" breakBefore="false" POS="V" name="blend"/>
+    </lexUnit>
+    <lexUnit status="Created" POS="V" name="combine.v" ID="9507" lemmaID="7271" cBy="MJE" cDate="09/23/2003 04:16:59 PDT Tue">
+        <definition>COD: unite; merge; unite to form a compound</definition>
+        <sentenceCount annotated="16" total="301"/>
+        <lexeme order="1" headword="false" breakBefore="false" POS="V" name="combine"/>
+    </lexUnit>
+    <semType name="Degree" ID="175"/>
+</frame>

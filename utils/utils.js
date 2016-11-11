@@ -7,13 +7,13 @@ if (!Array.prototype.flatten) {
 }
 
 if (!Array.prototype.chunk) {
-  Array.prototype.chunk = function(chunkLength) {
-    var chunks = [];
+  Array.prototype.chunk = function (chunkLength) {
+    const chunks = [];
     if (this.length <= chunkLength) {
       chunks.push(this);
       return chunks;
     }
-    var iterator = 0;
+    let iterator = 0;
     while (iterator + chunkLength <= this.length) {
       chunks.push(this.slice(iterator, iterator + chunkLength));
       iterator += chunkLength;
