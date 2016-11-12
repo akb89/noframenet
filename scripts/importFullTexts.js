@@ -41,11 +41,11 @@ function convertToDocuments(jsonixFullText) {
   });
 }
 
-function processCorpus(jsonixFullText, documents, uniques) {
+function processCorpus(jsonixFullText, documents, corpora) {
   const corpusId = jsonixFullText.value.header.corpus[0].id;
   let corpus;
-  if (uniques.corpora.has(corpusId)) {
-    corpus = uniques.corpora.get(corpusId);
+  if (corpora.has(corpusId)) {
+    corpus = corpora.get(corpusId);
   } else {
     corpus = new Corpus({
       _id: corpusId,
@@ -53,7 +53,7 @@ function processCorpus(jsonixFullText, documents, uniques) {
       description: jsonixFullText.value.header.corpus[0].description,
       documents: [],
     });
-    uniques.corpora.set(corpusId, corpus.toObject());
+    corpora.set(corpusId, corpus.toObject());
   }
   const docs = convertToDocuments(jsonixFullText);
   corpus.documents.push(...docs.map(doc => doc._id));
@@ -66,7 +66,7 @@ async function convertToObjects(batch, uniques) {
   };
   await Promise.all(batch.map(async(file) => {
     const jsonixFullText = await unmarshall(file);
-    processCorpus(jsonixFullText, data.documents, uniques);
+    processCorpus(jsonixFullText, data.documents, uniques.corpora);
   }));
   return data;
 }

@@ -67,7 +67,11 @@ function convertToObjects(jsonixFrameRelations) {
     frameRelations: [],
     feRelations: [],
   };
-  data.frameRelationTypes.push(...convertToRelationTypes(jsonixFrameRelations, data.frameRelations, data.feRelations));
+  data.frameRelationTypes.push(
+    ...convertToRelationTypes(
+      jsonixFrameRelations,
+      data.frameRelations,
+      data.feRelations));
   return data;
 }
 
