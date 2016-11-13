@@ -31,6 +31,7 @@ import {
   unmarshall,
 } from './../marshalling/unmarshaller';
 import config from './../config';
+import './../utils/utils'; // For .flatten()
 
 const logger = config.logger;
 const startTime = process.hrtime();
@@ -114,7 +115,8 @@ function convertToSentences(jsonixLexUnit, annotationSets, labels) {
       sentenceNumber: jsonixSentence.sentNo,
       aPos: jsonixSentence.aPos,
     });
-    annotationSets.push(...convertToAnnoSets(jsonixSentence, labels));
+    addToMap(annotationSets, convertToAnnoSets(jsonixSentence, labels));
+    //annotationSets.push(...convertToAnnoSets(jsonixSentence, labels));
     return sentence.toObject();
   });
 }
@@ -142,7 +144,7 @@ function convertToLexUnit(
     definition: jsonixLexUnit.definition,
     frame: jsonixLexUnit.frameID,
     status: jsonixLexUnit.status,
-    totalAnnotated: jsonixLexUnit.sentenceCount.annotated,
+    totalAnnotated: jsonixLexUnit.totalAnnotated,
   });
   // SemTypes are imported via a separate script
   lexUnit.semTypes = toJsonixSemTypeArray(jsonixLexUnit).map(jsonixSemType => jsonixSemType.id);
@@ -224,7 +226,7 @@ async function importBatchSet(batchSet, db) {
     logger.info(`Importing lexUnit batch ${counter} out of ${batchSet.length}...`);
     const data = convertToObjects(batch, uniques);
     try {
-      await saveArraysToDb(db.mongo, data);
+      //await saveArraysToDb(db.mongo, data);
     } catch (err) {
       logger.error(err);
       process.exit(1);
@@ -232,7 +234,7 @@ async function importBatchSet(batchSet, db) {
     counter += 1;
   }
   try {
-    await saveMapsToDb(db.mongo, uniques);
+    //await saveMapsToDb(db.mongo, uniques);
   } catch (err) {
     logger.error(err);
     process.exit(1);
@@ -245,13 +247,13 @@ async function importLexUnitsOnceConnectedToDb(lexUnitDir, chunkSize, db) {
   logger.info(`Import process completed in ${process.hrtime(startTime)[0]}s`);
 }
 
-async function importLexUnits(lexUnitDir, chunkSize, validLayers, dbUri) {
-  const db = connectToDatabase(dbUri);
+async function importLexUnits(lexUnitDir, chunkSize, dbUri) {
+  const db = await connectToDatabase(dbUri);
   await importLexUnitsOnceConnectedToDb(lexUnitDir, chunkSize, db);
   db.mongo.close();
   db.mongoose.disconnect();
 }
 
 if (require.main === module) {
-  importLexUnits(config.lexUnitDir, config.lexUnitChunkSize, config.validLayers, config.dbUri);
+  importLexUnits(config.lexUnitDir, config.lexUnitChunkSize, config.dbUri);
 }

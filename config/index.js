@@ -1,12 +1,12 @@
 'use strict';
 
-import Logger from './../logger';
+import Logger from './../logger/logger';
 
 const config = {
   dbUri: 'mongodb://localhost:27017/dev',
   port: 3030,
   logger: Logger.info,
-  lexUnitDir: '/Users/AKB/Desktop/fndata-1.6/lu',
+  lexUnitDir: '/Users/AKB/Desktop/fndata-1.6/tmp/lu10',
   frameDir: '/Users/AKB/Desktop/fndata-1.6/frame',
   fullTextDir: '/Users/AKB/Desktop/fndata-1.6/fulltext',
   relationsFilePath: '/Users/AKB/Desktop/fndata-1.6/frRelation.xml',
