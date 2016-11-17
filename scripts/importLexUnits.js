@@ -176,7 +176,6 @@ async function convertToObjects(batch, uniques) {
 }
 
 async function saveArraysToDb(mongodb, data) {
-  logger.info('Saving arrays');
   await mongodb.collection('labels').insertMany(data.labels, {
     w: 0,
     j: false,
