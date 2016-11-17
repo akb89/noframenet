@@ -6,7 +6,7 @@ const config = {
   dbUri: 'mongodb://localhost:27017/dev',
   port: 3030,
   logger: Logger.info,
-  lexUnitDir: '/Users/AKB/Desktop/fndata-1.6/tmp/lu10',
+  lexUnitDir: '/Users/AKB/Desktop/fndata-1.6/tmp/lu100',
   frameDir: '/Users/AKB/Desktop/fndata-1.6/frame',
   fullTextDir: '/Users/AKB/Desktop/fndata-1.6/fulltext',
   relationsFilePath: '/Users/AKB/Desktop/fndata-1.6/frRelation.xml',

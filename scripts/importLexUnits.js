@@ -34,7 +34,6 @@ import config from './../config';
 import './../utils/utils'; // For .flatten()
 
 const logger = config.logger;
-const startTime = process.hrtime();
 
 function convertToValenceUnits(jsonixPattern, valenceUnits) {
   return toJsonixValenceUnitArray(jsonixPattern).map((jsonixValenceUnit) => {
@@ -59,11 +58,12 @@ function processPatterns(jsonixLexUnit, annotationSets, patterns, valenceUnits) 
   // Add all info regading patterns and lexUnits to AnnoSet objects
   toJsonixPatternArray(jsonixLexUnit).forEach((jsonixPattern) => {
     const vus = convertToValenceUnits(jsonixPattern, valenceUnits);
-    const key = vus.map(vu => vu._id).sort().concat(); // TODO check this
+    const key = vus.map(vu => vu._id).sort().join(''); // TODO check this
     let pattern;
     if (!patterns.has(key)) {
-      pattern = new Pattern();
-      pattern.valenceUnits = vus;
+      pattern = new Pattern({
+        valenceUnits: vus,
+      });
       patterns.set(key, pattern.toObject());
     } else {
       pattern = patterns.get(key);
@@ -73,6 +73,7 @@ function processPatterns(jsonixLexUnit, annotationSets, patterns, valenceUnits) 
         const annoSet = annotationSets.get(jsonixAnnoSet.id);
         annoSet.lexUnit = jsonixLexUnit.value.id;
         annoSet.pattern = pattern._id;
+        //annotationSets.set(jsonixAnnoSet.id, annoSet);
       }
     });
   });
@@ -93,10 +94,11 @@ function convertToLabels(jsonixAnnoSet) {
   }).flatten();
 }
 
-function convertToAnnoSets(jsonixSentence, labels) {
+function convertToAnnoSets(jsonixSentence, lexUnitId, labels) {
   return toJsonixSentenceAnnoSetArray(jsonixSentence).map((jsonixAnnoSet) => {
     const annoSet = new AnnotationSet({
       _id: jsonixAnnoSet.id,
+      lexUnit: lexUnitId,
       sentence: jsonixSentence.id,
     });
     const annoLabels = convertToLabels(jsonixAnnoSet);
@@ -115,7 +117,7 @@ function convertToSentences(jsonixLexUnit, annotationSets, labels) {
       sentenceNumber: jsonixSentence.sentNo,
       aPos: jsonixSentence.aPos,
     });
-    addToMap(annotationSets, convertToAnnoSets(jsonixSentence, labels));
+    addToMap(annotationSets, convertToAnnoSets(jsonixSentence, jsonixLexUnit.value.id, labels));
     //annotationSets.push(...convertToAnnoSets(jsonixSentence, labels));
     return sentence.toObject();
   });
@@ -138,13 +140,13 @@ function convertToLexUnit(
   sentences,
   valenceUnits) {
   const lexUnit = new LexUnit({
-    _id: jsonixLexUnit.id,
-    name: jsonixLexUnit.name,
-    pos: jsonixLexUnit.pos,
-    definition: jsonixLexUnit.definition,
-    frame: jsonixLexUnit.frameID,
-    status: jsonixLexUnit.status,
-    totalAnnotated: jsonixLexUnit.totalAnnotated,
+    _id: jsonixLexUnit.value.id,
+    name: jsonixLexUnit.value.name,
+    pos: jsonixLexUnit.value.pos,
+    definition: jsonixLexUnit.value.definition,
+    frame: jsonixLexUnit.value.frameID,
+    status: jsonixLexUnit.value.status,
+    totalAnnotated: jsonixLexUnit.value.totalAnnotated,
   });
   // SemTypes are imported via a separate script
   lexUnit.semTypes = toJsonixSemTypeArray(jsonixLexUnit).map(jsonixSemType => jsonixSemType.id);
@@ -163,7 +165,7 @@ async function convertToObjects(batch, uniques) {
     data.lexUnits.push(
       convertToLexUnit(
         jsonixLexUnit,
-        data.annotationSets,
+        uniques.annotationSets,
         data.labels,
         uniques.patterns,
         uniques.sentences,
@@ -174,6 +176,7 @@ async function convertToObjects(batch, uniques) {
 }
 
 async function saveArraysToDb(mongodb, data) {
+  logger.info('Saving arrays');
   await mongodb.collection('labels').insertMany(data.labels, {
     w: 0,
     j: false,
@@ -188,11 +191,12 @@ async function saveArraysToDb(mongodb, data) {
 
 async function saveMapsToDb(mongodb, maps) {
   // TODO Check: annotationSets Map may be too big
-  await mongodb.collection('annotationsets').insertMany(maps.annotationSets, {
-    w: 0,
-    j: false,
-    ordered: false,
-  });
+  await mongodb.collection('annotationsets')
+    .insertMany(Array.from(maps.annotationSets), {
+      w: 0,
+      j: false,
+      ordered: false,
+    });
   await mongodb.collection('patterns')
     .insertMany(Array.from(maps.patterns), {
       w: 0,
@@ -217,16 +221,16 @@ async function saveMapsToDb(mongodb, maps) {
 async function importBatchSet(batchSet, db) {
   let counter = 1;
   const uniques = {
-    AnnotationSets: new Map(),
+    annotationSets: new Map(),
     patterns: new Map(),
     sentences: new Map(), // Try with a Map first. If too big, use set of ids like before
     valenceUnits: new Map(),
   };
   for (const batch of batchSet) {
     logger.info(`Importing lexUnit batch ${counter} out of ${batchSet.length}...`);
-    const data = convertToObjects(batch, uniques);
+    const data = await convertToObjects(batch, uniques);
     try {
-      //await saveArraysToDb(db.mongo, data);
+      await saveArraysToDb(db.mongo, data);
     } catch (err) {
       logger.error(err);
       process.exit(1);
@@ -234,7 +238,7 @@ async function importBatchSet(batchSet, db) {
     counter += 1;
   }
   try {
-    //await saveMapsToDb(db.mongo, uniques);
+    await saveMapsToDb(db.mongo, uniques);
   } catch (err) {
     logger.error(err);
     process.exit(1);
@@ -244,16 +248,16 @@ async function importBatchSet(batchSet, db) {
 async function importLexUnitsOnceConnectedToDb(lexUnitDir, chunkSize, db) {
   const batchSet = await filterAndChunk(lexUnitDir, chunkSize);
   await importBatchSet(batchSet, db);
-  logger.info(`Import process completed in ${process.hrtime(startTime)[0]}s`);
 }
 
 async function importLexUnits(lexUnitDir, chunkSize, dbUri) {
   const db = await connectToDatabase(dbUri);
   await importLexUnitsOnceConnectedToDb(lexUnitDir, chunkSize, db);
-  db.mongo.close();
-  db.mongoose.disconnect();
+  await db.mongo.close();
+  await db.mongoose.disconnect();
 }
 
 if (require.main === module) {
-  importLexUnits(config.lexUnitDir, config.lexUnitChunkSize, config.dbUri);
+  const startTime = process.hrtime();
+  importLexUnits(config.lexUnitDir, config.lexUnitChunkSize, config.dbUri).then(() => logger.info(`Import process completed in ${process.hrtime(startTime)[0]}s`));
 }
