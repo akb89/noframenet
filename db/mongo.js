@@ -8,16 +8,36 @@ const logger = config.logger;
 export async function connectToDatabase(uri) {
   let mongo;
   try {
-    mongo = await MongoClient.connect(uri); // db inserts will be performed
-    // directly via the mongo driver for better performances
-    await mongoose.connect('mongodb://localhost:27017/dev'); // models (and
-    // indexes) will be initialized via the mongoose models for scalability and
-    //  readability
+    mongo = await MongoClient.connect(uri, {
+      server: {
+        socketOptions: {
+          connectTimeoutMS: 0,
+          socketTimeoutMS: 0,
+        },
+      },
+    }); // db inserts will be performed directly via the mongo driver for
+    // better performances
+    await mongoose.connect(uri, {
+      server: {
+        reconnectTries: Number.MAX_VALUE,
+        socketOptions: {
+          keepAlive: 120,
+          connectTimeoutMS: 0,
+          socketTimeoutMS: 0,
+        },
+      },
+      replset: {
+        socketOptions: {
+          keepAlive: 120,
+        },
+      },
+    }); // models (and indexes) will be initialized via the mongoose models for
+    // scalability and readability
   } catch (err) {
     logger.error(err);
     process.exit(1); // TODO : graceful exit?
   }
-  logger.info(`Connected to database: ${config.dbUri}`);
+  logger.info(`Connected to database: ${uri}`);
   return {
     mongo,
     mongoose,

@@ -70,10 +70,7 @@ function processPatterns(jsonixLexUnit, annotationSets, patterns, valenceUnits) 
     }
     toJsonixPatternAnnoSetArray(jsonixPattern).forEach((jsonixAnnoSet) => {
       if (annotationSets.has(jsonixAnnoSet.id)) {
-        const annoSet = annotationSets.get(jsonixAnnoSet.id);
-        annoSet.lexUnit = jsonixLexUnit.value.id;
-        annoSet.pattern = pattern._id;
-        //annotationSets.set(jsonixAnnoSet.id, annoSet);
+        annotationSets.get(jsonixAnnoSet.id).pattern = pattern._id;
       }
     });
   });
@@ -108,6 +105,14 @@ function convertToAnnoSets(jsonixSentence, lexUnitId, labels) {
   });
 }
 
+function addToMap(map, array) {
+  array.forEach((item) => {
+    if (!map.has(item._id)) {
+      map.set(item._id, item);
+    }
+  });
+}
+
 function convertToSentences(jsonixLexUnit, annotationSets, labels) {
   return toJsonixLexUnitSentenceArray(jsonixLexUnit).map((jsonixSentence) => {
     const sentence = new Sentence({
@@ -118,16 +123,7 @@ function convertToSentences(jsonixLexUnit, annotationSets, labels) {
       aPos: jsonixSentence.aPos,
     });
     addToMap(annotationSets, convertToAnnoSets(jsonixSentence, jsonixLexUnit.value.id, labels));
-    //annotationSets.push(...convertToAnnoSets(jsonixSentence, labels));
     return sentence.toObject();
-  });
-}
-
-function addToMap(map, array) {
-  array.forEach((item) => {
-    if (!map.has(item._id)) {
-      map.set(item._id, item);
-    }
   });
 }
 
@@ -150,7 +146,8 @@ function convertToLexUnit(
   });
   // SemTypes are imported via a separate script
   lexUnit.semTypes = toJsonixSemTypeArray(jsonixLexUnit).map(jsonixSemType => jsonixSemType.id);
-  addToMap(sentences, convertToSentences(jsonixLexUnit, annotationSets, labels));
+  //addToMap(sentences, convertToSentences(jsonixLexUnit, annotationSets, //labels));
+  sentences.push(...convertToSentences(jsonixLexUnit, annotationSets, labels));
   processPatterns(jsonixLexUnit, annotationSets, patterns, valenceUnits);
   return lexUnit.toObject();
 }
@@ -159,6 +156,7 @@ async function convertToObjects(batch, uniques) {
   const data = {
     labels: [],
     lexUnits: [],
+    sentences: [],
   };
   await Promise.all(batch.map(async(file) => {
     const jsonixLexUnit = await unmarshall(file);
@@ -168,7 +166,7 @@ async function convertToObjects(batch, uniques) {
         uniques.annotationSets,
         data.labels,
         uniques.patterns,
-        uniques.sentences,
+        data.sentences,
         uniques.valenceUnits,
       ));
   }));
@@ -182,6 +180,11 @@ async function saveArraysToDb(mongodb, data) {
     ordered: false,
   });
   await mongodb.collection('lexUnits').insertMany(data.lexUnits, {
+    w: 0,
+    j: false,
+    ordered: false,
+  });
+  await mongodb.collection('sentences').insertMany(data.sentences, {
     w: 0,
     j: false,
     ordered: false,
@@ -203,12 +206,13 @@ async function saveMapsToDb(mongodb, maps) {
       ordered: false,
     });
   // TODO Check: sentences Map may be too big
+  /*
   await mongodb.collection('sentences')
     .insertMany(Array.from(maps.sentences), {
       w: 0,
       j: false,
       ordered: false,
-    });
+    });*/
   await mongodb.collection('valenceunits')
     .insertMany(Array.from(maps.valenceUnits), {
       w: 0,
@@ -222,7 +226,7 @@ async function importBatchSet(batchSet, db) {
   const uniques = {
     annotationSets: new Map(),
     patterns: new Map(),
-    sentences: new Map(), // Try with a Map first. If too big, use set of ids like before
+    //sentences: new Map(),
     valenceUnits: new Map(),
   };
   for (const batch of batchSet) {
