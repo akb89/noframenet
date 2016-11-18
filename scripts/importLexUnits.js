@@ -35,43 +35,47 @@ import './../utils/utils'; // For .flatten()
 
 const logger = config.logger;
 
-function convertToValenceUnits(jsonixPattern, valenceUnits) {
+function convertToValenceUnits(jsonixPattern, valenceUnitsMap) {
   return toJsonixValenceUnitArray(jsonixPattern).map((jsonixValenceUnit) => {
     const key = jsonixValenceUnit.fe + jsonixValenceUnit.pt + jsonixValenceUnit.gf;
     let valenceUnit;
-    if (!valenceUnits.has(key)) {
+    if (!valenceUnitsMap.has(key)) {
       valenceUnit = new ValenceUnit({
         FE: jsonixValenceUnit.fe,
         PT: jsonixValenceUnit.pt,
         GF: jsonixValenceUnit.gf,
       });
-      valenceUnits.set(key, valenceUnit.toObject());
+      valenceUnitsMap.set(key, valenceUnit.toObject());
     } else {
-      valenceUnit = valenceUnits.get(key);
+      valenceUnit = valenceUnitsMap.get(key);
     }
     return valenceUnit;
   });
 }
 
-function processPatterns(jsonixLexUnit, annotationSets, patterns, valenceUnits) {
+function processPatterns(jsonixLexUnit, annoSet2PatternMap, patternsMap, valenceUnitsMap) {
   // Import patterns and valenceUnits.
   // Add all info regading patterns and lexUnits to AnnoSet objects
   toJsonixPatternArray(jsonixLexUnit).forEach((jsonixPattern) => {
-    const vus = convertToValenceUnits(jsonixPattern, valenceUnits);
-    const key = vus.map(vu => vu._id).sort().join(''); // TODO check this
+    const vus = convertToValenceUnits(jsonixPattern, valenceUnitsMap);
+    const key = vus.map(vu => vu._id).sort().join(''); // TODO test this
     let pattern;
-    if (!patterns.has(key)) {
+    if (!patternsMap.has(key)) {
       pattern = new Pattern({
         valenceUnits: vus,
       });
-      patterns.set(key, pattern.toObject());
+      patternsMap.set(key, pattern.toObject({
+        depopulate: true,
+      }));
     } else {
-      pattern = patterns.get(key);
+      pattern = patternsMap.get(key);
     }
     toJsonixPatternAnnoSetArray(jsonixPattern).forEach((jsonixAnnoSet) => {
+      annoSet2PatternMap.set(jsonixAnnoSet.id, pattern._id);
+      /*
       if (annotationSets.has(jsonixAnnoSet.id)) {
         annotationSets.get(jsonixAnnoSet.id).pattern = pattern._id;
-      }
+      }*/
     });
   });
 }
@@ -122,7 +126,8 @@ function convertToSentences(jsonixLexUnit, annotationSets, labels) {
       sentenceNumber: jsonixSentence.sentNo,
       aPos: jsonixSentence.aPos,
     });
-    addToMap(annotationSets, convertToAnnoSets(jsonixSentence, jsonixLexUnit.value.id, labels));
+    annotationSets.push(...convertToAnnoSets(jsonixSentence, jsonixLexUnit.value.id, labels));
+    //addToMap(annotationSets, convertToAnnoSets(jsonixSentence, //jsonixLexUnit.value.id, labels));
     return sentence.toObject();
   });
 }
@@ -130,11 +135,12 @@ function convertToSentences(jsonixLexUnit, annotationSets, labels) {
 // Lemma and Lexeme information is updated via importLemmasAndLemexes script
 function convertToLexUnit(
   jsonixLexUnit,
+  annoSet2PatternMap,
   annotationSets,
   labels,
-  patterns,
+  patternsMap,
   sentences,
-  valenceUnits) {
+  valenceUnitsMap) {
   const lexUnit = new LexUnit({
     _id: jsonixLexUnit.value.id,
     name: jsonixLexUnit.value.name,
@@ -148,12 +154,13 @@ function convertToLexUnit(
   lexUnit.semTypes = toJsonixSemTypeArray(jsonixLexUnit).map(jsonixSemType => jsonixSemType.id);
   //addToMap(sentences, convertToSentences(jsonixLexUnit, annotationSets, //labels));
   sentences.push(...convertToSentences(jsonixLexUnit, annotationSets, labels));
-  processPatterns(jsonixLexUnit, annotationSets, patterns, valenceUnits);
+  processPatterns(jsonixLexUnit, annoSet2PatternMap, patternsMap, valenceUnitsMap);
   return lexUnit.toObject();
 }
 
 async function convertToObjects(batch, uniques) {
   const data = {
+    annotationSets: [],
     labels: [],
     lexUnits: [],
     sentences: [],
@@ -163,17 +170,23 @@ async function convertToObjects(batch, uniques) {
     data.lexUnits.push(
       convertToLexUnit(
         jsonixLexUnit,
-        uniques.annotationSets,
+        uniques.annoSet2PatternMap,
+        data.annotationSets,
         data.labels,
-        uniques.patterns,
+        uniques.patternsMap,
         data.sentences,
-        uniques.valenceUnits,
+        uniques.valenceUnitsMap,
       ));
   }));
   return data;
 }
 
 async function saveArraysToDb(mongodb, data) {
+  await mongodb.collection('annotationsets').insertMany(data.annotationSets, {
+    w: 0,
+    j: false,
+    ordered: false,
+  });
   await mongodb.collection('labels').insertMany(data.labels, {
     w: 0,
     j: false,
@@ -193,14 +206,15 @@ async function saveArraysToDb(mongodb, data) {
 
 async function saveMapsToDb(mongodb, maps) {
   // TODO Check: annotationSets Map may be too big
+  /*
   await mongodb.collection('annotationsets')
     .insertMany(Array.from(maps.annotationSets), {
       w: 0,
       j: false,
       ordered: false,
-    });
+    });*/
   await mongodb.collection('patterns')
-    .insertMany(Array.from(maps.patterns), {
+    .insertMany(Array.from(maps.patternsMap), {
       w: 0,
       j: false,
       ordered: false,
@@ -213,21 +227,46 @@ async function saveMapsToDb(mongodb, maps) {
       j: false,
       ordered: false,
     });*/
+
   await mongodb.collection('valenceunits')
-    .insertMany(Array.from(maps.valenceUnits), {
+    .insertMany(Array.from(maps.valenceUnitsMap), {
       w: 0,
       j: false,
       ordered: false,
     });
+  // update pattern references in annotationSets
+  /*
+  await mongodb.collection('annotationsets').updateMany({
+    _id: {
+      $in: maps.annoSet2PatternMap.keys,
+    },
+  }, {
+    $set: {
+      pattern: maps.annoSet2PatternMap.get(_id),
+    }
+  }, {
+    upsert: false,
+  })
+  */
+  maps.annoSet2PatternMap.forEach(async(patternId, annoSetId) => {
+    await mongodb.collection('annotationsets').update({
+      _id: annoSetId,
+    }, {
+      $set: {
+        pattern: patternId,
+      },
+    });
+  });
 }
 
 async function importBatchSet(batchSet, db) {
   let counter = 1;
   const uniques = {
-    annotationSets: new Map(),
-    patterns: new Map(),
+    annoSet2PatternMap: new Map(),
+    //annotationSets: new Map(),
+    patternsMap: new Map(),
     //sentences: new Map(),
-    valenceUnits: new Map(),
+    valenceUnitsMap: new Map(),
   };
   for (const batch of batchSet) {
     logger.info(`Importing lexUnit batch ${counter} out of ${batchSet.length}...`);
