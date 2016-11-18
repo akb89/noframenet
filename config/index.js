@@ -16,7 +16,7 @@ const config = {
   // validLayers: ['FE', 'PT', 'GF', 'Target', 'PENN', 'NER', 'WSL', 'Other',
   //  'Sent', 'Noun']
   frameChunkSize: 100,
-  lexUnitChunkSize: 200,
+  lexUnitChunkSize: 50,
   fullTextChunkSize: 20,
 };
 

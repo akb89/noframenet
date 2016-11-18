@@ -192,7 +192,7 @@ async function saveArraysToDb(mongodb, data) {
     j: false,
     ordered: false,
   });
-  await mongodb.collection('lexUnits').insertMany(data.lexUnits, {
+  await mongodb.collection('lexunits').insertMany(data.lexUnits, {
     w: 0,
     j: false,
     ordered: false,
