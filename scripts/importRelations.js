@@ -2,15 +2,9 @@
  * Standalone script to import the content of frRelation.xml to MongoDB
  */
 
-import {
-  FERelation,
-  FrameRelation,
-  FrameRelationType,
+import { FERelation, FrameRelation, FrameRelationType,
 } from 'noframenet-core';
-import {
-  toJsonixFERelationArray,
-  toJsonixFrameRelationArray,
-  toJsonixFrameRelationTypeArray,
+import { toJsonixFERelationArray, toJsonixFrameRelationArray, toJsonixFrameRelationTypeArray,
 } from './../utils/jsonixUtils';
 import config from './../config';
 import driver from './../db/mongo';

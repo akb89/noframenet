@@ -7,43 +7,26 @@ const logger = config.logger;
 function isValidXml(file) {
   return file.endsWith('.xml');
 }
-/*
-Object.defineProperty(Array.prototype, 'chunk', {
-  value(chunkSize) {
-    const chunks = [];
-    if (this.length <= chunkSize) {
-      chunks.push(this);
-      return chunks;
-    }
-    let iterator = 0;
-    while (iterator + chunkSize <= this.length) {
-      chunks.push(this.slice(iterator, iterator + chunkSize));
-      iterator += chunkSize;
-    }
-    if (this.slice(iterator).length !== 0) {
-      chunks.push(this.slice(iterator));
-    }
-    return chunks;
-  },
-});
-*/
+
 if (!Array.prototype.chunk) {
-  Array.prototype.chunk = function (chunkLength) {
-    const chunks = [];
-    if (this.length <= chunkLength) {
-      chunks.push(this);
+  Object.defineProperty(Array.prototype, 'chunk', {
+    value(chunkSize) {
+      const chunks = [];
+      if (this.length <= chunkSize) {
+        chunks.push(this);
+        return chunks;
+      }
+      let iterator = 0;
+      while (iterator + chunkSize <= this.length) {
+        chunks.push(this.slice(iterator, iterator + chunkSize));
+        iterator += chunkSize;
+      }
+      if (this.slice(iterator).length !== 0) {
+        chunks.push(this.slice(iterator));
+      }
       return chunks;
-    }
-    let iterator = 0;
-    while (iterator + chunkLength <= this.length) {
-      chunks.push(this.slice(iterator, iterator + chunkLength));
-      iterator += chunkLength;
-    }
-    if (this.slice(iterator).length !== 0) {
-      chunks.push(this.slice(iterator));
-    }
-    return chunks;
-  };
+    },
+  });
 }
 
 async function filterAndChunk(dir, chunkSize) {

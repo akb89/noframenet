@@ -2,21 +2,9 @@
  * Standalone script to import FrameNet lexical units to MongoDB.
  */
 
-import {
-  AnnotationSet,
-  Label,
-  Pattern,
-  Sentence,
-  ValenceUnit,
+import { AnnotationSet, Label, Pattern, Sentence, ValenceUnit,
 } from 'noframenet-core';
-import {
-  toJsonixLabelArray,
-  toJsonixLayerArray,
-  toJsonixLexUnitSentenceArray,
-  toJsonixPatternAnnoSetArray,
-  toJsonixPatternArray,
-  toJsonixSentenceAnnoSetArray,
-  toJsonixValenceUnitArray,
+import { toJsonixLabelArray, toJsonixLayerArray, toJsonixLexUnitSentenceArray, toJsonixPatternAnnoSetArray, toJsonixPatternArray, toJsonixSentenceAnnoSetArray, toJsonixValenceUnitArray,
 } from './../utils/jsonixUtils';
 import config from './../config';
 import driver from './../db/mongo';
@@ -68,30 +56,27 @@ function processPatterns(jsonixLexUnit, annoSet2PatternMap, patternsMap, valence
 
 function convertToLabels(jsonixAnnoSet) {
   return toJsonixLayerArray(jsonixAnnoSet)
-    .map(jsonixLayer =>
-      toJsonixLabelArray(jsonixLayer)
-      .map(jsonixLabel =>
-        new Label({
-          name: jsonixLabel.name,
-          type: jsonixLayer.name,
-          startPos: jsonixLabel.start,
-          endPos: jsonixLabel.end,
-        }).toObject()))
+    .map(jsonixLayer => toJsonixLabelArray(jsonixLayer)
+      .map(jsonixLabel => new Label({
+        name: jsonixLabel.name,
+        type: jsonixLayer.name,
+        startPos: jsonixLabel.start,
+        endPos: jsonixLabel.end,
+      }).toObject()))
     .reduce((a, b) => a.concat(b));
 }
 
 function convertToAnnoSets(jsonixSentence, lexUnitId, labels) {
-  return toJsonixSentenceAnnoSetArray(jsonixSentence).map(jsonixAnnoSet =>
-    new AnnotationSet({
-      _id: jsonixAnnoSet.id,
-      lexUnit: lexUnitId,
-      sentence: jsonixSentence.id,
-      labels: convertToLabels(jsonixAnnoSet)
-        .map((label) => {
-          labels.push(label);
-          return label._id;
-        }),
-    }).toObject());
+  return toJsonixSentenceAnnoSetArray(jsonixSentence).map(jsonixAnnoSet => new AnnotationSet({
+    _id: jsonixAnnoSet.id,
+    lexUnit: lexUnitId,
+    sentence: jsonixSentence.id,
+    labels: convertToLabels(jsonixAnnoSet)
+      .map((label) => {
+        labels.push(label);
+        return label._id;
+      }),
+  }).toObject());
 }
 
 function convertToSentences(jsonixLexUnit, annotationSets, labels) {
@@ -127,7 +112,7 @@ async function convertToObjects(batch, uniques) {
     labels: [],
     sentences: [],
   };
-  await Promise.all(batch.map(async(file) => {
+  await Promise.all(batch.map(async (file) => {
     const jsonixLexUnit = await marshaller.unmarshall(file);
     processLexUnit(
       jsonixLexUnit,

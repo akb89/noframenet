@@ -2,21 +2,9 @@
  * Standalone script to import FrameNet frames to MongoDB.
  */
 
-import {
-  Frame,
-  FrameElement,
-  Lexeme,
-  LexUnit,
+import { Frame, FrameElement, Lexeme, LexUnit,
 } from 'noframenet-core';
-import {
-  toJsonixExcludesFEArray,
-  toJsonixFECoreSetArray,
-  toJsonixFECoreSetMemberArray,
-  toJsonixFrameElementArray,
-  toJsonixLexemeArray,
-  toJsonixLexUnitArray,
-  toJsonixRequiresFEArray,
-  toJsonixSemTypeArray,
+import { toJsonixExcludesFEArray, toJsonixFECoreSetArray, toJsonixFECoreSetMemberArray, toJsonixFrameElementArray, toJsonixLexemeArray, toJsonixLexUnitArray, toJsonixRequiresFEArray, toJsonixSemTypeArray,
 } from './../utils/jsonixUtils';
 import config from './../config';
 import driver from './../db/mongo';
@@ -28,59 +16,56 @@ const startTime = process.hrtime();
 
 function convertToLexemes(jsonixLexUnit) {
   return toJsonixLexemeArray(jsonixLexUnit)
-    .map(jsonixLexeme =>
-      new Lexeme({
-        name: jsonixLexeme.name,
-        pos: jsonixLexeme.pos,
-        headword: jsonixLexeme.headword,
-        order: jsonixLexeme.order,
-        breakBefore: jsonixLexeme.breakBefore,
-      }).toObject());
+    .map(jsonixLexeme => new Lexeme({
+      name: jsonixLexeme.name,
+      pos: jsonixLexeme.pos,
+      headword: jsonixLexeme.headword,
+      order: jsonixLexeme.order,
+      breakBefore: jsonixLexeme.breakBefore,
+    }).toObject());
 }
 
 function convertToLexUnits(jsonixFrame, lexemes) {
   return toJsonixLexUnitArray(jsonixFrame)
-    .map(jsonixLexUnit =>
-      new LexUnit({
-        _id: jsonixLexUnit.id,
-        name: jsonixLexUnit.name,
-        pos: jsonixLexUnit.pos,
-        definition: jsonixLexUnit.definition,
-        lemmaID: jsonixLexUnit.lemmaID,
-        frame: jsonixFrame.value.id,
-        status: jsonixLexUnit.status,
-        cBy: jsonixLexUnit.cBy,
-        cDate: jsonixLexUnit.cDate,
-        lexemes: convertToLexemes(jsonixLexUnit)
-          .map((lexeme) => {
-            lexemes.push(lexeme);
-            return lexeme._id;
-          }),
-        semTypes: toJsonixSemTypeArray(jsonixLexUnit)
-          .map(jsonixSemType => jsonixSemType.id),
-      }).toObject());
+    .map(jsonixLexUnit => new LexUnit({
+      _id: jsonixLexUnit.id,
+      name: jsonixLexUnit.name,
+      pos: jsonixLexUnit.pos,
+      definition: jsonixLexUnit.definition,
+      lemmaID: jsonixLexUnit.lemmaID,
+      frame: jsonixFrame.value.id,
+      status: jsonixLexUnit.status,
+      cBy: jsonixLexUnit.cBy,
+      cDate: jsonixLexUnit.cDate,
+      lexemes: convertToLexemes(jsonixLexUnit)
+        .map((lexeme) => {
+          lexemes.push(lexeme);
+          return lexeme._id;
+        }),
+      semTypes: toJsonixSemTypeArray(jsonixLexUnit)
+        .map(jsonixSemType => jsonixSemType.id),
+    }).toObject());
 }
 
 function convertToFrameElements(jsonixFrame) {
   return toJsonixFrameElementArray(jsonixFrame)
-    .map(jsonixFE =>
-      new FrameElement({
-        _id: jsonixFE.id,
-        name: jsonixFE.name,
-        definition: jsonixFE.definition,
-        coreType: jsonixFE.coreType,
-        cDate: jsonixFE.cDate,
-        cBy: jsonixFE.cBy,
-        fgColor: jsonixFE.fgColor,
-        bgColor: jsonixFE.bgColor,
-        abbrev: jsonixFE.abbrev,
-        requires: toJsonixRequiresFEArray(jsonixFE)
-          .map(jsonixRequiresFE => jsonixRequiresFE.id),
-        excludes: toJsonixExcludesFEArray(jsonixFE)
-          .map(jsonixExcludesFE => jsonixExcludesFE.id),
-        semTypes: toJsonixSemTypeArray(jsonixFE)
-          .map(jsonixSemType => jsonixSemType.id),
-      }).toObject());
+    .map(jsonixFE => new FrameElement({
+      _id: jsonixFE.id,
+      name: jsonixFE.name,
+      definition: jsonixFE.definition,
+      coreType: jsonixFE.coreType,
+      cDate: jsonixFE.cDate,
+      cBy: jsonixFE.cBy,
+      fgColor: jsonixFE.fgColor,
+      bgColor: jsonixFE.bgColor,
+      abbrev: jsonixFE.abbrev,
+      requires: toJsonixRequiresFEArray(jsonixFE)
+        .map(jsonixRequiresFE => jsonixRequiresFE.id),
+      excludes: toJsonixExcludesFEArray(jsonixFE)
+        .map(jsonixExcludesFE => jsonixExcludesFE.id),
+      semTypes: toJsonixSemTypeArray(jsonixFE)
+        .map(jsonixSemType => jsonixSemType.id),
+    }).toObject());
 }
 
 function convertToFrame(jsonixFrame, frameElements, lexUnits, lexemes) {
@@ -96,8 +81,7 @@ function convertToFrame(jsonixFrame, frameElements, lexUnits, lexemes) {
         return fe._id;
       }),
     feCoreSets: toJsonixFECoreSetArray(jsonixFrame)
-      .map(jsonixFECoreSet =>
-        toJsonixFECoreSetMemberArray(jsonixFECoreSet)
+      .map(jsonixFECoreSet => toJsonixFECoreSetMemberArray(jsonixFECoreSet)
         .map(jsonixFE => jsonixFE.id)),
     lexUnits: convertToLexUnits(jsonixFrame, lexemes)
       .map((lu) => {
@@ -116,7 +100,7 @@ async function convertToObjects(batch) {
     lexUnits: [],
     lexemes: [],
   };
-  await Promise.all(batch.map(async(file) => {
+  await Promise.all(batch.map(async (file) => {
     const jsonixFrame = await marshaller.unmarshall(file);
     data.frames.push(convertToFrame(jsonixFrame, data.frameElements, data.lexUnits, data.lexemes));
   }));

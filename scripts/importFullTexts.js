@@ -2,13 +2,9 @@
  * Standalone script to import the content of the fulltext directory to MongoDB
  */
 
-import {
-  Corpus,
-  Document,
+import { Corpus, Document,
 } from 'noframenet-core';
-import {
-  toJsonixDocumentArray,
-  toJsonixDocumentSentenceArray,
+import { toJsonixDocumentArray, toJsonixDocumentSentenceArray,
 } from './../utils/jsonixUtils';
 import config from './../config';
 import driver from './../db/mongo';
@@ -24,14 +20,13 @@ const startTime = process.hrtime();
  */
 function convertToDocuments(jsonixFullText) {
   return toJsonixDocumentArray(jsonixFullText.value.header.corpus[0])
-    .map(jsonixDocument =>
-      new Document({
-        _id: jsonixDocument.id,
-        name: jsonixDocument.name,
-        description: jsonixDocument.description,
-        sentences: toJsonixDocumentSentenceArray(jsonixFullText)
-          .map(jsonixSentence => jsonixSentence.id),
-      }).toObject());
+    .map(jsonixDocument => new Document({
+      _id: jsonixDocument.id,
+      name: jsonixDocument.name,
+      description: jsonixDocument.description,
+      sentences: toJsonixDocumentSentenceArray(jsonixFullText)
+        .map(jsonixSentence => jsonixSentence.id),
+    }).toObject());
 }
 
 function processCorpus(jsonixFullText, documents, corpora) {
@@ -58,7 +53,7 @@ async function convertToObjects(batch, uniques) {
   const data = {
     documents: [],
   };
-  await Promise.all(batch.map(async(file) => {
+  await Promise.all(batch.map(async (file) => {
     const jsonixFullText = await marshaller.unmarshall(file);
     processCorpus(jsonixFullText, data.documents, uniques.corpora);
   }));

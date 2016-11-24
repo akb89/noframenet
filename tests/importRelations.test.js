@@ -1,21 +1,12 @@
 /**
  * Behavior tests for importRelations script
  */
-import {
-  FERelation,
-  FrameRelation,
-  FrameRelationType,
+import { FERelation, FrameRelation, FrameRelationType,
 } from 'noframenet-core';
 import chai from 'chai';
-import {
-  toJsonixFrameElementRelationArray,
-  toJsonixFrameRelationArray,
-  toJsonixFrameRelationTypeArray,
+import { toJsonixFrameRelationArray, toJsonixFrameRelationTypeArray,
 } from './../utils/jsonixUtils';
-import {
-  convertToFERelations,
-  convertToFrameRelations,
-  convertToRelationTypes,
+import { convertToFERelations, convertToFrameRelations, convertToRelationTypes,
 } from './../scripts/importRelations';
 import marshaller from './../marshalling/unmarshaller';
 import mochAsync from './async.test';
@@ -26,7 +17,7 @@ describe('importRelations', () => {
   let jsonixFrameRelations;
   let jsonixFrameRelationTypeArray;
   let jsonixFrameRelationArray;
-  before(mochAsync(async() => {
+  before(mochAsync(async () => {
     jsonixFrameRelations = await marshaller.unmarshall('./tests/resources/frRelations.test.xml');
     jsonixFrameRelationTypeArray = toJsonixFrameRelationTypeArray(jsonixFrameRelations);
     jsonixFrameRelationArray = toJsonixFrameRelationArray(jsonixFrameRelationTypeArray[0]);
@@ -47,9 +38,10 @@ describe('importRelations', () => {
       supFE: 1446,
       frameRelation: 2,
     });
-    (typeof feRelations[0]).should.equal(typeof testFERelation);
-    (feRelations[0] instanceof FERelation).should.be.false;
-    (testFERelation instanceof FERelation).should.be.true;
+    (typeof feRelations[0])
+      .should.equal(typeof testFERelation);
+    feRelations[0].constructor.should.not.equal(FERelation);
+    testFERelation.constructor.should.equal(FERelation);
   });
   it('#convertToFrameRelations should return a properly formatted array of FrameRelation objects', () => {
     const frameRelations = convertToFrameRelations(jsonixFrameRelationTypeArray[0], []);
@@ -67,9 +59,10 @@ describe('importRelations', () => {
       supFrame: 1446,
       type: 2,
     });
-    (typeof frameRelations[0]).should.equal(typeof testFrameRelation);
-    (frameRelations[0] instanceof FrameRelation).should.be.false;
-    (testFrameRelation instanceof FrameRelation).should.be.true;
+    (typeof frameRelations[0])
+      .should.equal(typeof testFrameRelation);
+    frameRelations[0].constructor.should.not.equal(FrameRelation);
+    testFrameRelation.constructor.should.equal(FrameRelation);
   });
   it('#convertToRelationTypes should return a properly formatted array of FrameRelationType objects', () => {
     const relationTypes = convertToRelationTypes(jsonixFrameRelations, [], []);
@@ -87,8 +80,9 @@ describe('importRelations', () => {
       subFrameName: 'sub',
       supFrameName: 'sup',
     });
-    (typeof relationTypes[0]).should.equal(typeof testFrameRelationType);
-    (relationTypes[0] instanceof FrameRelationType).should.be.false;
-    (testFrameRelationType instanceof FrameRelationType).should.be.true
+    (typeof relationTypes[0])
+      .should.equal(typeof testFrameRelationType);
+    relationTypes[0].constructor.should.not.equal(FrameRelationType);
+    testFrameRelationType.constructor.should.equal(FrameRelationType);
   });
 });

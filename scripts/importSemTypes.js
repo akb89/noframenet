@@ -2,12 +2,9 @@
  * Standalone script to import the content of semTypes.xml to MongoDB
  */
 
-import {
-  SemType,
+import { SemType,
 } from 'noframenet-core';
-import {
-  toJsonixSemTypesSemTypeArray,
-  toJsonixSuperTypeArray,
+import { toJsonixSemTypesSemTypeArray, toJsonixSuperTypeArray,
 } from './../utils/jsonixUtils';
 import config from './../config';
 import driver from './../db/mongo';
@@ -25,13 +22,12 @@ function getSuperTypes(jsonixSemType) {
 // TODO Replace with rewire module
 export function getSemTypes(jsonixSemTypes) {
   return toJsonixSemTypesSemTypeArray(jsonixSemTypes)
-    .map(jsonixSemType =>
-      new SemType({
-        _id: jsonixSemType.id,
-        name: jsonixSemType.name,
-        definition: jsonixSemType.definition,
-        superTypes: getSuperTypes(jsonixSemType),
-      }).toObject());
+    .map(jsonixSemType => new SemType({
+      _id: jsonixSemType.id,
+      name: jsonixSemType.name,
+      definition: jsonixSemType.definition,
+      superTypes: getSuperTypes(jsonixSemType),
+    }).toObject());
 }
 
 async function saveToDb(mongodb, semTypes) {
