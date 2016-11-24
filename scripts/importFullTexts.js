@@ -11,7 +11,7 @@ import driver from './../db/mongo';
 import marshaller from './../marshalling/unmarshaller';
 import utils from './../utils/utils';
 
-const logger = config.logger;
+const logger = config.default.logger;
 const startTime = process.hrtime();
 
 /**

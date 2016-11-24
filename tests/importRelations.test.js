@@ -4,14 +4,16 @@
 import { FERelation, FrameRelation, FrameRelationType,
 } from 'noframenet-core';
 import chai from 'chai';
+import rewire from 'rewire';
 import { toJsonixFrameRelationArray, toJsonixFrameRelationTypeArray,
 } from './../utils/jsonixUtils';
-import { convertToFERelations, convertToFrameRelations, convertToRelationTypes,
-} from './../scripts/importRelations';
 import marshaller from './../marshalling/unmarshaller';
 import mochAsync from './async.test';
 
 const should = chai.should();
+const convertToFERelations = rewire('./../scripts/importRelations.js').__get__('convertToFERelations');
+const convertToFrameRelations = rewire('./../scripts/importRelations.js').__get__('convertToFrameRelations');
+const convertToRelationTypes = rewire('./../scripts/importRelations.js').__get__('convertToRelationTypes');
 
 describe('importRelations', () => {
   let jsonixFrameRelations;

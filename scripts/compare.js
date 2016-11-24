@@ -4,7 +4,7 @@ import { toJsonixLexUnitArray,
 import marshaller from './../marshalling/unmarshaller';
 import config from './../config';
 
-const logger = config.logger;
+const logger = config.default.logger;
 
 async function getLexUnitIDs(batch) {
   return Promise.all(batch.map(async file => parseInt(file.substring(file.lastIndexOf('lu') + 2, file.lastIndexOf('.xml')), 0)));

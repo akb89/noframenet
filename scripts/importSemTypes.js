@@ -10,7 +10,7 @@ import config from './../config';
 import driver from './../db/mongo';
 import marshaller from './../marshalling/unmarshaller';
 
-const logger = config.logger;
+const logger = config.default.logger;
 const startTime = process.hrtime();
 
 function getSuperTypes(jsonixSemType) {
@@ -18,9 +18,7 @@ function getSuperTypes(jsonixSemType) {
     .map(jsonixSuperType => jsonixSuperType.supID);
 }
 
-// Export for testing
-// TODO Replace with rewire module
-export function getSemTypes(jsonixSemTypes) {
+function getSemTypes(jsonixSemTypes) {
   return toJsonixSemTypesSemTypeArray(jsonixSemTypes)
     .map(jsonixSemType => new SemType({
       _id: jsonixSemType.id,

@@ -1,20 +1,5 @@
-'use strict';
-
 import chai from 'chai';
-import {
-  toJsonixDocumentArray,
-  toJsonixDocumentSentenceArray,
-  toJsonixFERelationArray,
-  toJsonixFrameRelationArray,
-  toJsonixFrameRelationTypeArray,
-  toJsonixSemTypesSemTypeArray,
-  toJsonixExcludesFEArray,
-  toJsonixFECoreSetArray,
-  toJsonixFECoreSetMemberArray,
-  toJsonixFrameElementArray,
-  toJsonixLexUnitArray,
-  toJsonixRequiresFEArray,
-  toJsonixSemTypeArray,
+import { toJsonixDocumentArray, toJsonixDocumentSentenceArray, toJsonixFERelationArray, toJsonixFrameRelationArray, toJsonixFrameRelationTypeArray, toJsonixSemTypesSemTypeArray, toJsonixExcludesFEArray, toJsonixFECoreSetArray, toJsonixFECoreSetMemberArray, toJsonixFrameElementArray, toJsonixLexUnitArray, toJsonixRequiresFEArray, toJsonixSemTypeArray,
 } from './../utils/jsonixUtils';
 import marshaller from './../marshalling//unmarshaller';
 
@@ -32,7 +17,7 @@ describe('jsonixUtils', () => {
   let jsonixFrame;
   let jsonixFrameElements;
   let jsonixFE;
-  before(async() => {
+  before(async () => {
     jsonixSemTypes = await marshaller.unmarshall('./tests/resources/semTypes.test.xml');
     jsonixFrameRelations = await marshaller.unmarshall('./tests/resources/frRelations.test.xml');
     jsonixFullText = await marshaller.unmarshall('./tests/resources/fulltext.test.xml');

@@ -10,10 +10,10 @@ import config from './../config';
 import driver from './../db/mongo';
 import marshaller from './../marshalling/unmarshaller';
 
-const logger = config.logger;
+const logger = config.default.logger;
 const startTime = process.hrtime();
 
-export function convertToFERelations(jsonixFrameRelation) {
+function convertToFERelations(jsonixFrameRelation) {
   return toJsonixFERelationArray(jsonixFrameRelation)
     .map(jsonixFERelation => new FERelation({
       _id: jsonixFERelation.id,
@@ -23,7 +23,7 @@ export function convertToFERelations(jsonixFrameRelation) {
     }).toObject());
 }
 
-export function convertToFrameRelations(jsonixFrameRelationType, frameElementRelations) {
+function convertToFrameRelations(jsonixFrameRelationType, frameElementRelations) {
   return toJsonixFrameRelationArray(jsonixFrameRelationType)
     .map((jsonixFrameRelation) => {
       frameElementRelations
@@ -36,8 +36,8 @@ export function convertToFrameRelations(jsonixFrameRelationType, frameElementRel
       }).toObject();
     });
 }
-// TODO: use rewire module
-export function convertToRelationTypes(jsonixFrameRelations, frameRelations, frameElementRelations) {
+
+function convertToRelationTypes(jsonixFrameRelations, frameRelations, frameElementRelations) {
   return toJsonixFrameRelationTypeArray(jsonixFrameRelations)
     .map((jsonixFrameRelationType) => {
       frameRelations

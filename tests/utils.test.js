@@ -29,8 +29,6 @@ describe('utils', () => {
     chunks.reduce((a, b) => a.concat(b))
       .length.should.equal(10);
     chunks.reduce((a, b) => a.concat(b))
-      .forEach((file) => {
-        file.endsWith('.xml').should.be.true;
-      });
+      .forEach(file => file.endsWith('.xml').should.be.true);
   }));
 });

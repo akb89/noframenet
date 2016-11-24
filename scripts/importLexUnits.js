@@ -11,7 +11,7 @@ import driver from './../db/mongo';
 import marshaller from './../marshalling/unmarshaller';
 import utils from './../utils/utils';
 
-const logger = config.logger;
+const logger = config.default.logger;
 
 function convertToValenceUnits(jsonixPattern, valenceUnitsMap) {
   return toJsonixValenceUnitArray(jsonixPattern).map((jsonixValenceUnit) => {
@@ -158,21 +158,7 @@ async function saveMapsToDb(mongodb, maps) {
       j: false,
       ordered: false,
     });
-  // update pattern references in annotationSets
-  /*
-  await mongodb.collection('annotationsets').updateMany({
-    _id: {
-      $in: maps.annoSet2PatternMap.keys,
-    },
-  }, {
-    $set: {
-      pattern: maps.annoSet2PatternMap.get(_id),
-    }
-  }, {
-    upsert: false,
-  })
-  */
-  maps.annoSet2PatternMap.forEach(async(patternId, annoSetId) => {
+  maps.annoSet2PatternMap.forEach(async (patternId, annoSetId) => {
     await mongodb.collection('annotationsets').update({
       _id: annoSetId,
     }, {

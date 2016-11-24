@@ -3,17 +3,17 @@
  */
 import chai from 'chai';
 import mochAsync from './async.test';
-import {
-  getSemTypes,
-} from './../scripts/importSemTypes';
+import rewire from 'rewire';
 import marshaller from './../marshalling/unmarshaller';
 
 const should = chai.should();
+const getSemTypes = rewire('./../scripts/importSemTypes.js').__get__('getSemTypes');
 
 describe('importSemTypes', () => {
   let jsonixSemTypes;
-  before(mochAsync(async() => {
-    jsonixSemTypes = await marshaller.unmarshall('./tests/resources/semTypes.test.xml');
+  before(mochAsync(async () => {
+    jsonixSemTypes = await marshaller
+      .unmarshall('./tests/resources/semTypes.test.xml');
   }));
   it('#getSemTypes should return a properly formatted array of SemType objects', () => {
     const semTypes = getSemTypes(jsonixSemTypes);

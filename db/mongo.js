@@ -3,7 +3,7 @@ import mongodb from 'mongodb';
 import config from './../config';
 
 const MongoClient = mongodb.MongoClient;
-const logger = config.logger;
+const logger = config.default.logger;
 
 async function connectToDatabase(uri) {
   let mongo;

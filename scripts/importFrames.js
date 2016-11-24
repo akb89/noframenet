@@ -11,7 +11,7 @@ import driver from './../db/mongo';
 import marshaller from './../marshalling/unmarshaller';
 import utils from './../utils/utils';
 
-const logger = config.logger;
+const logger = config.default.logger;
 const startTime = process.hrtime();
 
 function convertToLexemes(jsonixLexUnit) {
@@ -163,5 +163,5 @@ async function importFrames(frameDir, chunkSize, dbUri) {
 }
 
 if (require.main === module) {
-  importFrames(config.frameDir, config.frameChunkSize, config.dbUri);
+  importFrames(config.default.frameDir, config.default.frameChunkSize, config.default.dbUri);
 }
