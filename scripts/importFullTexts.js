@@ -23,16 +23,15 @@ const startTime = process.hrtime();
  * document so it is processed as an array here
  */
 function convertToDocuments(jsonixFullText) {
-  return toJsonixDocumentArray(jsonixFullText.value.header.corpus[0]).map((jsonixDocument) => {
-    const document = new Document({
-      _id: jsonixDocument.id,
-      name: jsonixDocument.name,
-      description: jsonixDocument.description,
-    });
-    document.sentences = toJsonixDocumentSentenceArray(jsonixFullText)
-      .map(jsonixSentence => jsonixSentence.id);
-    return document.toObject();
-  });
+  return toJsonixDocumentArray(jsonixFullText.value.header.corpus[0])
+    .map(jsonixDocument =>
+      new Document({
+        _id: jsonixDocument.id,
+        name: jsonixDocument.name,
+        description: jsonixDocument.description,
+        sentences: toJsonixDocumentSentenceArray(jsonixFullText)
+          .map(jsonixSentence => jsonixSentence.id),
+      }).toObject());
 }
 
 function processCorpus(jsonixFullText, documents, corpora) {
@@ -49,9 +48,10 @@ function processCorpus(jsonixFullText, documents, corpora) {
     });
     corpora.set(corpusId, corpus.toObject());
   }
-  const docs = convertToDocuments(jsonixFullText);
-  corpus.documents.push(...docs.map(doc => doc._id));
-  documents.push(...docs);
+  convertToDocuments(jsonixFullText).forEach((document) => {
+    corpus.documents.push(document._id);
+    documents.push(document);
+  });
 }
 
 async function convertToObjects(batch, uniques) {

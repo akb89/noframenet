@@ -24,15 +24,14 @@ function getSuperTypes(jsonixSemType) {
 // Export for testing
 // TODO Replace with rewire module
 export function getSemTypes(jsonixSemTypes) {
-  return toJsonixSemTypesSemTypeArray(jsonixSemTypes).map((jsonixSemType) => {
-    const semType = new SemType({
-      _id: jsonixSemType.id,
-      name: jsonixSemType.name,
-      definition: jsonixSemType.definition,
-      superTypes: getSuperTypes(jsonixSemType),
-    });
-    return semType.toObject();
-  });
+  return toJsonixSemTypesSemTypeArray(jsonixSemTypes)
+    .map(jsonixSemType =>
+      new SemType({
+        _id: jsonixSemType.id,
+        name: jsonixSemType.name,
+        definition: jsonixSemType.definition,
+        superTypes: getSuperTypes(jsonixSemType),
+      }).toObject());
 }
 
 async function saveToDb(mongodb, semTypes) {

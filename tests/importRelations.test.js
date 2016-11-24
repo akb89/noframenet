@@ -17,9 +17,7 @@ import {
   convertToFrameRelations,
   convertToRelationTypes,
 } from './../scripts/importRelations';
-import {
-  unmarshall,
-} from './../marshalling/unmarshaller';
+import marshaller from './../marshalling/unmarshaller';
 import mochAsync from './async.test';
 
 const should = chai.should();
@@ -29,7 +27,7 @@ describe('importRelations', () => {
   let jsonixFrameRelationTypeArray;
   let jsonixFrameRelationArray;
   before(mochAsync(async() => {
-    jsonixFrameRelations = await unmarshall('./tests/resources/frRelations.test.xml');
+    jsonixFrameRelations = await marshaller.unmarshall('./tests/resources/frRelations.test.xml');
     jsonixFrameRelationTypeArray = toJsonixFrameRelationTypeArray(jsonixFrameRelations);
     jsonixFrameRelationArray = toJsonixFrameRelationArray(jsonixFrameRelationTypeArray[0]);
   }));

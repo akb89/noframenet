@@ -16,9 +16,7 @@ import {
   toJsonixRequiresFEArray,
   toJsonixSemTypeArray,
 } from './../utils/jsonixUtils';
-import {
-  unmarshall,
-} from './../marshalling//unmarshaller';
+import marshaller from './../marshalling//unmarshaller';
 
 const should = chai.should();
 
@@ -35,10 +33,10 @@ describe('jsonixUtils', () => {
   let jsonixFrameElements;
   let jsonixFE;
   before(async() => {
-    jsonixSemTypes = await unmarshall('./tests/resources/semTypes.test.xml');
-    jsonixFrameRelations = await unmarshall('./tests/resources/frRelations.test.xml');
-    jsonixFullText = await unmarshall('./tests/resources/fulltext.test.xml');
-    jsonixFrame = await unmarshall('./tests/resources/frames.test.xml');
+    jsonixSemTypes = await marshaller.unmarshall('./tests/resources/semTypes.test.xml');
+    jsonixFrameRelations = await marshaller.unmarshall('./tests/resources/frRelations.test.xml');
+    jsonixFullText = await marshaller.unmarshall('./tests/resources/fulltext.test.xml');
+    jsonixFrame = await marshaller.unmarshall('./tests/resources/frames.test.xml');
     jsonixFrameElements = toJsonixFrameElementArray(jsonixFrame);
     jsonixFE = jsonixFrameElements[0];
     jsonixDocuments = toJsonixDocumentArray(jsonixFullText.value.header.corpus[0]);

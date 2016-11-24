@@ -20,41 +20,41 @@ const logger = config.logger;
 const startTime = process.hrtime();
 
 export function convertToFERelations(jsonixFrameRelation) {
-  return toJsonixFERelationArray(jsonixFrameRelation).map((jsonixFERelation) => {
-    const feRelation = new FERelation({
+  return toJsonixFERelationArray(jsonixFrameRelation)
+    .map(jsonixFERelation => new FERelation({
       _id: jsonixFERelation.id,
       subFE: jsonixFERelation.subID,
       supFE: jsonixFERelation.supID,
       frameRelation: jsonixFrameRelation.id,
-    });
-    return feRelation.toObject();
-  });
+    }).toObject());
 }
 
 export function convertToFrameRelations(jsonixFrameRelationType, frameElementRelations) {
-  return toJsonixFrameRelationArray(jsonixFrameRelationType).map((jsonixFrameRelation) => {
-    const frameRelation = new FrameRelation({
-      _id: jsonixFrameRelation.id,
-      subFrame: jsonixFrameRelation.subID,
-      supFrame: jsonixFrameRelation.supID,
-      type: jsonixFrameRelationType.id,
+  return toJsonixFrameRelationArray(jsonixFrameRelationType)
+    .map((jsonixFrameRelation) => {
+      frameElementRelations
+        .push(...convertToFERelations(jsonixFrameRelation));
+      return new FrameRelation({
+        _id: jsonixFrameRelation.id,
+        subFrame: jsonixFrameRelation.subID,
+        supFrame: jsonixFrameRelation.supID,
+        type: jsonixFrameRelationType.id,
+      }).toObject();
     });
-    frameElementRelations.push(...convertToFERelations(jsonixFrameRelation));
-    return frameRelation.toObject();
-  });
 }
 // TODO: use rewire module
 export function convertToRelationTypes(jsonixFrameRelations, frameRelations, frameElementRelations) {
-  return toJsonixFrameRelationTypeArray(jsonixFrameRelations).map((jsonixFrameRelationType) => {
-    const frameRelationType = new FrameRelationType({
-      _id: jsonixFrameRelationType.id,
-      name: jsonixFrameRelationType.name,
-      subFrameName: jsonixFrameRelationType.subFrameName,
-      supFrameName: jsonixFrameRelationType.superFrameName,
+  return toJsonixFrameRelationTypeArray(jsonixFrameRelations)
+    .map((jsonixFrameRelationType) => {
+      frameRelations
+        .push(...convertToFrameRelations(jsonixFrameRelationType, frameElementRelations));
+      return new FrameRelationType({
+        _id: jsonixFrameRelationType.id,
+        name: jsonixFrameRelationType.name,
+        subFrameName: jsonixFrameRelationType.subFrameName,
+        supFrameName: jsonixFrameRelationType.superFrameName,
+      }).toObject();
     });
-    frameRelations.push(...convertToFrameRelations(jsonixFrameRelationType, frameElementRelations));
-    return frameRelationType.toObject();
-  });
 }
 
 function convertToObjects(jsonixFrameRelations) {

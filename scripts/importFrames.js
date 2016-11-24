@@ -40,8 +40,8 @@ function convertToLexemes(jsonixLexUnit) {
 
 function convertToLexUnits(jsonixFrame, lexemes) {
   return toJsonixLexUnitArray(jsonixFrame)
-    .map((jsonixLexUnit) => {
-      const lexUnit = new LexUnit({
+    .map(jsonixLexUnit =>
+      new LexUnit({
         _id: jsonixLexUnit.id,
         name: jsonixLexUnit.name,
         pos: jsonixLexUnit.pos,
@@ -49,20 +49,22 @@ function convertToLexUnits(jsonixFrame, lexemes) {
         lemmaID: jsonixLexUnit.lemmaID,
         frame: jsonixFrame.value.id,
         status: jsonixLexUnit.status,
-      });
-      const _lexemes = convertToLexemes(jsonixLexUnit);
-      lexemes.push(..._lexemes);
-      lexUnit.lexemes = _lexemes.map(lex => lex._id);
-      lexUnit.semTypes = toJsonixSemTypeArray(jsonixLexUnit)
-        .map(jsonixSemType => jsonixSemType.id);
-      return lexUnit.toObject();
-    });
+        cBy: jsonixLexUnit.cBy,
+        cDate: jsonixLexUnit.cDate,
+        lexemes: convertToLexemes(jsonixLexUnit)
+          .map((lexeme) => {
+            lexemes.push(lexeme);
+            return lexeme._id;
+          }),
+        semTypes: toJsonixSemTypeArray(jsonixLexUnit)
+          .map(jsonixSemType => jsonixSemType.id),
+      }).toObject());
 }
 
 function convertToFrameElements(jsonixFrame) {
   return toJsonixFrameElementArray(jsonixFrame)
-    .map((jsonixFE) => {
-      const frameElement = new FrameElement({
+    .map(jsonixFE =>
+      new FrameElement({
         _id: jsonixFE.id,
         name: jsonixFE.name,
         definition: jsonixFE.definition,
@@ -72,38 +74,39 @@ function convertToFrameElements(jsonixFrame) {
         fgColor: jsonixFE.fgColor,
         bgColor: jsonixFE.bgColor,
         abbrev: jsonixFE.abbrev,
-      });
-      frameElement.requires = toJsonixRequiresFEArray(jsonixFE)
-        .map(jsonixRequiresFE => jsonixRequiresFE.id);
-      frameElement.excludes = toJsonixExcludesFEArray(jsonixFE)
-        .map(jsonixExcludesFE => jsonixExcludesFE.id);
-      frameElement.semTypes = toJsonixSemTypeArray(jsonixFE)
-        .map(jsonixSemType => jsonixSemType.id);
-      return frameElement.toObject();
-    });
+        requires: toJsonixRequiresFEArray(jsonixFE)
+          .map(jsonixRequiresFE => jsonixRequiresFE.id),
+        excludes: toJsonixExcludesFEArray(jsonixFE)
+          .map(jsonixExcludesFE => jsonixExcludesFE.id),
+        semTypes: toJsonixSemTypeArray(jsonixFE)
+          .map(jsonixSemType => jsonixSemType.id),
+      }).toObject());
 }
 
 function convertToFrame(jsonixFrame, frameElements, lexUnits, lexemes) {
-  const frame = new Frame({
+  return new Frame({
     _id: jsonixFrame.value.id,
     name: jsonixFrame.value.name,
     definition: jsonixFrame.value.definition,
     cDate: jsonixFrame.value.cDate,
     cBy: jsonixFrame.value.cBy,
-  });
-  const fes = convertToFrameElements(jsonixFrame, frameElements);
-  frameElements.push(...fes);
-  frame.frameElements = fes
-    .map(fe => fe._id);
-  frame.feCoreSets = toJsonixFECoreSetArray(jsonixFrame)
-    .map(jsonixFECoreSet => toJsonixFECoreSetMemberArray(jsonixFECoreSet)
-      .map(jsonixFE => jsonixFE.id));
-  const lus = convertToLexUnits(jsonixFrame, lexemes);
-  lexUnits.push(...lus);
-  frame.lexUnits = lus.map(lu => lu._id);
-  frame.semTypes = toJsonixSemTypeArray(jsonixFrame)
-    .map(jsonixSemType => jsonixSemType.id);
-  return frame.toObject();
+    frameElements: convertToFrameElements(jsonixFrame, frameElements)
+      .map((fe) => {
+        frameElements.push(fe);
+        return fe._id;
+      }),
+    feCoreSets: toJsonixFECoreSetArray(jsonixFrame)
+      .map(jsonixFECoreSet =>
+        toJsonixFECoreSetMemberArray(jsonixFECoreSet)
+        .map(jsonixFE => jsonixFE.id)),
+    lexUnits: convertToLexUnits(jsonixFrame, lexemes)
+      .map((lu) => {
+        lexUnits.push(lu);
+        return lu._id;
+      }),
+    semTypes: toJsonixSemTypeArray(jsonixFrame)
+      .map(jsonixSemType => jsonixSemType.id),
+  }).toObject();
 }
 
 async function convertToObjects(batch) {

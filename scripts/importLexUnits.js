@@ -5,7 +5,6 @@
 import {
   AnnotationSet,
   Label,
-  LexUnit,
   Pattern,
   Sentence,
   ValenceUnit,
@@ -16,7 +15,6 @@ import {
   toJsonixLexUnitSentenceArray,
   toJsonixPatternAnnoSetArray,
   toJsonixPatternArray,
-  toJsonixSemTypeArray,
   toJsonixSentenceAnnoSetArray,
   toJsonixValenceUnitArray,
 } from './../utils/jsonixUtils';
@@ -68,53 +66,50 @@ function processPatterns(jsonixLexUnit, annoSet2PatternMap, patternsMap, valence
   });
 }
 
-// TODO: filter valid layers?
 function convertToLabels(jsonixAnnoSet) {
   return toJsonixLayerArray(jsonixAnnoSet)
     .map(jsonixLayer =>
       toJsonixLabelArray(jsonixLayer)
-      .map((jsonixLabel) => {
-        const label = new Label({
+      .map(jsonixLabel =>
+        new Label({
           name: jsonixLabel.name,
           type: jsonixLayer.name,
           startPos: jsonixLabel.start,
           endPos: jsonixLabel.end,
-        });
-        return label.toObject();
-      }))
+        }).toObject()))
     .reduce((a, b) => a.concat(b));
 }
 
 function convertToAnnoSets(jsonixSentence, lexUnitId, labels) {
-  return toJsonixSentenceAnnoSetArray(jsonixSentence).map((jsonixAnnoSet) => {
-    const annoSet = new AnnotationSet({
+  return toJsonixSentenceAnnoSetArray(jsonixSentence).map(jsonixAnnoSet =>
+    new AnnotationSet({
       _id: jsonixAnnoSet.id,
       lexUnit: lexUnitId,
       sentence: jsonixSentence.id,
-    });
-    const annoLabels = convertToLabels(jsonixAnnoSet);
-    annoSet.labels = annoLabels.map(label => label._id);
-    labels.push(...annoLabels);
-    return annoSet.toObject();
-  });
+      labels: convertToLabels(jsonixAnnoSet)
+        .map((label) => {
+          labels.push(label);
+          return label._id;
+        }),
+    }).toObject());
 }
 
 function convertToSentences(jsonixLexUnit, annotationSets, labels) {
-  return toJsonixLexUnitSentenceArray(jsonixLexUnit).map((jsonixSentence) => {
-    const sentence = new Sentence({
-      _id: jsonixSentence.id,
-      text: jsonixSentence.text,
-      paragraphNumber: jsonixSentence.paragNo,
-      sentenceNumber: jsonixSentence.sentNo,
-      aPos: jsonixSentence.aPos,
+  return toJsonixLexUnitSentenceArray(jsonixLexUnit)
+    .map((jsonixSentence) => {
+      annotationSets.push(...convertToAnnoSets(jsonixSentence, jsonixLexUnit.value.id, labels));
+      return new Sentence({
+        _id: jsonixSentence.id,
+        text: jsonixSentence.text,
+        paragraphNumber: jsonixSentence.paragNo,
+        sentenceNumber: jsonixSentence.sentNo,
+        aPos: jsonixSentence.aPos,
+      }).toObject();
     });
-    annotationSets.push(...convertToAnnoSets(jsonixSentence, jsonixLexUnit.value.id, labels));
-    return sentence.toObject();
-  });
 }
 
 // Lemma and Lexeme information is updated via importLemmasAndLemexes script
-function convertToLexUnit(
+function processLexUnit(
   jsonixLexUnit,
   annoSet2PatternMap,
   annotationSets,
@@ -122,41 +117,27 @@ function convertToLexUnit(
   patternsMap,
   sentences,
   valenceUnitsMap) {
-  const lexUnit = new LexUnit({
-    _id: jsonixLexUnit.value.id,
-    name: jsonixLexUnit.value.name,
-    pos: jsonixLexUnit.value.pos,
-    definition: jsonixLexUnit.value.definition,
-    frame: jsonixLexUnit.value.frameID,
-    status: jsonixLexUnit.value.status,
-    totalAnnotated: jsonixLexUnit.value.totalAnnotated,
-  });
-  // SemTypes are imported via a separate script
-  lexUnit.semTypes = toJsonixSemTypeArray(jsonixLexUnit).map(jsonixSemType => jsonixSemType.id);
   sentences.push(...convertToSentences(jsonixLexUnit, annotationSets, labels));
   processPatterns(jsonixLexUnit, annoSet2PatternMap, patternsMap, valenceUnitsMap);
-  return lexUnit.toObject();
 }
 
 async function convertToObjects(batch, uniques) {
   const data = {
     annotationSets: [],
     labels: [],
-    lexUnits: [],
     sentences: [],
   };
   await Promise.all(batch.map(async(file) => {
     const jsonixLexUnit = await marshaller.unmarshall(file);
-    data.lexUnits.push(
-      convertToLexUnit(
-        jsonixLexUnit,
-        uniques.annoSet2PatternMap,
-        data.annotationSets,
-        data.labels,
-        uniques.patternsMap,
-        data.sentences,
-        uniques.valenceUnitsMap,
-      ));
+    processLexUnit(
+      jsonixLexUnit,
+      uniques.annoSet2PatternMap,
+      data.annotationSets,
+      data.labels,
+      uniques.patternsMap,
+      data.sentences,
+      uniques.valenceUnitsMap,
+    );
   }));
   return data;
 }
@@ -168,11 +149,6 @@ async function saveArraysToDb(mongodb, data) {
     ordered: false,
   });
   await mongodb.collection('labels').insertMany(data.labels, {
-    w: 0,
-    j: false,
-    ordered: false,
-  });
-  await mongodb.collection('lexunits').insertMany(data.lexUnits, {
     w: 0,
     j: false,
     ordered: false,
