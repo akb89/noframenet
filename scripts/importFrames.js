@@ -28,16 +28,14 @@ const startTime = process.hrtime();
 
 function convertToLexemes(jsonixLexUnit) {
   return toJsonixLexemeArray(jsonixLexUnit)
-    .map((jsonixLexeme) => {
-      const lexeme = new Lexeme({
+    .map(jsonixLexeme =>
+      new Lexeme({
         name: jsonixLexeme.name,
         pos: jsonixLexeme.pos,
         headword: jsonixLexeme.headword,
         order: jsonixLexeme.order,
         breakBefore: jsonixLexeme.breakBefore,
-      });
-      return lexeme.toObject();
-    });
+      }).toObject());
 }
 
 function convertToLexUnits(jsonixFrame, lexemes) {
