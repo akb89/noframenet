@@ -1,23 +1,13 @@
-'use strict';
+// Because of the export default works with babel, we need to use classic require
+import logger from './../logger/logger';
 
-import Logger from './../logger/logger';
-
-const config = {
-  dbUri: 'mongodb://localhost:27017/dev',
-  port: 3030,
-  logger: Logger.info,
-  lexUnitDir: '/Users/AKB/Desktop/fndata-1.6/lu',
-  frameDir: '/Users/AKB/Desktop/fndata-1.6/frame',
-  fullTextDir: '/Users/AKB/Desktop/fndata-1.6/fulltext',
-  relationsFilePath: '/Users/AKB/Desktop/fndata-1.6/frRelation.xml',
-  semTypesFilePath: '/Users/AKB/Desktop/fndata-1.6/semTypes.xml',
-  validLayers: ['FE', 'PT', 'GF'], // Configured this way for scalability, as
-  // other languages may use additional specific layers
-  // validLayers: ['FE', 'PT', 'GF', 'Target', 'PENN', 'NER', 'WSL', 'Other',
-  //  'Sent', 'Noun']
-  frameChunkSize: 100,
-  lexUnitChunkSize: 50,
-  fullTextChunkSize: 20,
-};
+const env = process.env.NODE_ENV || 'development';
+let config;
+try {
+  config = require(`./${env}.js`);
+} catch (error) {
+  logger.info.info(error);
+  logger.info.info(`No specific configuration for env ${env}`);
+}
 
 export default config;
