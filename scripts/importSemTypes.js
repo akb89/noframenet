@@ -5,17 +5,13 @@
 import {
   SemType,
 } from 'noframenet-core';
-import config from './../config';
 import {
   toJsonixSemTypesSemTypeArray,
   toJsonixSuperTypeArray,
 } from './../utils/jsonixUtils';
-import {
-  connectToDatabase,
-} from './../db/mongo.js';
-import {
-  unmarshall,
-} from './../marshalling/unmarshaller';
+import config from './../config';
+import driver from './../db/mongo';
+import marshaller from './../marshalling/unmarshaller';
 
 const logger = config.logger;
 const startTime = process.hrtime();
@@ -26,6 +22,7 @@ function getSuperTypes(jsonixSemType) {
 }
 
 // Export for testing
+// TODO Replace with rewire module
 export function getSemTypes(jsonixSemTypes) {
   return toJsonixSemTypesSemTypeArray(jsonixSemTypes).map((jsonixSemType) => {
     const semType = new SemType({
@@ -59,16 +56,16 @@ async function importSemTypeObjects(semTypes, db) {
 
 async function importUnmarshalledSemTypes(jsonixSemTypes, db) {
   const semTypes = getSemTypes(jsonixSemTypes);
-  await importSemTypeObjects(semTypes, db)
+  await importSemTypeObjects(semTypes, db);
 }
 
 async function importSemTypesOnceConnectedToDb(semTypesFilePath, db) {
-  const jsonixSemTypes = await unmarshall(semTypesFilePath);
-  await importUnmarshalledSemTypes(jsonixSemTypes, db)
+  const jsonixSemTypes = await marshaller.unmarshall(semTypesFilePath);
+  await importUnmarshalledSemTypes(jsonixSemTypes, db);
 }
 
 async function importSemTypes(semTypesFilePath, dbUri) {
-  const db = await connectToDatabase(dbUri);
+  const db = await driver.connectToDatabase(dbUri);
   logger.info('Importing SemTypes to database...');
   await importSemTypesOnceConnectedToDb(semTypesFilePath, db);
   db.mongo.close();

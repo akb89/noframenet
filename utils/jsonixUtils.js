@@ -161,7 +161,8 @@ export function toJsonixFrameRelationTypeArray(jsonixFrameRelations) {
   let frameRelationTypeIterator = 0;
   if ({}.hasOwnProperty.call(jsonixFrameRelations.value, 'frameRelationType')) {
     while (jsonixFrameRelations.value.frameRelationType[frameRelationTypeIterator] !== undefined) {
-      frameRelationTypes.push(jsonixFrameRelations.value.frameRelationType[frameRelationTypeIterator]);
+      frameRelationTypes.push(jsonixFrameRelations
+        .value.frameRelationType[frameRelationTypeIterator]);
       frameRelationTypeIterator += 1;
     }
   }

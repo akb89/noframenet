@@ -2,8 +2,7 @@ import chai from 'chai';
 import fs from 'fs';
 import {
   filterAndChunk,
-} from './../utils/filesUtils';
-import './../utils/utils'; // for flatten
+} from '../utils/utils';
 import mochAsync from './async.test';
 
 const should = chai.should();
@@ -29,8 +28,8 @@ describe('filesUtils', () => {
     chunks.forEach((chunk) => {
       chunk.length.should.equal(2);
     });
-    chunks.flatten().length.should.equal(10);
-    chunks.flatten().forEach((file) => {
+    chunks.reduce((a,b)=> a.concat(b)).length.should.equal(10);
+    chunks.reduce((a,b)=> a.concat(b)).forEach((file) => {
       file.endsWith('.xml').should.be.true;
     });
   }));

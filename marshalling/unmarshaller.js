@@ -1,4 +1,4 @@
-import Promise from 'bluebird'
+import Promise from 'bluebird';
 import jsonix from 'jsonix';
 import frameSchema from './../mappings/FrameSchema';
 import frameRelationSchema from './../mappings/FrameRelationSchema';
@@ -12,10 +12,16 @@ const FrameRelationSchema = frameRelationSchema.FrameRelationSchema;
 const FullTextSchema = fullTextSchema.FullTextSchema;
 const LexUnitSchema = lexUnitSchema.LexUnitSchema;
 const SemTypeSchema = semTypeSchema.SemTypeSchema;
-const context = new Jsonix.Context([FrameSchema, FrameRelationSchema, FullTextSchema, LexUnitSchema, SemTypeSchema]);
+const context = new Jsonix.Context([
+  FrameSchema,
+  FrameRelationSchema,
+  FullTextSchema,
+  LexUnitSchema,
+  SemTypeSchema,
+]);
 const unmarshaller = context.createUnmarshaller();
 
-export function unmarshall(file) {
+function unmarshall(file) {
   return new Promise((resolve, reject) => {
     try {
       unmarshaller.unmarshalFile(file, (unmarshalledFile) => {
@@ -26,3 +32,7 @@ export function unmarshall(file) {
     }
   });
 }
+
+export default {
+  unmarshall,
+};

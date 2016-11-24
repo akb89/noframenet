@@ -7,26 +7,20 @@ import {
   Document,
 } from 'noframenet-core';
 import {
-  filterAndChunk,
-} from './../utils/filesUtils';
-import {
   toJsonixDocumentArray,
   toJsonixDocumentSentenceArray,
 } from './../utils/jsonixUtils';
-import {
-  connectToDatabase,
-} from './../db/mongo';
-import {
-  unmarshall,
-} from './../marshalling/unmarshaller';
 import config from './../config';
+import driver from './../db/mongo';
+import marshaller from './../marshalling/unmarshaller';
+import utils from './../utils/utils';
 
 const logger = config.logger;
 const startTime = process.hrtime();
 
 /**
  * Theoretically (in header.xsd), maxOccurs="unbounded" for
- *  document so it is processed as an array here
+ * document so it is processed as an array here
  */
 function convertToDocuments(jsonixFullText) {
   return toJsonixDocumentArray(jsonixFullText.value.header.corpus[0]).map((jsonixDocument) => {
@@ -65,7 +59,7 @@ async function convertToObjects(batch, uniques) {
     documents: [],
   };
   await Promise.all(batch.map(async(file) => {
-    const jsonixFullText = await unmarshall(file);
+    const jsonixFullText = await marshaller.unmarshall(file);
     processCorpus(jsonixFullText, data.documents, uniques.corpora);
   }));
   return data;
@@ -117,13 +111,13 @@ async function importBatchSet(batchSet, db) {
 }
 
 async function importFullTextOnceConnectedToDb(fullTextDir, chunkSize, db) {
-  const batchSet = await filterAndChunk(fullTextDir, chunkSize);
+  const batchSet = await utils.filterAndChunk(fullTextDir, chunkSize);
   await importBatchSet(batchSet, db);
   logger.info(`Import process completed in ${process.hrtime(startTime)[0]}s`);
 }
 
 async function importFullText(fullTextDir, chunkSize, dbUri) {
-  const db = await connectToDatabase(dbUri);
+  const db = await driver.connectToDatabase(dbUri);
   await importFullTextOnceConnectedToDb(fullTextDir, chunkSize, db);
   db.mongo.close();
   db.mongoose.disconnect();

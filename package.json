@@ -30,7 +30,7 @@
     "lodash": "^4.14.1",
     "mongodb": "^2.2.5",
     "mongoose": "^4.5.8",
-    "noframenet-core": "^0.5.0",
+    "noframenet-core": "^0.10.0",
     "path": "^0.12.7",
     "winston": "^2.3.0"
   },

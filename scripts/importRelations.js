@@ -12,13 +12,9 @@ import {
   toJsonixFrameRelationArray,
   toJsonixFrameRelationTypeArray,
 } from './../utils/jsonixUtils';
-import {
-  connectToDatabase,
-} from './../db/mongo';
-import {
-  unmarshall,
-} from './../marshalling/unmarshaller';
 import config from './../config';
+import driver from './../db/mongo';
+import marshaller from './../marshalling/unmarshaller';
 
 const logger = config.logger;
 const startTime = process.hrtime();
@@ -47,7 +43,7 @@ export function convertToFrameRelations(jsonixFrameRelationType, frameElementRel
     return frameRelation.toObject();
   });
 }
-
+// TODO: use rewire module
 export function convertToRelationTypes(jsonixFrameRelations, frameRelations, frameElementRelations) {
   return toJsonixFrameRelationTypeArray(jsonixFrameRelations).map((jsonixFrameRelationType) => {
     const frameRelationType = new FrameRelationType({
@@ -62,7 +58,7 @@ export function convertToRelationTypes(jsonixFrameRelations, frameRelations, fra
 }
 
 function convertToObjects(jsonixFrameRelations) {
-  let data = {
+  const data = {
     frameRelationTypes: [],
     frameRelations: [],
     feRelations: [],
@@ -108,14 +104,13 @@ async function importUnmarshalledFrameRelations(jsonixFrameRelations, db) {
 }
 
 async function importRelationsOnceConnectedToDb(relationsFilePath, db) {
-  const jsonixFrameRelations = await unmarshall(relationsFilePath);
+  const jsonixFrameRelations = await marshaller.unmarshall(relationsFilePath);
   await importUnmarshalledFrameRelations(jsonixFrameRelations, db);
   logger.info(`Import completed in ${process.hrtime(startTime)[0]}s`);
-  //logger.info(`SemTypes = ${semTypes.length}`);
 }
 
 async function importRelations(relationsFilePath, dbUri) {
-  const db = await connectToDatabase(dbUri);
+  const db = await driver.connectToDatabase(dbUri);
   logger.info('Importing Relations to database...');
   await importRelationsOnceConnectedToDb(relationsFilePath, db);
   // TODO revise this in case of pipeline script execution?

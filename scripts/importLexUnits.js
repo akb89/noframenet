@@ -2,7 +2,6 @@
  * Standalone script to import FrameNet lexical units to MongoDB.
  */
 
-// TODO: ADD info regarding lexemes/lemmas of lexUnit found in frame files
 import {
   AnnotationSet,
   Label,
@@ -21,17 +20,10 @@ import {
   toJsonixSentenceAnnoSetArray,
   toJsonixValenceUnitArray,
 } from './../utils/jsonixUtils';
-import {
-  filterAndChunk,
-} from './../utils/filesUtils';
-import {
-  connectToDatabase,
-} from './../db/mongo';
-import {
-  unmarshall,
-} from './../marshalling/unmarshaller';
 import config from './../config';
-import './../utils/utils'; // For .flatten()
+import driver from './../db/mongo';
+import marshaller from './../marshalling/unmarshaller';
+import utils from './../utils/utils';
 
 const logger = config.logger;
 
@@ -72,27 +64,25 @@ function processPatterns(jsonixLexUnit, annoSet2PatternMap, patternsMap, valence
     }
     toJsonixPatternAnnoSetArray(jsonixPattern).forEach((jsonixAnnoSet) => {
       annoSet2PatternMap.set(jsonixAnnoSet.id, pattern._id);
-      /*
-      if (annotationSets.has(jsonixAnnoSet.id)) {
-        annotationSets.get(jsonixAnnoSet.id).pattern = pattern._id;
-      }*/
     });
   });
 }
 
 // TODO: filter valid layers?
 function convertToLabels(jsonixAnnoSet) {
-  return toJsonixLayerArray(jsonixAnnoSet).map((jsonixLayer) => {
-    return toJsonixLabelArray(jsonixLayer).map((jsonixLabel) => {
-      const label = new Label({
-        name: jsonixLabel.name,
-        type: jsonixLayer.name,
-        startPos: jsonixLabel.start,
-        endPos: jsonixLabel.end,
-      });
-      return label.toObject();
-    });
-  }).flatten();
+  return toJsonixLayerArray(jsonixAnnoSet)
+    .map(jsonixLayer =>
+      toJsonixLabelArray(jsonixLayer)
+      .map((jsonixLabel) => {
+        const label = new Label({
+          name: jsonixLabel.name,
+          type: jsonixLayer.name,
+          startPos: jsonixLabel.start,
+          endPos: jsonixLabel.end,
+        });
+        return label.toObject();
+      }))
+    .reduce((a, b) => a.concat(b));
 }
 
 function convertToAnnoSets(jsonixSentence, lexUnitId, labels) {
@@ -109,14 +99,6 @@ function convertToAnnoSets(jsonixSentence, lexUnitId, labels) {
   });
 }
 
-function addToMap(map, array) {
-  array.forEach((item) => {
-    if (!map.has(item._id)) {
-      map.set(item._id, item);
-    }
-  });
-}
-
 function convertToSentences(jsonixLexUnit, annotationSets, labels) {
   return toJsonixLexUnitSentenceArray(jsonixLexUnit).map((jsonixSentence) => {
     const sentence = new Sentence({
@@ -127,7 +109,6 @@ function convertToSentences(jsonixLexUnit, annotationSets, labels) {
       aPos: jsonixSentence.aPos,
     });
     annotationSets.push(...convertToAnnoSets(jsonixSentence, jsonixLexUnit.value.id, labels));
-    //addToMap(annotationSets, convertToAnnoSets(jsonixSentence, //jsonixLexUnit.value.id, labels));
     return sentence.toObject();
   });
 }
@@ -152,7 +133,6 @@ function convertToLexUnit(
   });
   // SemTypes are imported via a separate script
   lexUnit.semTypes = toJsonixSemTypeArray(jsonixLexUnit).map(jsonixSemType => jsonixSemType.id);
-  //addToMap(sentences, convertToSentences(jsonixLexUnit, annotationSets, //labels));
   sentences.push(...convertToSentences(jsonixLexUnit, annotationSets, labels));
   processPatterns(jsonixLexUnit, annoSet2PatternMap, patternsMap, valenceUnitsMap);
   return lexUnit.toObject();
@@ -166,7 +146,7 @@ async function convertToObjects(batch, uniques) {
     sentences: [],
   };
   await Promise.all(batch.map(async(file) => {
-    const jsonixLexUnit = await unmarshall(file);
+    const jsonixLexUnit = await marshaller.unmarshall(file);
     data.lexUnits.push(
       convertToLexUnit(
         jsonixLexUnit,
@@ -205,29 +185,12 @@ async function saveArraysToDb(mongodb, data) {
 }
 
 async function saveMapsToDb(mongodb, maps) {
-  // TODO Check: annotationSets Map may be too big
-  /*
-  await mongodb.collection('annotationsets')
-    .insertMany(Array.from(maps.annotationSets), {
-      w: 0,
-      j: false,
-      ordered: false,
-    });*/
   await mongodb.collection('patterns')
     .insertMany(Array.from(maps.patternsMap), {
       w: 0,
       j: false,
       ordered: false,
     });
-  // TODO Check: sentences Map may be too big
-  /*
-  await mongodb.collection('sentences')
-    .insertMany(Array.from(maps.sentences), {
-      w: 0,
-      j: false,
-      ordered: false,
-    });*/
-
   await mongodb.collection('valenceunits')
     .insertMany(Array.from(maps.valenceUnitsMap), {
       w: 0,
@@ -263,9 +226,7 @@ async function importBatchSet(batchSet, db) {
   let counter = 1;
   const uniques = {
     annoSet2PatternMap: new Map(),
-    //annotationSets: new Map(),
     patternsMap: new Map(),
-    //sentences: new Map(),
     valenceUnitsMap: new Map(),
   };
   for (const batch of batchSet) {
@@ -288,12 +249,12 @@ async function importBatchSet(batchSet, db) {
 }
 
 async function importLexUnitsOnceConnectedToDb(lexUnitDir, chunkSize, db) {
-  const batchSet = await filterAndChunk(lexUnitDir, chunkSize);
+  const batchSet = await utils.filterAndChunk(lexUnitDir, chunkSize);
   await importBatchSet(batchSet, db);
 }
 
 async function importLexUnits(lexUnitDir, chunkSize, dbUri) {
-  const db = await connectToDatabase(dbUri);
+  const db = await driver.connectToDatabase(dbUri);
   await importLexUnitsOnceConnectedToDb(lexUnitDir, chunkSize, db);
   await db.mongo.close();
   await db.mongoose.disconnect();

@@ -5,7 +5,7 @@ import config from './../config';
 const MongoClient = mongodb.MongoClient;
 const logger = config.logger;
 
-export async function connectToDatabase(uri) {
+async function connectToDatabase(uri) {
   let mongo;
   try {
     mongo = await MongoClient.connect(uri, {
@@ -43,3 +43,7 @@ export async function connectToDatabase(uri) {
     mongoose,
   };
 }
+
+export default {
+  connectToDatabase,
+};
