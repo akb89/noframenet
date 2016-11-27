@@ -3,14 +3,13 @@
  */
 
 import chai from 'chai';
-import mochAsync from './async.test';
 
 const should = chai.should();
 
 describe('importFullTexts', () => {
-  before(mochAsync(async () => {
+  before(async () => {
 
-  }));
+  });
   it('', () => {
 
   });

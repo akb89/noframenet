@@ -2,7 +2,6 @@
  * Behavior tests for importSemTypes script
  */
 import chai from 'chai';
-import mochAsync from './async.test';
 import rewire from 'rewire';
 import marshaller from './../marshalling/unmarshaller';
 
@@ -11,10 +10,10 @@ const getSemTypes = rewire('./../scripts/importSemTypes.js').__get__('getSemType
 
 describe('importSemTypes', () => {
   let jsonixSemTypes;
-  before(mochAsync(async () => {
+  before(async () => {
     jsonixSemTypes = await marshaller
       .unmarshall('./tests/resources/semTypes.test.xml');
-  }));
+  });
   it('#getSemTypes should return a properly formatted array of SemType objects', () => {
     const semTypes = getSemTypes(jsonixSemTypes);
     semTypes.length.should.equal(6);

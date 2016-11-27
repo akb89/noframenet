@@ -1,14 +1,11 @@
 /**
  * Behavior tests for importRelations script
  */
-import { FERelation, FrameRelation, FrameRelationType,
-} from 'noframenet-core';
+import { FERelation, FrameRelation, FrameRelationType, } from 'noframenet-core';
 import chai from 'chai';
 import rewire from 'rewire';
-import { toJsonixFrameRelationArray, toJsonixFrameRelationTypeArray,
-} from './../utils/jsonixUtils';
+import { toJsonixFrameRelationArray, toJsonixFrameRelationTypeArray, } from './../utils/jsonixUtils';
 import marshaller from './../marshalling/unmarshaller';
-import mochAsync from './async.test';
 
 const should = chai.should();
 const convertToFERelations = rewire('./../scripts/importRelations.js').__get__('convertToFERelations');
@@ -19,11 +16,11 @@ describe('importRelations', () => {
   let jsonixFrameRelations;
   let jsonixFrameRelationTypeArray;
   let jsonixFrameRelationArray;
-  before(mochAsync(async () => {
+  before(async () => {
     jsonixFrameRelations = await marshaller.unmarshall('./tests/resources/frRelations.test.xml');
     jsonixFrameRelationTypeArray = toJsonixFrameRelationTypeArray(jsonixFrameRelations);
     jsonixFrameRelationArray = toJsonixFrameRelationArray(jsonixFrameRelationTypeArray[0]);
-  }));
+  });
   it('#convertToFERelations should return a properly formatted array of FrameElementRelation objects', () => {
     const feRelations = convertToFERelations(jsonixFrameRelationArray[0]);
     feRelations.length.should.equal(4);
