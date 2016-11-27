@@ -2,10 +2,8 @@
  * Standalone script to import FrameNet lexical units to MongoDB.
  */
 
-import { AnnotationSet, Label, Pattern, Sentence, ValenceUnit,
-} from 'noframenet-core';
-import { toJsonixLabelArray, toJsonixLayerArray, toJsonixLexUnitSentenceArray, toJsonixPatternAnnoSetArray, toJsonixPatternArray, toJsonixSentenceAnnoSetArray, toJsonixValenceUnitArray,
-} from './../utils/jsonixUtils';
+import { AnnotationSet, Label, Pattern, Sentence, ValenceUnit, } from 'noframenet-core';
+import { toJsonixLabelArray, toJsonixLayerArray, toJsonixLexUnitSentenceArray, toJsonixPatternAnnoSetArray, toJsonixPatternArray, toJsonixSentenceAnnoSetArray, toJsonixValenceUnitArray, } from './../utils/jsonixUtils';
 import config from './../config';
 import driver from './../db/mongo';
 import marshaller from './../marshalling/unmarshaller';
@@ -211,3 +209,7 @@ if (require.main === module) {
   const startTime = process.hrtime();
   importLexUnits(config.lexUnitDir, config.lexUnitChunkSize, config.dbUri).then(() => logger.info(`Import process completed in ${process.hrtime(startTime)[0]}s`));
 }
+
+export default {
+  importLexUnitsOnceConnectedToDb,
+};
