@@ -2,8 +2,8 @@
  * Standalone script to import FrameNet lexical units to MongoDB.
  */
 
-import { AnnotationSet, Label, Pattern, Sentence, ValenceUnit, } from 'noframenet-core';
-import { toJsonixLabelArray, toJsonixLayerArray, toJsonixLexUnitSentenceArray, toJsonixPatternAnnoSetArray, toJsonixPatternArray, toJsonixSentenceAnnoSetArray, toJsonixValenceUnitArray, } from './../utils/jsonixUtils';
+import { AnnotationSet, Label, Pattern, Sentence, ValenceUnit } from 'noframenet-core';
+import { toJsonixLabelArray, toJsonixLayerArray, toJsonixLexUnitSentenceArray, toJsonixPatternAnnoSetArray, toJsonixPatternArray, toJsonixSentenceAnnoSetArray, toJsonixValenceUnitArray } from './../utils/jsonixUtils';
 import config from './../config';
 import driver from './../db/mongo';
 import marshaller from './../marshalling/unmarshaller';

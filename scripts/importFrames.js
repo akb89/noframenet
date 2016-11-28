@@ -2,10 +2,8 @@
  * Standalone script to import FrameNet frames to MongoDB.
  */
 
-import { Frame, FrameElement, Lexeme, LexUnit,
-} from 'noframenet-core';
-import { toJsonixExcludesFEArray, toJsonixFECoreSetArray, toJsonixFECoreSetMemberArray, toJsonixFrameElementArray, toJsonixLexemeArray, toJsonixLexUnitArray, toJsonixRequiresFEArray, toJsonixSemTypeArray,
-} from './../utils/jsonixUtils';
+import { Frame, FrameElement, Lexeme, LexUnit } from 'noframenet-core';
+import { toJsonixExcludesFEArray, toJsonixFECoreSetArray, toJsonixFECoreSetMemberArray, toJsonixFrameElementArray, toJsonixLexemeArray, toJsonixLexUnitArray, toJsonixRequiresFEArray, toJsonixSemTypeArray } from './../utils/jsonixUtils';
 import config from './../config';
 import driver from './../db/mongo';
 import marshaller from './../marshalling/unmarshaller';
@@ -152,7 +150,6 @@ async function importBatchSet(batchSet, db) {
 async function importFramesOnceConnectedToDb(frameDir, chunkSize, db) {
   const batchSet = await utils.filterAndChunk(frameDir, chunkSize);
   await importBatchSet(batchSet, db);
-  logger.info(`Import process completed in ${process.hrtime(startTime)[0]}s`);
 }
 
 async function importFrames(frameDir, chunkSize, dbUri) {
@@ -163,5 +160,9 @@ async function importFrames(frameDir, chunkSize, dbUri) {
 }
 
 if (require.main === module) {
-  importFrames(config.default.frameDir, config.default.frameChunkSize, config.default.dbUri);
+  importFrames(config.default.frameDir, config.default.frameChunkSize, config.default.dbUri).then(() => logger.info(`Import process completed in ${process.hrtime(startTime)[0]}s`));
 }
+
+export default {
+  importFramesOnceConnectedToDb,
+};

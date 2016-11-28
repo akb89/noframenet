@@ -1,6 +1,5 @@
 import chai from 'chai';
-import { toJsonixDocumentArray, toJsonixDocumentSentenceArray, toJsonixFERelationArray, toJsonixFrameRelationArray, toJsonixFrameRelationTypeArray, toJsonixSemTypesSemTypeArray, toJsonixExcludesFEArray, toJsonixFECoreSetArray, toJsonixFECoreSetMemberArray, toJsonixFrameElementArray, toJsonixLexUnitArray, toJsonixRequiresFEArray, toJsonixSemTypeArray,
-} from './../utils/jsonixUtils';
+import { toJsonixDocumentArray, toJsonixDocumentSentenceArray, toJsonixFERelationArray, toJsonixFrameRelationArray, toJsonixFrameRelationTypeArray, toJsonixSemTypesSemTypeArray, toJsonixExcludesFEArray, toJsonixFECoreSetArray, toJsonixFECoreSetMemberArray, toJsonixFrameElementArray, toJsonixLexUnitArray, toJsonixRequiresFEArray, toJsonixSemTypeArray } from './../utils/jsonixUtils';
 import marshaller from './../marshalling//unmarshaller';
 
 const should = chai.should();

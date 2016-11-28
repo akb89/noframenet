@@ -1,20 +1,28 @@
 import config from './../config';
 import driver from './../db/mongo';
-import { importFramesOnceConnectedToDb } from './importFrames';
-import { importFullTextOnceConnectedToDb } from './importFullTexts';
-import { importLexUnitsOnceConnectedToDb } from './importLexUnits';
-import { importRelationsOnceConnectedToDb } from './importRelations';
-import { importSemTypesOnceConnectedToDb } from './importSemTypes';
+import importFrames from './importFrames';
+import importFullTexts from './importFullTexts';
+import importLexUnits from './importLexUnits';
+import importRelations from './importRelations';
+import importSemTypes from './importSemTypes';
+
+const logger = config.default.logger;
+const startTime = process.hrtime();
 
 async function importFrameNetData(dbUri, lexUnitDir, lexUnitChunkSize,
   frameDir, frameChunkSize, fullTextDir, fullTextChunkSize, relationsFilePath,
   semTypesFilePath) {
   const db = await driver.connectToDatabase(dbUri);
-  await importFramesOnceConnectedToDb(frameDir, frameChunkSize, db);
-  await importFullTextOnceConnectedToDb(fullTextDir, fullTextChunkSize, db);
-  await importRelationsOnceConnectedToDb(relationsFilePath, db);
-  await importSemTypesOnceConnectedToDb(semTypesFilePath, db);
-  await importLexUnitsOnceConnectedToDb(lexUnitDir, lexUnitChunkSize, db);
+  await importFrames.importFramesOnceConnectedToDb(frameDir, frameChunkSize, db);
+  logger.info('Frames import completed');
+  await importFullTexts.importFullTextOnceConnectedToDb(fullTextDir, fullTextChunkSize, db);
+  logger.info('FullTexts import completed');
+  await importRelations.importRelationsOnceConnectedToDb(relationsFilePath, db);
+  logger.info('Relations import completed');
+  await importSemTypes.importSemTypesOnceConnectedToDb(semTypesFilePath, db);
+  logger.info('SemTypes import completed');
+  await importLexUnits.importLexUnitsOnceConnectedToDb(lexUnitDir, lexUnitChunkSize, db);
+  logger.info('LexUnits import completed');
   db.mongo.close();
   db.mongoose.disconnect();
 }
@@ -24,5 +32,5 @@ if (require.main === module) {
     config.default.lexUnitChunkSize, config.default.frameDir,
     config.default.frameChunkSize, config.default.fullTextDir,
     config.default.fullTextChunkSize, config.default.relationsFilePath,
-    config.default.semTypesFilePath);
+    config.default.semTypesFilePath).then(() => logger.info(`Import completed in ${process.hrtime(startTime)[0]}s`));
 }

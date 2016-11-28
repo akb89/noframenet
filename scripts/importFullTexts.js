@@ -2,10 +2,8 @@
  * Standalone script to import the content of the fulltext directory to MongoDB
  */
 
-import { Corpus, Document,
-} from 'noframenet-core';
-import { toJsonixDocumentArray, toJsonixDocumentSentenceArray,
-} from './../utils/jsonixUtils';
+import { Corpus, Document } from 'noframenet-core';
+import { toJsonixDocumentArray, toJsonixDocumentSentenceArray } from './../utils/jsonixUtils';
 import config from './../config';
 import driver from './../db/mongo';
 import marshaller from './../marshalling/unmarshaller';
@@ -108,7 +106,6 @@ async function importBatchSet(batchSet, db) {
 async function importFullTextOnceConnectedToDb(fullTextDir, chunkSize, db) {
   const batchSet = await utils.filterAndChunk(fullTextDir, chunkSize);
   await importBatchSet(batchSet, db);
-  logger.info(`Import process completed in ${process.hrtime(startTime)[0]}s`);
 }
 
 async function importFullText(fullTextDir, chunkSize, dbUri) {
@@ -119,5 +116,9 @@ async function importFullText(fullTextDir, chunkSize, dbUri) {
 }
 
 if (require.main === module) {
-  importFullText(config.fullTextDir, config.fullTextChunkSize, config.dbUri);
+  importFullText(config.fullTextDir, config.fullTextChunkSize, config.dbUri).then(() => logger.info(`Import process completed in ${process.hrtime(startTime)[0]}s`));
 }
+
+export default {
+  importFullTextOnceConnectedToDb,
+};

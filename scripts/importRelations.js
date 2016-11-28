@@ -2,10 +2,8 @@
  * Standalone script to import the content of frRelation.xml to MongoDB
  */
 
-import { FERelation, FrameRelation, FrameRelationType,
-} from 'noframenet-core';
-import { toJsonixFERelationArray, toJsonixFrameRelationArray, toJsonixFrameRelationTypeArray,
-} from './../utils/jsonixUtils';
+import { FERelation, FrameRelation, FrameRelationType } from 'noframenet-core';
+import { toJsonixFERelationArray, toJsonixFrameRelationArray, toJsonixFrameRelationTypeArray } from './../utils/jsonixUtils';
 import config from './../config';
 import driver from './../db/mongo';
 import marshaller from './../marshalling/unmarshaller';
@@ -98,20 +96,22 @@ async function importUnmarshalledFrameRelations(jsonixFrameRelations, db) {
 }
 
 async function importRelationsOnceConnectedToDb(relationsFilePath, db) {
+  logger.info(`Processing file: ${relationsFilePath}`);
   const jsonixFrameRelations = await marshaller.unmarshall(relationsFilePath);
   await importUnmarshalledFrameRelations(jsonixFrameRelations, db);
-  logger.info(`Import completed in ${process.hrtime(startTime)[0]}s`);
 }
 
 async function importRelations(relationsFilePath, dbUri) {
   const db = await driver.connectToDatabase(dbUri);
-  logger.info('Importing Relations to database...');
   await importRelationsOnceConnectedToDb(relationsFilePath, db);
-  // TODO revise this in case of pipeline script execution?
   db.mongo.close();
   db.mongoose.disconnect();
 }
 
 if (require.main === module) {
-  importRelations(config.relationsFilePath, config.dbUri);
+  importRelations(config.relationsFilePath, config.dbUri).then(() => logger.info(`Import completed in ${process.hrtime(startTime)[0]}s`));
 }
+
+export default {
+  importRelationsOnceConnectedToDb,
+};

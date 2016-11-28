@@ -2,10 +2,8 @@
  * Standalone script to import the content of semTypes.xml to MongoDB
  */
 
-import { SemType,
-} from 'noframenet-core';
-import { toJsonixSemTypesSemTypeArray, toJsonixSuperTypeArray,
-} from './../utils/jsonixUtils';
+import { SemType } from 'noframenet-core';
+import { toJsonixSemTypesSemTypeArray, toJsonixSuperTypeArray } from './../utils/jsonixUtils';
 import config from './../config';
 import driver from './../db/mongo';
 import marshaller from './../marshalling/unmarshaller';
@@ -43,8 +41,6 @@ async function importSemTypeObjects(semTypes, db) {
     logger.error(err);
     process.exit(1);
   }
-  logger.info(`Import completed in ${process.hrtime(startTime)[0]}s`);
-  logger.info(`SemTypes = ${semTypes.length}`);
 }
 
 async function importUnmarshalledSemTypes(jsonixSemTypes, db) {
@@ -53,18 +49,22 @@ async function importUnmarshalledSemTypes(jsonixSemTypes, db) {
 }
 
 async function importSemTypesOnceConnectedToDb(semTypesFilePath, db) {
+  logger.info(`Processing file: ${semTypesFilePath}`);
   const jsonixSemTypes = await marshaller.unmarshall(semTypesFilePath);
   await importUnmarshalledSemTypes(jsonixSemTypes, db);
 }
 
 async function importSemTypes(semTypesFilePath, dbUri) {
   const db = await driver.connectToDatabase(dbUri);
-  logger.info('Importing SemTypes to database...');
   await importSemTypesOnceConnectedToDb(semTypesFilePath, db);
   db.mongo.close();
   db.mongoose.disconnect();
 }
 
 if (require.main === module) {
-  importSemTypes(config.semTypesFilePath, config.dbUri);
+  importSemTypes(config.semTypesFilePath, config.dbUri).then(() => logger.info(`Import completed in ${process.hrtime(startTime)[0]}s`));
 }
+
+export default {
+  importSemTypesOnceConnectedToDb,
+};

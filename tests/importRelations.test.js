@@ -1,10 +1,10 @@
 /**
  * Behavior tests for importRelations script
  */
-import { FERelation, FrameRelation, FrameRelationType, } from 'noframenet-core';
+import { FERelation, FrameRelation, FrameRelationType } from 'noframenet-core';
 import chai from 'chai';
 import rewire from 'rewire';
-import { toJsonixFrameRelationArray, toJsonixFrameRelationTypeArray, } from './../utils/jsonixUtils';
+import { toJsonixFrameRelationArray, toJsonixFrameRelationTypeArray } from './../utils/jsonixUtils';
 import marshaller from './../marshalling/unmarshaller';
 
 const should = chai.should();
