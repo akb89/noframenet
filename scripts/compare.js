@@ -1,6 +1,9 @@
+/**
+ * A script to compare the set of lexical units under frame files and the set
+ * of lexical units under the lu directory, as those two sets do no match.
+ */
 import utils from '../utils/utils';
-import { toJsonixLexUnitArray,
-} from './../utils/jsonixUtils';
+import { toJsonixLexUnitArray } from './../utils/jsonixUtils';
 import marshaller from './../marshalling/unmarshaller';
 import config from './../config';
 

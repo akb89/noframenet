@@ -5,6 +5,7 @@ import importFullTexts from './importFullTexts';
 import importLexUnits from './importLexUnits';
 import importRelations from './importRelations';
 import importSemTypes from './importSemTypes';
+import clean from './clean';
 
 const logger = config.default.logger;
 const startTime = process.hrtime();
@@ -23,6 +24,7 @@ async function importFrameNetData(dbUri, lexUnitDir, lexUnitChunkSize,
   logger.info('SemTypes import completed');
   await importLexUnits.importLexUnitsOnceConnectedToDb(lexUnitDir, lexUnitChunkSize, db);
   logger.info('LexUnits import completed');
+  await clean.cleanOnceConnectedToDB();
   db.mongo.close();
   db.mongoose.disconnect();
 }
