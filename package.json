@@ -29,7 +29,7 @@
     "jsonix": "^2.4.1",
     "mongodb": "^2.2.5",
     "mongoose": "^4.7.0",
-    "noframenet-core": "^1.1.0",
+    "noframenet-core": "^1.2.0",
     "winston": "^2.3.0"
   },
   "devDependencies": {

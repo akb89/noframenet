@@ -5,7 +5,6 @@ import importFullTexts from './importFullTexts';
 import importLexUnits from './importLexUnits';
 import importRelations from './importRelations';
 import importSemTypes from './importSemTypes';
-import clean from './clean';
 
 const logger = config.default.logger;
 const startTime = process.hrtime();
@@ -24,7 +23,6 @@ async function importFrameNetData(dbUri, lexUnitDir, lexUnitChunkSize,
   logger.info('SemTypes import completed');
   await importLexUnits.importLexUnitsOnceConnectedToDb(lexUnitDir, lexUnitChunkSize, db);
   logger.info('LexUnits import completed');
-  await clean.cleanOnceConnectedToDB();
   db.mongo.close();
   db.mongoose.disconnect();
 }
@@ -34,5 +32,6 @@ if (require.main === module) {
     config.default.lexUnitChunkSize, config.default.frameDir,
     config.default.frameChunkSize, config.default.fullTextDir,
     config.default.fullTextChunkSize, config.default.relationsFilePath,
-    config.default.semTypesFilePath).then(() => logger.info(`Import completed in ${process.hrtime(startTime)[0]}s`));
+    config.default.semTypesFilePath)
+    .then(() => logger.info(`Import completed in ${process.hrtime(startTime)[0]}s`));
 }
