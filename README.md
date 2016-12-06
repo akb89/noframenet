@@ -9,7 +9,7 @@ To import FrameNet XML data to MongoDB
 
 1. Download [FrameNet XML data](https://framenet.icsi.berkeley.edu/fndrupal/framenet_request_data)
 2. Download [NoFrameNet]()
-3. Install required dependencies by running the following command in your terminal, under the NoFrameNet directory:
+3. Install the required dependencies by running the following command in your terminal, under the NoFrameNet directory:
 ```
 npm install
 ```
@@ -24,7 +24,7 @@ const config = {
   fullTextChunkSize: 20,
 };
 ```
-4. Finally, in the NoFrameNet directory, run:
+5. Start the full import process by running the following command in your terminal, under the NoFrameNet directory:
 ```
 npm run import
 ```
