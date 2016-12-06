@@ -6,6 +6,7 @@ You need to have node, npm and Mongo installed on your system
 
 ## Import
 To import FrameNet XML data to MongoDB
+
 1. Download [FrameNet XML data](https://framenet.icsi.berkeley.edu/fndrupal/framenet_request_data)
 2. Download [NoFrameNet]()
 3. Install required dependencies by running the following command in your terminal, under the NoFrameNet directory:
