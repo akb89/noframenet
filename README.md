@@ -7,14 +7,14 @@ You need to have node, npm and Mongo installed on your system
 ## Import
 To import FrameNet XML data to MongoDB
 
-### Download [FrameNet XML data](https://framenet.icsi.berkeley.edu/fndrupal/framenet_request_data)
-### Download [NoFrameNet]()
-### Install the required dependencies 
+### 1. Download [FrameNet XML data](https://framenet.icsi.berkeley.edu/fndrupal/framenet_request_data)
+### 2. Download [NoFrameNet]()
+### 3. Install the required dependencies
 Run the following command in your terminal, under the NoFrameNet directory:
 ```
 npm install
 ```
-### Set-up the configuration
+### 4. Set-up the configuration
 Modify the `config/production.js` file
 ```
 const config = {
@@ -26,7 +26,7 @@ const config = {
   fullTextChunkSize: 20,
 };
 ```
-### Start the full import process
+### 5. Start the full import process
 Run the following command in your terminal, under the NoFrameNet directory:
 ```
 npm run import

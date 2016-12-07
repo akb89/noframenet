@@ -2,6 +2,7 @@ import filesystem from 'fs';
 import path from 'path';
 import config from './../config';
 
+
 const logger = config.default.logger;
 
 function isValidXml(file) {
@@ -21,7 +22,8 @@ if (!Array.prototype.chunk) {
         chunks.push(this.slice(iterator, iterator + chunkSize));
         iterator += chunkSize;
       }
-      if (this.slice(iterator).length !== 0) {
+      if (this.slice(iterator)
+          .length !== 0) {
         chunks.push(this.slice(iterator));
       }
       return chunks;

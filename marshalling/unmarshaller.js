@@ -6,6 +6,7 @@ import fullTextSchema from './../mappings/FullTextSchema';
 import lexUnitSchema from './../mappings/LexUnitSchema';
 import semTypeSchema from './../mappings/SemTypeSchema';
 
+
 const Jsonix = jsonix.Jsonix;
 const FrameSchema = frameSchema.FrameSchema;
 const FrameRelationSchema = frameRelationSchema.FrameRelationSchema;
