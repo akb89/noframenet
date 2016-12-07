@@ -2,7 +2,6 @@ import filesystem from 'fs';
 import path from 'path';
 import config from './../config';
 
-
 const logger = config.default.logger;
 
 function isValidXml(file) {

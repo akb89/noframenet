@@ -1,5 +1,4 @@
 var FrameRelationSchema_Module_Factory = function() {
-
   var FrameRelationSchema = {
     name: 'FrameRelationSchema',
     defaultElementNamespaceURI: 'http:\/\/framenet.icsi.berkeley.edu',

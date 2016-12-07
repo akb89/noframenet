@@ -1,5 +1,4 @@
 var FullTextSchema_Module_Factory = function() {
-
   var FullTextSchema = {
     name: 'FullTextSchema',
     defaultElementNamespaceURI: 'http:\/\/framenet.icsi.berkeley.edu',

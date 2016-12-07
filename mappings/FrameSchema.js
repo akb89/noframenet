@@ -1,5 +1,4 @@
 var FrameSchema_Module_Factory = function() {
-
   var FrameSchema = {
     name: 'FrameSchema',
     defaultElementNamespaceURI: 'http:\/\/framenet.icsi.berkeley.edu',

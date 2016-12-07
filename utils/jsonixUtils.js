@@ -3,7 +3,6 @@
  * @param jsonixPattern
  * @returns {Array}
  */
-
 export function toJsonixPatternAnnoSetArray(jsonixPattern) {
   const annotationSets = [];
   let annotationSetIterator = 0;

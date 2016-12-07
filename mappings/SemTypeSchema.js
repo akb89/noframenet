@@ -1,5 +1,4 @@
 var SemTypeSchema_Module_Factory = function() {
-
   var SemTypeSchema = {
     name: 'SemTypeSchema',
     defaultElementNamespaceURI: 'http:\/\/framenet.icsi.berkeley.edu',

@@ -1,5 +1,4 @@
 var LexUnitSchema_Module_Factory = function() {
-
   var LexUnitSchema = {
     name: 'LexUnitSchema',
     defaultElementNamespaceURI: 'http:\/\/framenet.icsi.berkeley.edu',
