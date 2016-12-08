@@ -83,7 +83,7 @@ async function importBatchSet(batchSet, db) {
   const uniques = {
     corpora: new Map(),
   };
-  for (const batch of batchSet) { // eslint-disable-line no-restricted-syntax
+  for (const batch of batchSet) {
     logger.info(`Importing fullText batch ${counter} out of ${batchSet.length}...`);
     const data = await convertToObjects(batch, uniques);
     try {

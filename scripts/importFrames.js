@@ -141,7 +141,7 @@ async function saveToDb(mongodb, data) {
  */
 async function importBatchSet(batchSet, db) {
   let counter = 1;
-  for (const batch of batchSet) { // eslint-disable-line no-restricted-syntax
+  for (const batch of batchSet) {
     logger.info(`Importing frame batch ${counter} out of ${batchSet.length}...`);
     const data = await convertToObjects(batch);
     try {

@@ -45,6 +45,15 @@
       {
         "varsIgnorePattern": "should"
       }
+    ],
+    // Allow for of loops as forEach does not work with async await
+    no-restricted-syntax: [
+      "warn",
+      "ForOfStatement"
+    ],
+    // Allow extending Array with chunk method for readability
+    no-extend-native: [
+      "warn"
     ]
   }
 }

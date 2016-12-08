@@ -9,7 +9,7 @@ function isValidXml(file) {
 }
 
 if (!Array.prototype.chunk) {
-  Object.defineProperty(Array.prototype, 'chunk', { // eslint-disable-line no-extend-native
+  Object.defineProperty(Array.prototype, 'chunk', {
     value(chunkSize) {
       const chunks = [];
       if (this.length <= chunkSize) {
