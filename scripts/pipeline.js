@@ -29,7 +29,7 @@ async function importFrameNetData(dbUri, lexUnitDir, lexUnitChunkSize,
 if (require.main === module) {
   const startTime = process.hrtime();
   const dbUri = config.default.dbUri;
-  const lexUnitDir = config.default.frameNetDir.concat('tmp/lu1000');
+  const lexUnitDir = config.default.frameNetDir.concat('tmp/lu6000');
   const lexUnitChunkSize = config.default.lexUnitChunkSize;
   const frameDir = config.default.frameNetDir.concat('frame');
   const frameChunkSize = config.default.frameChunkSize;

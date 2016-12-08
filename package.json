@@ -11,6 +11,7 @@
   "scripts": {
     "lint": "./node_modules/.bin/eslint . --ext .js",
     "test": "NODE_ENV=testing ./node_modules/mocha/bin/mocha --compilers js:babel-core/register --require babel-polyfill './tests/**/*.@(js)' --reporter spec",
+    "posttest": "npm run lint",
     "debug": "NODE_ENV=development ./node_modules/babel-cli/bin/babel-node.js ./scripts/pipeline.js",
     "import": "NODE_ENV=production ./node_modules/babel-cli/bin/babel-node.js ./scripts/pipeline.js",
     "clean dev": "NODE_ENV=development ./node_modules/babel-cli/bin/babel-node.js ./scripts/clean.js",
