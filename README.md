@@ -44,12 +44,12 @@ npm run import
 
 The import process usually takes about 20min to 30min in total (tested on a MacBook Pro with 2,8 GHz Intel Core i5 and 8 GB 1600 MHz DDR3)
 
-## Data Cleanup
+## Data Fix
 ### Wrong Phrase Type
 In Sentence#1492916 , _'Before his death Edward IV had also initiated military activity against France , following Louis XI 's renunciation of some of the key terms of the 1475 treaty of Picquigny .'_, the Phrase Type of the 'Activity' frame element corresponding to the 'initiate.v' lexical unit is mistakenly marked as an 'Obj'.
 To replace the 'Obj' with an 'NP', run the following command after import:
 ```
-npm run clean
+npm run fix
 ```
 
 ## Models

@@ -3,6 +3,7 @@
  */
 
 import { Frame, FrameElement, Lexeme, LexUnit } from 'noframenet-core';
+import ProgressBar from 'ascii-progress';
 import { toJsonixExcludesFEArray, toJsonixFECoreSetArray, toJsonixFECoreSetMemberArray, toJsonixFrameElementArray, toJsonixLexemeArray, toJsonixLexUnitArray, toJsonixRequiresFEArray, toJsonixSemTypeArray } from './../utils/jsonixUtils';
 import config from './../config';
 import driver from './../db/mongo';
@@ -141,8 +142,13 @@ async function saveToDb(mongodb, data) {
  */
 async function importBatchSet(batchSet, db) {
   let counter = 1;
+  const frameProgressBar = new ProgressBar({
+    total: batchSet.length,
+    clean: true,
+  });
+  logger.info('Importing frames by batch');
   for (const batch of batchSet) {
-    logger.info(`Importing frame batch ${counter} out of ${batchSet.length}...`);
+    logger.debug(`Importing frame batch ${counter} out of ${batchSet.length}...`);
     const data = await convertToObjects(batch);
     try {
       await saveToDb(db.mongo, data);
@@ -151,6 +157,7 @@ async function importBatchSet(batchSet, db) {
       process.exit(1);
     }
     counter += 1;
+    frameProgressBar.tick();
   }
 }
 

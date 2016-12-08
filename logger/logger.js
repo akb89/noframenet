@@ -15,6 +15,11 @@ const info = new (winston.Logger)({
       level: 'info',
       colorize: true,
     }),
+    new (winston.transports.File)({
+      filename: 'noframenet.log',
+      level: 'debug',
+      colorize: true,
+    }),
   ],
 });
 

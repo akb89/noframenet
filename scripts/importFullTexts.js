@@ -3,6 +3,7 @@
  */
 
 import { Corpus, Document } from 'noframenet-core';
+import ProgressBar from 'ascii-progress';
 import { toJsonixDocumentArray, toJsonixDocumentSentenceArray } from './../utils/jsonixUtils';
 import config from './../config';
 import driver from './../db/mongo';
@@ -80,11 +81,16 @@ async function saveMapsToDb(mongodb, maps) {
  */
 async function importBatchSet(batchSet, db) {
   let counter = 1;
+  const fulltextProgressBar = new ProgressBar({
+    total: batchSet.length,
+    clean: true,
+  });
+  logger.info('Importing fulltexts by batch');
   const uniques = {
     corpora: new Map(),
   };
   for (const batch of batchSet) {
-    logger.info(`Importing fullText batch ${counter} out of ${batchSet.length}...`);
+    logger.debug(`Importing fullText batch ${counter} out of ${batchSet.length}...`);
     const data = await convertToObjects(batch, uniques);
     try {
       await saveArraysToDb(db.mongo, data);
@@ -93,6 +99,7 @@ async function importBatchSet(batchSet, db) {
       process.exit(1);
     }
     counter += 1;
+    fulltextProgressBar.tick();
   }
   try {
     await saveMapsToDb(db.mongo, uniques);

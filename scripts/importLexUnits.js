@@ -3,6 +3,7 @@
  */
 
 import { AnnotationSet, Label, Pattern, Sentence, ValenceUnit } from 'noframenet-core';
+import ProgressBar from 'ascii-progress';
 import { toJsonixLabelArray, toJsonixLayerArray, toJsonixLexUnitSentenceArray, toJsonixPatternAnnoSetArray, toJsonixPatternArray, toJsonixSentenceAnnoSetArray, toJsonixValenceUnitArray } from './../utils/jsonixUtils';
 import config from './../config';
 import driver from './../db/mongo';
@@ -156,26 +157,40 @@ async function saveMapsToDb(mongodb, maps) {
       j: false,
       ordered: false,
     });
-  maps.annoSet2PatternMap.forEach(async (patternId, annoSetId) => {
-    await mongodb.collection('annotationsets').update({
-      _id: annoSetId,
-    }, {
-      $set: {
-        pattern: patternId,
-      },
-    });
+  logger.info('Updating annotatioSets\' pattern references');
+  const annoSetProgressBar = new ProgressBar({
+    total: maps.annoSet2PatternMap.size,
+    clean: true,
   });
+  for (const entry of maps.annoSet2PatternMap) {
+    const patternId = entry[0];
+    const annoSetId = entry[1];
+    await mongodb.collection('annotationsets')
+      .update({
+        _id: annoSetId,
+      }, {
+        $set: {
+          pattern: patternId,
+        },
+      });
+    annoSetProgressBar.tick(1000);
+  }
 }
 
 async function importBatchSet(batchSet, db) {
   let counter = 1;
+  const lexUnitProgressBar = new ProgressBar({
+    total: batchSet.length,
+    clean: true,
+  });
+  logger.info('Importing lexical units by batch');
   const uniques = {
     annoSet2PatternMap: new Map(),
     patternsMap: new Map(),
     valenceUnitsMap: new Map(),
   };
   for (const batch of batchSet) {
-    logger.info(`Importing lexUnit batch ${counter} out of ${batchSet.length}...`);
+    logger.debug(`Importing lexUnit batch ${counter} out of ${batchSet.length}...`);
     const data = await convertToObjects(batch, uniques);
     try {
       await saveArraysToDb(db.mongo, data);
@@ -184,6 +199,7 @@ async function importBatchSet(batchSet, db) {
       process.exit(1);
     }
     counter += 1;
+    lexUnitProgressBar.tick();
   }
   try {
     await saveMapsToDb(db.mongo, uniques);

@@ -1,9 +1,12 @@
 import mongoose from 'mongoose';
 import mongodb from 'mongodb';
+import bluebird from 'bluebird';
 import config from './../config';
 
 const MongoClient = mongodb.MongoClient;
 const logger = config.default.logger;
+
+mongoose.Promise = bluebird;
 
 async function connectToDatabase(uri) {
   let mongo;
