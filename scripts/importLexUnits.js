@@ -207,7 +207,10 @@ async function importLexUnits(lexUnitDir, chunkSize, dbUri) {
 
 if (require.main === module) {
   const startTime = process.hrtime();
-  importLexUnits(config.lexUnitDir, config.lexUnitChunkSize, config.dbUri).then(() => logger.info(`Import process completed in ${process.hrtime(startTime)[0]}s`));
+  const dbUri = config.default.dbUri;
+  const lexUnitDir = config.default.frameNetDir.concat('lu');
+  const lexUnitChunkSize = config.default.lexUnitChunkSize;
+  importLexUnits(lexUnitDir, lexUnitChunkSize, dbUri).then(() => logger.info(`Import process completed in ${process.hrtime(startTime)[0]}s`));
 }
 
 export default {

@@ -9,7 +9,6 @@ import driver from './../db/mongo';
 import marshaller from './../marshalling/unmarshaller';
 
 const logger = config.default.logger;
-const startTime = process.hrtime();
 
 function convertToFERelations(jsonixFrameRelation) {
   return toJsonixFERelationArray(jsonixFrameRelation)
@@ -109,7 +108,10 @@ async function importRelations(relationsFilePath, dbUri) {
 }
 
 if (require.main === module) {
-  importRelations(config.relationsFilePath, config.dbUri).then(() => logger.info(`Import completed in ${process.hrtime(startTime)[0]}s`));
+  const startTime = process.hrtime();
+  const dbUri = config.default.dbUri;
+  const relationsFilePath = config.default.frameNetDir.concat('frRelation.xml');
+  importRelations(relationsFilePath, dbUri).then(() => logger.info(`Import completed in ${process.hrtime(startTime)[0]}s`));
 }
 
 export default {

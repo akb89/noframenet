@@ -7,7 +7,6 @@ import importRelations from './importRelations';
 import importSemTypes from './importSemTypes';
 
 const logger = config.default.logger;
-const startTime = process.hrtime();
 
 async function importFrameNetData(dbUri, lexUnitDir, lexUnitChunkSize,
   frameDir, frameChunkSize, fullTextDir, fullTextChunkSize, relationsFilePath,
@@ -28,6 +27,7 @@ async function importFrameNetData(dbUri, lexUnitDir, lexUnitChunkSize,
 }
 
 if (require.main === module) {
+  const startTime = process.hrtime();
   const dbUri = config.default.dbUri;
   const lexUnitDir = config.default.frameNetDir.concat('lu');
   const lexUnitChunkSize = config.default.lexUnitChunkSize;

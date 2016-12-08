@@ -10,7 +10,6 @@ import marshaller from './../marshalling/unmarshaller';
 import utils from './../utils/utils';
 
 const logger = config.default.logger;
-const startTime = process.hrtime();
 
 /**
  * Theoretically (in header.xsd), maxOccurs="unbounded" for
@@ -116,7 +115,11 @@ async function importFullText(fullTextDir, chunkSize, dbUri) {
 }
 
 if (require.main === module) {
-  importFullText(config.fullTextDir, config.fullTextChunkSize, config.dbUri).then(() => logger.info(`Import process completed in ${process.hrtime(startTime)[0]}s`));
+  const startTime = process.hrtime();
+  const dbUri = config.default.dbUri;
+  const fullTextDir = config.default.frameNetDir.concat('fulltext');
+  const fullTextChunkSize = config.default.fullTextChunkSize;
+  importFullText(fullTextDir, fullTextChunkSize, dbUri).then(() => logger.info(`Import process completed in ${process.hrtime(startTime)[0]}s`));
 }
 
 export default {

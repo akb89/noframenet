@@ -44,5 +44,9 @@ async function compare(frameDir, frameChunkSize, lexUnitDir, lexUnitChunkSize) {
 }
 
 if (require.main === module) {
-  compare(config.frameDir, config.frameChunkSize, config.lexUnitDir, config.lexUnitChunkSize);
+  const lexUnitDir = config.default.frameNetDir.concat('lu');
+  const lexUnitChunkSize = config.default.lexUnitChunkSize;
+  const frameDir = config.default.frameNetDir.concat('frame');
+  const frameChunkSize = config.default.frameChunkSize;
+  compare(frameDir, frameChunkSize, lexUnitDir, lexUnitChunkSize);
 }

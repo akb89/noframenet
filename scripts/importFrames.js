@@ -10,7 +10,6 @@ import marshaller from './../marshalling/unmarshaller';
 import utils from './../utils/utils';
 
 const logger = config.default.logger;
-const startTime = process.hrtime();
 
 function convertToLexemes(jsonixLexUnit) {
   return toJsonixLexemeArray(jsonixLexUnit)
@@ -168,7 +167,11 @@ async function importFrames(frameDir, chunkSize, dbUri) {
 }
 
 if (require.main === module) {
-  importFrames(config.default.frameDir, config.default.frameChunkSize, config.default.dbUri)
+  const startTime = process.hrtime();
+  const dbUri = config.default.dbUri;
+  const frameDir = config.default.frameNetDir.concat('frame');
+  const frameChunkSize = config.default.frameChunkSize;
+  importFrames(frameDir, frameChunkSize, dbUri)
     .then(() => logger.info(`Import process completed in ${process.hrtime(startTime)[0]}s`));
 }
 

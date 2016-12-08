@@ -9,7 +9,6 @@ import driver from './../db/mongo';
 import marshaller from './../marshalling/unmarshaller';
 
 const logger = config.default.logger;
-const startTime = process.hrtime();
 
 function getSuperTypes(jsonixSemType) {
   return toJsonixSuperTypeArray(jsonixSemType)
@@ -62,7 +61,10 @@ async function importSemTypes(semTypesFilePath, dbUri) {
 }
 
 if (require.main === module) {
-  importSemTypes(config.semTypesFilePath, config.dbUri).then(() => logger.info(`Import completed in ${process.hrtime(startTime)[0]}s`));
+  const startTime = process.hrtime();
+  const dbUri = config.default.dbUri;
+  const semTypesFilePath = config.default.frameNetDir.concat('semTypes.xml');
+  importSemTypes(semTypesFilePath, dbUri).then(() => logger.info(`Import completed in ${process.hrtime(startTime)[0]}s`));
 }
 
 export default {
