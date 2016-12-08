@@ -28,10 +28,16 @@ async function importFrameNetData(dbUri, lexUnitDir, lexUnitChunkSize,
 }
 
 if (require.main === module) {
-  importFrameNetData(config.default.dbUri, config.default.lexUnitDir,
-    config.default.lexUnitChunkSize, config.default.frameDir,
-    config.default.frameChunkSize, config.default.fullTextDir,
-    config.default.fullTextChunkSize, config.default.relationsFilePath,
-    config.default.semTypesFilePath)
+  const dbUri = config.default.dbUri;
+  const lexUnitDir = config.default.frameNetDir.concat('lu');
+  const lexUnitChunkSize = config.default.lexUnitChunkSize;
+  const frameDir = config.default.frameNetDir.concat('frame');
+  const frameChunkSize = config.default.frameChunkSize;
+  const fullTextDir = config.default.frameNetDir.concat('fulltext');
+  const fullTextChunkSize = config.default.fullTextChunkSize;
+  const relationsFilePath = config.default.frameNetDir.concat('frRelation.xml');
+  const semTypesFilePath = config.default.frameNetDir.concat('semTypes.xml');
+  importFrameNetData(dbUri, lexUnitDir, lexUnitChunkSize, frameDir,
+    frameChunkSize, fullTextDir, fullTextChunkSize, relationsFilePath, semTypesFilePath)
     .then(() => logger.info(`Import completed in ${process.hrtime(startTime)[0]}s`));
 }

@@ -20,7 +20,8 @@ function convertToLexemes(jsonixLexUnit) {
       headword: jsonixLexeme.headword,
       order: jsonixLexeme.order,
       breakBefore: jsonixLexeme.breakBefore,
-    }).toObject());
+    })
+      .toObject());
 }
 
 function convertToLexUnits(jsonixFrame, lexemes) {
@@ -42,7 +43,8 @@ function convertToLexUnits(jsonixFrame, lexemes) {
         }),
       semTypes: toJsonixSemTypeArray(jsonixLexUnit)
         .map(jsonixSemType => jsonixSemType.id),
-    }).toObject());
+    })
+      .toObject());
 }
 
 function convertToFrameElements(jsonixFrame) {
@@ -63,7 +65,8 @@ function convertToFrameElements(jsonixFrame) {
         .map(jsonixExcludesFE => jsonixExcludesFE.id),
       semTypes: toJsonixSemTypeArray(jsonixFE)
         .map(jsonixSemType => jsonixSemType.id),
-    }).toObject());
+    })
+      .toObject());
 }
 
 function convertToFrame(jsonixFrame, frameElements, lexUnits, lexemes) {
@@ -88,7 +91,8 @@ function convertToFrame(jsonixFrame, frameElements, lexUnits, lexemes) {
       }),
     semTypes: toJsonixSemTypeArray(jsonixFrame)
       .map(jsonixSemType => jsonixSemType.id),
-  }).toObject();
+  })
+    .toObject();
 }
 
 async function convertToObjects(batch) {
@@ -106,26 +110,30 @@ async function convertToObjects(batch) {
 }
 
 async function saveToDb(mongodb, data) {
-  await mongodb.collection('frames').insertMany(data.frames, {
-    writeConcern: 0,
-    j: false,
-    ordered: false,
-  });
-  await mongodb.collection('frameelements').insertMany(data.frameElements, {
-    writeConcern: 0,
-    j: false,
-    ordered: false,
-  });
-  await mongodb.collection('lexunits').insertMany(data.lexUnits, {
-    writeConcern: 0,
-    j: false,
-    ordered: false,
-  });
-  await mongodb.collection('lexemes').insertMany(data.lexemes, {
-    writeConcern: 0,
-    j: false,
-    ordered: false,
-  });
+  await mongodb.collection('frames')
+    .insertMany(data.frames, {
+      writeConcern: 0,
+      j: false,
+      ordered: false,
+    });
+  await mongodb.collection('frameelements')
+    .insertMany(data.frameElements, {
+      writeConcern: 0,
+      j: false,
+      ordered: false,
+    });
+  await mongodb.collection('lexunits')
+    .insertMany(data.lexUnits, {
+      writeConcern: 0,
+      j: false,
+      ordered: false,
+    });
+  await mongodb.collection('lexemes')
+    .insertMany(data.lexemes, {
+      writeConcern: 0,
+      j: false,
+      ordered: false,
+    });
 }
 
 /**
@@ -134,7 +142,7 @@ async function saveToDb(mongodb, data) {
  */
 async function importBatchSet(batchSet, db) {
   let counter = 1;
-  for (const batch of batchSet) {
+  for (const batch of batchSet) { // eslint-disable-line no-restricted-syntax
     logger.info(`Importing frame batch ${counter} out of ${batchSet.length}...`);
     const data = await convertToObjects(batch);
     try {
@@ -160,7 +168,8 @@ async function importFrames(frameDir, chunkSize, dbUri) {
 }
 
 if (require.main === module) {
-  importFrames(config.default.frameDir, config.default.frameChunkSize, config.default.dbUri).then(() => logger.info(`Import process completed in ${process.hrtime(startTime)[0]}s`));
+  importFrames(config.default.frameDir, config.default.frameChunkSize, config.default.dbUri)
+    .then(() => logger.info(`Import process completed in ${process.hrtime(startTime)[0]}s`));
 }
 
 export default {

@@ -1,13 +1,9 @@
 import logger from './../logger/logger';
 
 const config = {
-  dbUri: 'mongodb://localhost:27017/dev',
+  dbUri: 'mongodb://localhost:27017/noframenet15dev',
   logger: logger.debug,
-  lexUnitDir: '/Users/AKB/Desktop/fndata-1.6/lu',
-  frameDir: '/Users/AKB/Desktop/fndata-1.6/frame',
-  fullTextDir: '/Users/AKB/Desktop/fndata-1.6/fulltext',
-  relationsFilePath: '/Users/AKB/Desktop/fndata-1.6/frRelation.xml',
-  semTypesFilePath: '/Users/AKB/Desktop/fndata-1.6/semTypes.xml',
+  frameNetDir: '/Users/AKB/Desktop/fndata-1.5/',
   frameChunkSize: 100,
   lexUnitChunkSize: 50,
   fullTextChunkSize: 20,

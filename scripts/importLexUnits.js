@@ -174,7 +174,7 @@ async function importBatchSet(batchSet, db) {
     patternsMap: new Map(),
     valenceUnitsMap: new Map(),
   };
-  for (const batch of batchSet) {
+  for (const batch of batchSet) { // eslint-disable-line no-restricted-syntax
     logger.info(`Importing lexUnit batch ${counter} out of ${batchSet.length}...`);
     const data = await convertToObjects(batch, uniques);
     try {

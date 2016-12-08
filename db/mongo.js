@@ -32,10 +32,10 @@ async function connectToDatabase(uri) {
         },
       },
     }); // models (and indexes) will be initialized via the mongoose models for
-    // scalability and readability
+  // scalability and readability
   } catch (err) {
     logger.error(err);
-    process.exit(1); // TODO : graceful exit?
+    process.exit(1);
   }
   logger.info(`Connected to database: ${uri}`);
   return {

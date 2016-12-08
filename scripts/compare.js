@@ -26,12 +26,12 @@ async function compare(frameDir, frameChunkSize, lexUnitDir, lexUnitChunkSize) {
   const lexUnitBatchSet = await utils.filterAndChunk(lexUnitDir, lexUnitChunkSize);
   const frameLUIDs = [];
   const lexUnitIDs = [];
-  for (const batch of frameBatchSet) {
+  for (const batch of frameBatchSet) { // eslint-disable-line no-restricted-syntax
     const fluIDs = await getLUIDs(batch);
     const ffluIDs = fluIDs.reduce((a, b) => a.concat(b));
     frameLUIDs.push(...ffluIDs);
   }
-  for (const batch of lexUnitBatchSet) {
+  for (const batch of lexUnitBatchSet) { // eslint-disable-line no-restricted-syntax
     const luIDs = await getLexUnitIDs(batch);
     lexUnitIDs.push(...luIDs);
   }

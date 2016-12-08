@@ -24,7 +24,11 @@ const debug = new (winston.Logger)({
       level: 'debug',
       colorize: true,
     }),
-  //new (winston.transports.File)({filename: 'noFrameNet.log', level: 'error', colorize: true})
+    new (winston.transports.File)({
+      filename: 'noframenet.log',
+      level: 'debug',
+      colorize: true,
+    }),
   ],
 });
 

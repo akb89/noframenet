@@ -34,7 +34,7 @@ async function getFESet() {
       }]);
 }
 
-async function check() {
+async function check() { // eslint-disable-line
   let feSet = await getFESet();
   feSet = Array.from(feSet).map(vu => vu._id);
   logger.info(`FESet length = ${feSet.length}`);
