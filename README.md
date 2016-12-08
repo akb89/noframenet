@@ -14,7 +14,7 @@ NoFrameNet should work on Node v6.9.2 and above, npm v3.10.9 and above and mongo
 To import FrameNet XML data to MongoDB
 
 ### 1. Download [FrameNet XML data](https://framenet.icsi.berkeley.edu/fndrupal/framenet_request_data)
-### 2. Download [NoFrameNet]()
+### 2. Download [NoFrameNet](https://github.com/akb89/noframenet/releases/tag/v1.0)
 ### 3. Install the required dependencies
 Run the following command in your terminal, under the NoFrameNet directory:
 ```
