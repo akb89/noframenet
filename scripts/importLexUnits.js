@@ -163,8 +163,8 @@ async function saveMapsToDb(mongodb, maps) {
     clean: true,
   });
   for (const entry of maps.annoSet2PatternMap) {
-    const patternId = entry[0];
-    const annoSetId = entry[1];
+    const annoSetId = entry[0];
+    const patternId = entry[1];
     await mongodb.collection('annotationsets')
       .update({
         _id: annoSetId,
