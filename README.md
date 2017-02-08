@@ -68,4 +68,4 @@ NoFrameNet has been tested on FrameNet:
 [license-image]:http://img.shields.io/badge/license-MIT-000000.svg?style=flat-square
 [license-url]:LICENSE.txt
 [david-dep-image]: https://david-dm.org/akb89/noframenet.svg?style=flat-square
-[david-url]: https://david-dm.org/akb89/noframenet.svg?style=flat-square
+[david-url]: https://david-dm.org/akb89/noframenet
