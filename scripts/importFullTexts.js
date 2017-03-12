@@ -24,7 +24,8 @@ function convertToDocuments(jsonixFullText) {
       description: jsonixDocument.description,
       sentences: toJsonixDocumentSentenceArray(jsonixFullText)
         .map(jsonixSentence => jsonixSentence.id),
-    }).toObject());
+    })
+      .toObject());
 }
 
 function processCorpus(jsonixFullText, documents, corpora) {
@@ -41,10 +42,11 @@ function processCorpus(jsonixFullText, documents, corpora) {
     });
     corpora.set(corpusId, corpus.toObject());
   }
-  convertToDocuments(jsonixFullText).forEach((document) => {
-    corpus.documents.push(document._id);
-    documents.push(document);
-  });
+  convertToDocuments(jsonixFullText)
+    .forEach((document) => {
+      corpus.documents.push(document._id);
+      documents.push(document);
+    });
 }
 
 async function convertToObjects(batch, uniques) {
@@ -59,11 +61,12 @@ async function convertToObjects(batch, uniques) {
 }
 
 async function saveArraysToDb(mongodb, data) {
-  await mongodb.collection('documents').insertMany(data.documents, {
-    w: 0,
-    j: false,
-    ordered: false,
-  });
+  await mongodb.collection('documents')
+    .insertMany(data.documents, {
+      w: 0,
+      j: false,
+      ordered: false,
+    });
 }
 
 async function saveMapsToDb(mongodb, maps) {
@@ -91,9 +94,9 @@ async function importBatchSet(batchSet, db) {
   };
   for (const batch of batchSet) {
     logger.debug(`Importing fullText batch ${counter} out of ${batchSet.length}...`);
-    const data = await convertToObjects(batch, uniques);
+    const data = await convertToObjects(batch, uniques); // eslint-disable-line no-await-in-loop
     try {
-      await saveArraysToDb(db.mongo, data);
+      await saveArraysToDb(db.mongo, data); // eslint-disable-line no-await-in-loop
     } catch (err) {
       logger.error(err);
       process.exit(1);
@@ -126,7 +129,8 @@ if (require.main === module) {
   const dbUri = config.default.dbUri;
   const fullTextDir = config.default.frameNetDir.concat('fulltext');
   const fullTextChunkSize = config.default.fullTextChunkSize;
-  importFullText(fullTextDir, fullTextChunkSize, dbUri).then(() => logger.info(`Import process completed in ${process.hrtime(startTime)[0]}s`));
+  importFullText(fullTextDir, fullTextChunkSize, dbUri)
+    .then(() => logger.info(`Import process completed in ${process.hrtime(startTime)[0]}s`));
 }
 
 export default {

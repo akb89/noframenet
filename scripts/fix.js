@@ -8,41 +8,44 @@ import driver from './../db/mongo';
 const logger = config.default.logger;
 
 async function getGFSet() {
-  return await ValenceUnit
-      .aggregate([{
-        $group: {
-          _id: '$GF',
-        },
-      }]);
+  return ValenceUnit
+    .aggregate([{
+      $group: {
+        _id: '$GF',
+      },
+    }]);
 }
 
 async function getPTSet() {
-  return await ValenceUnit
-      .aggregate([{
-        $group: {
-          _id: '$PT',
-        },
-      }]);
+  return ValenceUnit
+    .aggregate([{
+      $group: {
+        _id: '$PT',
+      },
+    }]);
 }
 
 async function getFESet() {
-  return await ValenceUnit
-      .aggregate([{
-        $group: {
-          _id: '$FE',
-        },
-      }]);
+  return ValenceUnit
+    .aggregate([{
+      $group: {
+        _id: '$FE',
+      },
+    }]);
 }
 
 async function check() { // eslint-disable-line
   let feSet = await getFESet();
-  feSet = Array.from(feSet).map(vu => vu._id);
+  feSet = Array.from(feSet)
+    .map(vu => vu._id);
   logger.info(`FESet length = ${feSet.length}`);
   let ptSet = await getPTSet();
-  ptSet = Array.from(ptSet).map(vu => vu._id);
+  ptSet = Array.from(ptSet)
+    .map(vu => vu._id);
   logger.info(`PTSet length = ${ptSet.length}`);
   let gfSet = await getGFSet();
-  gfSet = Array.from(gfSet).map(vu => vu._id);
+  gfSet = Array.from(gfSet)
+    .map(vu => vu._id);
   logger.info(`GFSet length = ${gfSet.length}`);
   const fept = new Set([...feSet].filter(x => ptSet.has(x)));
   const fegf = new Set([...feSet].filter(x => gfSet.has(x)));
@@ -64,7 +67,7 @@ async function check() { // eslint-disable-line
  * FE: 'Activity',
  * PT: 'Obj',
  * GF: 'Obj' }
- * @method cleanOnceConnectedToDB
+ * @method fixOnceConnectedToDB
  * @return {Promise}              [description]
  */
 async function fixOnceConnectedToDB() {

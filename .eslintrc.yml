@@ -1,0 +1,32 @@
+env:
+  es6: true
+  node: true
+  mocha: true
+
+extends:
+  - airbnb
+
+plugins:
+  - import
+
+rules:
+  #Allow _id on mongo id attributes and rewire __get__
+  no-underscore-dangle: [error, {allow: [_id, __get__]}]
+
+  #Allow devDependencies for tests
+  import/no-extraneous-dependencies: [error, {devDependencies: ['**/*.test.js']}]
+
+  #Allow comment decoration with ****
+  spaced-comment: [error, always, {exceptions: ['*']}]
+
+  #Allow uppercase functions with mongoose
+  new-cap: [error, {capIsNewExceptions: ['mongoose.Schema', 'mongoose.Types.ObjectId']}]
+
+  #Ignore unused-var error message on chai.should()
+  no-unused-vars: [error, {varsIgnorePattern: 'should'}]
+
+  #Allow for of loops as forEach does not work with async await
+  no-restricted-syntax: [warn, ForOfStatement, ForInStatement]
+
+  #Allow extending Array with chunk method for readability
+  no-extend-native: [warn]

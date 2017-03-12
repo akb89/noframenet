@@ -2,7 +2,7 @@
  * Standalone script to import FrameNet lexical units to MongoDB.
  */
 
-import { AnnotationSet, Label, Pattern, Sentence, ValenceUnit } from 'noframenet-core';
+import { AnnotationSet, Frame, FrameElement, Label, Pattern, Sentence, ValenceUnit } from 'noframenet-core';
 import ProgressBar from 'ascii-progress';
 import { toJsonixLabelArray, toJsonixLayerArray, toJsonixLexUnitSentenceArray, toJsonixPatternAnnoSetArray, toJsonixPatternArray, toJsonixSentenceAnnoSetArray, toJsonixValenceUnitArray } from './../utils/jsonixUtils';
 import config from './../config';
@@ -12,17 +12,23 @@ import utils from './../utils/utils';
 
 const logger = config.default.logger;
 
-function convertToValenceUnits(jsonixPattern, valenceUnitsMap) {
+function convertToValenceUnits(jsonixPattern, valenceUnitsMap, frameElementsMap) {
   return toJsonixValenceUnitArray(jsonixPattern).map((jsonixValenceUnit) => {
-    const key = jsonixValenceUnit.fe + jsonixValenceUnit.pt + jsonixValenceUnit.gf;
+    const fe = frameElementsMap.get(jsonixValenceUnit.fe);
+    if (!fe) {
+      logger.warn(`FE is undefined: ${jsonixValenceUnit.fe}`);
+    }
+    const key = fe._id + jsonixValenceUnit.pt + jsonixValenceUnit.gf;
     let valenceUnit;
     if (!valenceUnitsMap.has(key)) {
       valenceUnit = new ValenceUnit({
-        FE: jsonixValenceUnit.fe,
+        FE: fe,
         PT: jsonixValenceUnit.pt,
         GF: jsonixValenceUnit.gf,
       });
-      valenceUnitsMap.set(key, valenceUnit.toObject());
+      valenceUnitsMap.set(key, valenceUnit.toObject({
+        depopulate: true,
+      }));
     } else {
       valenceUnit = valenceUnitsMap.get(key);
     }
@@ -30,11 +36,12 @@ function convertToValenceUnits(jsonixPattern, valenceUnitsMap) {
   });
 }
 
-function processPatterns(jsonixLexUnit, annoSet2PatternMap, patternsMap, valenceUnitsMap) {
+function processPatterns(jsonixLexUnit, annoSet2PatternMap, patternsMap,
+  valenceUnitsMap, frameElementsMap) {
   // Import patterns and valenceUnits.
   // Add all info regading patterns and lexUnits to AnnoSet objects
   toJsonixPatternArray(jsonixLexUnit).forEach((jsonixPattern) => {
-    const vus = convertToValenceUnits(jsonixPattern, valenceUnitsMap);
+    const vus = convertToValenceUnits(jsonixPattern, valenceUnitsMap, frameElementsMap);
     const key = vus.map(vu => vu._id).sort().join(''); // TODO test this
     let pattern;
     if (!patternsMap.has(key)) {
@@ -92,7 +99,7 @@ function convertToSentences(jsonixLexUnit, annotationSets, labels) {
     });
 }
 
-// Lemma and Lexeme information is updated via importLemmasAndLemexes script
+// Lemma and Lexeme information is updated via importLemmasAndLexemes script
 function processLexUnit(
   jsonixLexUnit,
   annoSet2PatternMap,
@@ -100,9 +107,25 @@ function processLexUnit(
   labels,
   patternsMap,
   sentences,
-  valenceUnitsMap) {
+  valenceUnitsMap,
+  frameElementsMap) {
   sentences.push(...convertToSentences(jsonixLexUnit, annotationSets, labels));
-  processPatterns(jsonixLexUnit, annoSet2PatternMap, patternsMap, valenceUnitsMap);
+  processPatterns(jsonixLexUnit, annoSet2PatternMap, patternsMap,
+    valenceUnitsMap, frameElementsMap);
+}
+
+// A Map of FEName -> full noframenet-core.FrameElement
+async function getFEMap(frameID) {
+  const feMap = new Map();
+  const frame = await Frame.findOne().where('_id').equals(frameID);
+  if (!frame) {
+    logger.error(`frame is null for _id = ${frameID}`);
+  }
+  const fes = await FrameElement.find().where('_id').in(frame.frameElements);
+  fes.forEach((fe) => {
+    feMap.set(fe.name, fe);
+  });
+  return feMap;
 }
 
 async function convertToObjects(batch, uniques) {
@@ -113,15 +136,22 @@ async function convertToObjects(batch, uniques) {
   };
   await Promise.all(batch.map(async (file) => {
     const jsonixLexUnit = await marshaller.unmarshall(file);
-    processLexUnit(
-      jsonixLexUnit,
-      uniques.annoSet2PatternMap,
-      data.annotationSets,
-      data.labels,
-      uniques.patternsMap,
-      data.sentences,
-      uniques.valenceUnitsMap,
-    );
+    const frameElementsMap = await getFEMap(jsonixLexUnit.value.frameID);
+    try {
+      processLexUnit(
+        jsonixLexUnit,
+        uniques.annoSet2PatternMap,
+        data.annotationSets,
+        data.labels,
+        uniques.patternsMap,
+        data.sentences,
+        uniques.valenceUnitsMap,
+        frameElementsMap,
+      );
+    } catch (err) {
+      logger.warn(`Ill-formed lexUnit detected: ID = ${jsonixLexUnit.value.id}`);
+      logger.debug(err);
+    }
   }));
   return data;
 }
@@ -165,7 +195,7 @@ async function saveMapsToDb(mongodb, maps) {
   for (const entry of maps.annoSet2PatternMap) {
     const annoSetId = entry[0];
     const patternId = entry[1];
-    await mongodb.collection('annotationsets')
+    await mongodb.collection('annotationsets') // eslint-disable-line no-await-in-loop
       .update({
         _id: annoSetId,
       }, {
@@ -191,9 +221,9 @@ async function importBatchSet(batchSet, db) {
   };
   for (const batch of batchSet) {
     logger.debug(`Importing lexUnit batch ${counter} out of ${batchSet.length}...`);
-    const data = await convertToObjects(batch, uniques);
+    const data = await convertToObjects(batch, uniques); // eslint-disable-line no-await-in-loop
     try {
-      await saveArraysToDb(db.mongo, data);
+      await saveArraysToDb(db.mongo, data); // eslint-disable-line no-await-in-loop
     } catch (err) {
       logger.error(err);
       process.exit(1);
