@@ -99,17 +99,13 @@ function convertToSentences(jsonixLexUnit, annotationSets, labels) {
     });
 }
 
-// Lemma and Lexeme information is updated via importLemmasAndLexemes script
-function processLexUnit(
-  jsonixLexUnit,
-  annoSet2PatternMap,
-  annotationSets,
-  labels,
-  patternsMap,
-  sentences,
-  valenceUnitsMap,
+// Lemma and Lexeme information is updated via
+// importLemmasAndLexemes script
+function processLexUnit(jsonixLexUnit, annoSet2PatternMap,
+  annotationSets, labels, patternsMap, sentences, valenceUnitsMap,
   frameElementsMap) {
-  sentences.push(...convertToSentences(jsonixLexUnit, annotationSets, labels));
+  sentences.push(...convertToSentences(jsonixLexUnit,
+    annotationSets, labels));
   processPatterns(jsonixLexUnit, annoSet2PatternMap, patternsMap,
     valenceUnitsMap, frameElementsMap);
 }
