@@ -30,7 +30,6 @@ const config = {
   frameNetDir: '/Users/AKB/Desktop/fndata-1.5/',
   frameChunkSize: 100,
   lexUnitChunkSize: 50,
-  fullTextChunkSize: 20,
 };
 ```
 The `frameNetDir` parameter should refer to the absolute path of the unzipped FrameNet data directory.
