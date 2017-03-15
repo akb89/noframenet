@@ -1,4 +1,5 @@
 # NoFrameNet
+[![GitHub release][release-image]][release-url]
 [![Build][travis-image]][travis-url]
 [![Dependencies][david-dep-image]][david-url]
 [![MIT License][license-image]][license-url]
@@ -61,6 +62,8 @@ NoFrameNet has been tested on FrameNet:
 - 1.6
 - 1.7
 
+[release-image]:https://img.shields.io/github/release/akb89/noframenet.svg?style=flat-square
+[release-url]:https://github.com/akb89/noframenet/releases/latest
 [travis-image]:https://img.shields.io/travis/akb89/noframenet.svg?style=flat-square
 [travis-url]:https://travis-ci.org/akb89/noframenet
 [framenet-image]:https://img.shields.io/badge/framenet-1.5%E2%87%A1-blue.svg?style=flat-square
