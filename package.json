@@ -1,6 +1,6 @@
 {
   "name": "noframenet",
-  "version": "1.1.2",
+  "version": "2.0.0",
   "description": "A set of scripts to import FrameNet XML data to a MongoDB database",
   "keywords": [
     "FrameNet",
@@ -14,10 +14,11 @@
     "posttest": "npm run lint",
     "clean": "NODE_ENV=production ./node_modules/babel-cli/bin/babel-node.js ./scripts/clean.js",
     "cleandev": "NODE_ENV=development ./node_modules/babel-cli/bin/babel-node.js ./scripts/clean.js",
-    "import": "NODE_ENV=production ./node_modules/babel-cli/bin/babel-node.js ./scripts/pipeline.js",
+    "import": "npm run clean && NODE_ENV=production ./node_modules/babel-cli/bin/babel-node.js ./scripts/pipeline.js",
     "importdev": "npm run cleandev && NODE_ENV=development ./node_modules/babel-cli/bin/babel-node.js ./scripts/pipeline.js",
     "fix": "NODE_ENV=production ./node_modules/babel-cli/bin/babel-node.js ./scripts/fix.js",
-    "fixdev": "NODE_ENV=development ./node_modules/babel-cli/bin/babel-node.js ./scripts/fix.js"
+    "fixdev": "NODE_ENV=development ./node_modules/babel-cli/bin/babel-node.js ./scripts/fix.js",
+    "try": "npm run cleandev && NODE_ENV=development ./node_modules/babel-cli/bin/babel-node.js ./scripts/importFullTexts.js"
   },
   "homepage": "https://github.com/akb89/noframenet#readme",
   "repository": {
@@ -29,25 +30,25 @@
   },
   "dependencies": {
     "ascii-progress": "^1.0.5",
-    "bluebird": "^3.4.1",
+    "bluebird": "^3.5.0",
     "jsonix": "^2.4.1",
-    "mongodb": "^2.2.5",
-    "mongoose": "^4.7.0",
-    "noframenet-core": "^2.1.0",
-    "winston": "^2.3.0"
+    "mongodb": "^2.2.24",
+    "mongoose": "^4.8.6",
+    "noframenet-core": "^3.1.0",
+    "winston": "^2.3.1"
   },
   "devDependencies": {
-    "babel-cli": "^6.18.0",
-    "babel-core": "^6.18.0",
-    "babel-polyfill": "^6.16.0",
-    "babel-preset-es2015": "^6.18.0",
-    "babel-preset-stage-0": "^6.16.0",
+    "babel-cli": "^6.23.0",
+    "babel-core": "^6.23.1",
+    "babel-polyfill": "^6.23.0",
+    "babel-preset-es2015": "^6.22.0",
+    "babel-preset-stage-0": "^6.22.0",
     "chai": "^3.5.0",
-    "eslint": "^3.8.1",
+    "eslint": "^3.17.1",
     "eslint-config-airbnb": "^13.0.0",
     "eslint-plugin-import": "^2.2.0",
     "eslint-plugin-jsx-a11y": "^2.2.3",
-    "eslint-plugin-react": "^6.6.0",
+    "eslint-plugin-react": "^6.4.1",
     "mocha": "^3.2.0",
     "rewire": "^2.5.2"
   }

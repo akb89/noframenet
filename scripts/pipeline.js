@@ -14,14 +14,14 @@ async function importFrameNetData(dbUri, lexUnitDir, lexUnitChunkSize,
   const db = await driver.connectToDatabase(dbUri);
   await importFrames.importFramesOnceConnectedToDb(frameDir, frameChunkSize, db);
   logger.info('Frames import completed');
-  await importFullTexts.importFullTextOnceConnectedToDb(fullTextDir, fullTextChunkSize, db);
-  logger.info('FullTexts import completed');
   await importRelations.importRelationsOnceConnectedToDb(relationsFilePath, db);
   logger.info('Relations import completed');
   await importSemTypes.importSemTypesOnceConnectedToDb(semTypesFilePath, db);
   logger.info('SemTypes import completed');
   await importLexUnits.importLexUnitsOnceConnectedToDb(lexUnitDir, lexUnitChunkSize, db);
   logger.info('LexUnits import completed');
+  await importFullTexts.importFullTextOnceConnectedToDb(fullTextDir, fullTextChunkSize, db);
+  logger.info('FullTexts import completed');
   db.mongo.close();
   db.mongoose.disconnect();
 }

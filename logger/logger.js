@@ -1,5 +1,14 @@
 import winston from 'winston';
 
+const error = new (winston.Logger)({
+  transports: [
+    new (winston.transports.Console)({
+      level: 'error',
+      colorize: true,
+    }),
+  ],
+});
+
 const warn = new (winston.Logger)({
   transports: [
     new (winston.transports.Console)({
@@ -13,6 +22,20 @@ const info = new (winston.Logger)({
   transports: [
     new (winston.transports.Console)({
       level: 'info',
+      colorize: true,
+    }),
+    new (winston.transports.File)({
+      filename: 'noframenet.log',
+      level: 'debug',
+      colorize: true,
+    }),
+  ],
+});
+
+const verbose = new (winston.Logger)({
+  transports: [
+    new (winston.transports.Console)({
+      level: 'verbose',
       colorize: true,
     }),
     new (winston.transports.File)({
@@ -38,7 +61,9 @@ const debug = new (winston.Logger)({
 });
 
 export default {
+  error,
   warn,
+  verbose,
   info,
   debug,
 };
