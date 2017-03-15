@@ -146,7 +146,7 @@ async function importBatchSet(batchSet, db) {
     total: batchSet.length,
     clean: true,
   });
-  logger.info('Importing frames by batch');
+  logger.info('Importing frames by batch...');
   for (const batch of batchSet) {
     logger.debug(`Importing frame batch ${counter} out of ${batchSet.length}...`);
     const data = await convertToObjects(batch); // eslint-disable-line no-await-in-loop

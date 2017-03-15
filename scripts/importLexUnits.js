@@ -66,6 +66,7 @@ function convertToLabels(jsonixAnnoSet) {
       .map(jsonixLabel => new Label({
         name: jsonixLabel.name,
         type: jsonixLayer.name,
+        rank: jsonixLayer.rank,
         startPos: jsonixLabel.start,
         endPos: jsonixLabel.end,
       }).toObject()))
@@ -183,7 +184,7 @@ async function saveMapsToDb(mongodb, maps) {
       j: false,
       ordered: false,
     });
-  logger.info('Updating annotatioSets\' pattern references');
+  logger.info('Updating annotatioSets\' pattern references...');
   const annoSetProgressBar = new ProgressBar({
     total: maps.annoSet2PatternMap.size,
     clean: true,
@@ -209,7 +210,7 @@ async function importBatchSet(batchSet, db) {
     total: batchSet.length,
     clean: true,
   });
-  logger.info('Importing lexical units by batch');
+  logger.info('Importing lexical units by batch...');
   const uniques = {
     annoSet2PatternMap: new Map(),
     patternsMap: new Map(),
