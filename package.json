@@ -14,11 +14,11 @@
     "posttest": "npm run lint",
     "clean": "NODE_ENV=production ./node_modules/babel-cli/bin/babel-node.js ./scripts/clean.js",
     "cleandev": "NODE_ENV=development ./node_modules/babel-cli/bin/babel-node.js ./scripts/clean.js",
-    "import": "NODE_ENV=production ./node_modules/babel-cli/bin/babel-node.js ./scripts/pipeline.js",
+    "import": "npm run clean && NODE_ENV=production ./node_modules/babel-cli/bin/babel-node.js ./scripts/pipeline.js",
     "importdev": "npm run cleandev && NODE_ENV=development ./node_modules/babel-cli/bin/babel-node.js ./scripts/pipeline.js",
     "fix": "NODE_ENV=production ./node_modules/babel-cli/bin/babel-node.js ./scripts/fix.js",
     "fixdev": "NODE_ENV=development ./node_modules/babel-cli/bin/babel-node.js ./scripts/fix.js",
-    "try": "NODE_ENV=development ./node_modules/babel-cli/bin/babel-node.js ./scripts/importFullTexts.js"
+    "try": "npm run cleandev && NODE_ENV=development ./node_modules/babel-cli/bin/babel-node.js ./scripts/importFullTexts.js"
   },
   "homepage": "https://github.com/akb89/noframenet#readme",
   "repository": {

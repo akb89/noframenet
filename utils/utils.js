@@ -46,6 +46,22 @@ async function filterAndChunk(dir, chunkSize) {
     .map(chunk => chunk.map(file => path.join(dir, file)));
 }
 
+async function filter(dir) {
+  logger.info(`Processing directory: ${dir}`);
+  const filesPromise = new Promise((resolve, reject) => {
+    filesystem.readdir(dir, (error, files) => {
+      if (error) return reject(error);
+      return resolve(files);
+    });
+  });
+  const files = await filesPromise;
+  logger.info(`Total number of files = ${files.filter(isValidXml).length}`);
+  return files
+    .filter(isValidXml)
+    .map(file => path.join(dir, file));
+}
+
 export default {
   filterAndChunk,
+  filter,
 };

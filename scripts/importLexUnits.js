@@ -16,7 +16,7 @@ function convertToValenceUnits(jsonixPattern, valenceUnitsMap, frameElementsMap)
   return toJsonixValenceUnitArray(jsonixPattern).map((jsonixValenceUnit) => {
     const fe = frameElementsMap.get(jsonixValenceUnit.fe);
     if (!fe) {
-      logger.warn(`FE is undefined: ${jsonixValenceUnit.fe}`);
+      logger.verbose(`FE is undefined: ${jsonixValenceUnit.fe}`);
     }
     const key = fe._id + jsonixValenceUnit.pt + jsonixValenceUnit.gf;
     let valenceUnit;
@@ -146,7 +146,7 @@ async function convertToObjects(batch, uniques) {
         frameElementsMap,
       );
     } catch (err) {
-      logger.warn(`Ill-formed lexUnit detected: ID = ${jsonixLexUnit.value.id}`);
+      logger.verbose(`Ill-formed lexUnit detected: ID = ${jsonixLexUnit.value.id}`);
       logger.debug(err);
     }
   }));
