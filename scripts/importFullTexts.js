@@ -228,6 +228,11 @@ async function saveCorpusAndDocument(jsonixFullText) {
   }
   if (corpus) {
     corpus.documents.push(...jsonixDocs.map(jsonixDoc => jsonixDoc.id));
+    await corpus.update({
+      $set: {
+        documents: corpus.documents,
+      },
+    });
   } else {
     const newCorpus = new Corpus({
       _id: corpusId,

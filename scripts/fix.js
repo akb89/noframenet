@@ -64,7 +64,7 @@ async function check() { // eslint-disable-line
 /**
  * In FrameNet 1.6 there is one valenceUnit with a wrong PT:
  * vu = { _id: ...,
- * FE: 'Activity',
+ * FE: '2085',
  * PT: 'Obj',
  * GF: 'Obj' }
  * @method fixOnceConnectedToDB
@@ -72,18 +72,21 @@ async function check() { // eslint-disable-line
  */
 async function fixOnceConnectedToDB() {
   const wrongPTVU = await ValenceUnit.findOne({
-    FE: 'Activity',
+    FE: 2085,
     PT: 'Obj',
     GF: 'Obj',
   });
+  logger.verbose(`Invalid PT ValenceUnit: ${JSON.stringify(wrongPTVU)}`);
   const correctPTVU = await ValenceUnit.findOne({
-    FE: 'Activity',
+    FE: 2085,
     PT: 'NP',
     GF: 'Obj',
   });
+  logger.verbose(`To be replaced by: ${JSON.stringify(correctPTVU)}`);
   const wrongpatterns = await Pattern.find({
     valenceUnits: wrongPTVU,
   });
+  logger.verbose(`Patterns with incorrect ValenceUnit: ${JSON.stringify(wrongpatterns)}`);
   await Pattern.update({
     _id: {
       $in: wrongpatterns,

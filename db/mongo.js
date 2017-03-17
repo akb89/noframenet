@@ -12,28 +12,15 @@ async function connectToDatabase(uri) {
   let mongo;
   try {
     mongo = await MongoClient.connect(uri, {
-      server: {
-        socketOptions: {
-          connectTimeoutMS: 0,
-          socketTimeoutMS: 0,
-        },
-      },
+      connectTimeoutMS: 0,
+      socketTimeoutMS: 0,
     }); // db inserts will be performed directly via the mongo driver for
     // better performances
     await mongoose.connect(uri, {
-      server: {
-        reconnectTries: Number.MAX_VALUE,
-        socketOptions: {
-          keepAlive: 120,
-          connectTimeoutMS: 0,
-          socketTimeoutMS: 0,
-        },
-      },
-      replset: {
-        socketOptions: {
-          keepAlive: 120,
-        },
-      },
+      reconnectTries: Number.MAX_VALUE,
+      keepAlive: 120,
+      connectTimeoutMS: 0,
+      socketTimeoutMS: 0,
     }); // models (and indexes) will be initialized via the mongoose models for
   // scalability and readability
   } catch (err) {
