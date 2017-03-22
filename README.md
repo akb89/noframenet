@@ -34,7 +34,7 @@ const config = {
 ```
 The `frameNetDir` parameter should refer to the absolute path of the unzipped FrameNet data directory.
 
-You can tweak the `frameChunkSize` and `lexUnitChunkSize`, `fullTextChunkSize` parameters to improve import speed by specifying how many frame, lu or fulltext files should be processed at once.  
+You can tweak the `frameChunkSize` and `lexUnitChunkSize`parameters to improve import speed by specifying how many frame or lu files should be processed at once.  
 
 ### 5. Start the full import process
 Run the following command in your terminal, under the NoFrameNet directory:
