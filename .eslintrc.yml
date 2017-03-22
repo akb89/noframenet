@@ -25,8 +25,11 @@ rules:
   #Ignore unused-var error message on chai.should()
   no-unused-vars: [error, {varsIgnorePattern: 'should'}]
 
-  #Allow for of loops as forEach does not work with async await
+  #Allow for of loops as forEach does not work with async await (yet)
   no-restricted-syntax: [warn, ForOfStatement, ForInStatement]
 
   #Allow extending Array with chunk method for readability
   no-extend-native: [warn]
+
+  #Allow param-reassign on annoSetLabelMap in importFullTexts:
+  no-param-reassign: [error, {props: true, ignorePropertyModificationsFor: [annoSetLabelMap]}]
