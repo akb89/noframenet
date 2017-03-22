@@ -36,93 +36,88 @@ function isValidFNAnnoSet(jsonixAnnoSet) {
   return false;
 }
 
-function addGFLabels(annoSetLabelMap) {
-  if (!annoSetLabelMap.annoSet || annoSetLabelMap.labelMap.size === 0) {
-    return annoSetLabelMap;
+function addGFLabels(jsonixAnnoSet, labelMap) {
+  if (!jsonixAnnoSet || labelMap.size === 0) {
+    return new Map();
   }
-  for (const jsonixLayer of toJsonixLayerArray(annoSetLabelMap.annoSet)) {
+  const gfLabelMap = new Map(labelMap);
+  for (const jsonixLayer of toJsonixLayerArray(jsonixAnnoSet)) {
     if (jsonixLayer.name === 'GF') {
       for (const jsonixLabel of toJsonixLabelArray(jsonixLayer)) {
-        if (jsonixLabel.start && jsonixLabel.end) {
+        if (jsonixLabel.start !== undefined && jsonixLabel.end !== undefined) {
           const key = `${jsonixLabel.start}#${jsonixLabel.end}#${jsonixLayer.rank}`;
-          if (!annoSetLabelMap.labelMap.has(key)) {
+          if (!gfLabelMap.has(key)) {
             // This is probably an annotation error
-            logger.verbose(`annotation error: GF with no FE and/or PT on #${annoSetLabelMap.annoSet.id} and layer ${jsonixLayer.name} and label ${JSON.stringify(key)}`);
-            return {
-              annoSet: annoSetLabelMap.jsonixAnnoSet,
-              labelMap: new Map(),
-            };
+            logger.verbose(`annotation error: GF with no FE and/or PT on #${jsonixAnnoSet.id} and layer ${jsonixLayer.name} and label ${JSON.stringify(key)}`);
+            return new Map();
           }
-          annoSetLabelMap.labelMap.get(key).GF = jsonixLabel.name;
+          gfLabelMap.get(key).GF = jsonixLabel.name;
         }
       }
     }
   }
-  return annoSetLabelMap;
+  return gfLabelMap;
 }
 
-function addPTLabels(annoSetLabelMap) {
-  if (!annoSetLabelMap.annoSet || annoSetLabelMap.labelMap.size === 0) {
-    return annoSetLabelMap;
+function addPTLabels(jsonixAnnoSet, labelMap) {
+  if (!jsonixAnnoSet || labelMap.size === 0) {
+    return new Map();
   }
-  for (const jsonixLayer of toJsonixLayerArray(annoSetLabelMap.annoSet)) {
+  const ptLabelMap = new Map(labelMap);
+  for (const jsonixLayer of toJsonixLayerArray(jsonixAnnoSet)) {
     if (jsonixLayer.name === 'PT') {
       for (const jsonixLabel of toJsonixLabelArray(jsonixLayer)) {
-        if (jsonixLabel.start && jsonixLabel.end) {
+        if (jsonixLabel.start !== undefined && jsonixLabel.end !== undefined) {
           const key = `${jsonixLabel.start}#${jsonixLabel.end}#${jsonixLayer.rank}`;
-          if (!annoSetLabelMap.labelMap.has(key)) {
+          if (!ptLabelMap.has(key)) {
             // This is probably an annotation error
-            logger.verbose(`annotation error: PT with no FE on #${annoSetLabelMap.annoSet.id} and layer ${jsonixLayer.name} and label ${JSON.stringify(key)}`);
-            return {
-              annoSet: annoSetLabelMap.jsonixAnnoSet,
-              labelMap: new Map(),
-            };
+            logger.verbose(`annotation error: PT with no FE on #${jsonixAnnoSet.id} and layer ${jsonixLayer.name} and label ${JSON.stringify(key)}`);
+            return new Map();
           }
-          annoSetLabelMap.labelMap.get(key).PT = jsonixLabel.name;
+          ptLabelMap.get(key).PT = jsonixLabel.name;
         }
       }
     }
   }
-  return annoSetLabelMap;
+  return ptLabelMap;
 }
 
-function addFELabels(annoSetLabelMap) {
-  if (!annoSetLabelMap.annoSet) {
-    return annoSetLabelMap;
+function addFELabels(jsonixAnnoSet, labelMap) {
+  if (!jsonixAnnoSet) {
+    return new Map();
   }
-  for (const jsonixLayer of toJsonixLayerArray(annoSetLabelMap.annoSet)) {
+  for (const jsonixLayer of toJsonixLayerArray(jsonixAnnoSet)) {
     if (jsonixLayer.name === 'FE') {
       for (const jsonixLabel of toJsonixLabelArray(jsonixLayer)) {
-        if (jsonixLabel.start && jsonixLabel.end) {
+        if (jsonixLabel.start !== undefined && jsonixLabel.end !== undefined) {
           const key = `${jsonixLabel.start}#${jsonixLabel.end}#${jsonixLayer.rank}`;
-          if (annoSetLabelMap.labelMap.has(key)) {
+          if (labelMap.has(key)) {
             // Do not process cases where multiple FE labels have
             // same start/end values
-            logger.verbose(`annotation error: multiple FE labels with same start/end values on #${annoSetLabelMap.annoSet.id} and layer ${jsonixLayer.name} and label ${JSON.stringify(key)}`);
-            return {
-              annoSet: annoSetLabelMap.jsonixAnnoSet,
-              labelMap: new Map(),
-            };
+            logger.verbose(`annotation error: multiple FE labels with same start/end values on #${jsonixAnnoSet.id} and layer ${jsonixLayer.name} and label ${JSON.stringify(key)}`);
+            return new Map();
           }
           const value = {
             FE: jsonixLabel.feID,
           };
-          if (jsonixLabel.itype) {
+          if (jsonixLabel.itype !== undefined) {
             value.PT = jsonixLabel.itype;
           }
-          annoSetLabelMap.labelMap.set(key, value);
+          labelMap.set(key, value);
         }
       }
     }
   }
-  return annoSetLabelMap;
+  return labelMap;
 }
 
+// FE / PT / GF labels can come in any order
 function getLabelMap(jsonixAnnoSet) {
-  return addGFLabels(addPTLabels(addFELabels({
-    annoSet: jsonixAnnoSet,
-    labelMap: new Map(),
-  }))).labelMap;
+  let labelMap = new Map();
+  labelMap = addFELabels(jsonixAnnoSet, labelMap);
+  labelMap = addPTLabels(jsonixAnnoSet, labelMap);
+  labelMap = addGFLabels(jsonixAnnoSet, labelMap);
+  return labelMap;
 }
 
 async function saveAnnoSets(jsonixSentence) {
@@ -155,6 +150,9 @@ async function saveAnnoSets(jsonixSentence) {
         logger.debug(`isValidFNAnnoSet = ${jsonixAnnoSet.id}`);
         // Look for pattern and add to annoSet
         const labelMap = getLabelMap(jsonixAnnoSet);
+        labelMap.forEach((value, key) => {
+          logger.debug(`labelMap contains ${key}: ${JSON.stringify(value)} pair`);
+        });
         const vus = [];
         for (const value of labelMap.values()) {
           logger.debug(`Looking for valenceUnit = ${JSON.stringify(value)}`);
@@ -169,7 +167,7 @@ async function saveAnnoSets(jsonixSentence) {
             vus.add(newVu._id);
           }
         }
-        const pattern = await Pattern.findOne().where('valenceUnits').in(vus);
+        const pattern = await Pattern.findOne().where('valenceUnits').equals(vus);
         if (pattern) {
           logger.debug(`pattern found = ${pattern._id} with vus = ${vus}`);
           annoSet.pattern = pattern._id;
