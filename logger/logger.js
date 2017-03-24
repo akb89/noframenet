@@ -40,7 +40,7 @@ const verbose = new (winston.Logger)({
     }),
     new (winston.transports.File)({
       filename: 'noframenet.log',
-      level: 'debug',
+      level: 'verbose',
       colorize: true,
     }),
   ],
@@ -54,7 +54,21 @@ const debug = new (winston.Logger)({
     }),
     new (winston.transports.File)({
       filename: 'noframenet.log',
-      level: 'debug',
+      level: 'silly',
+      colorize: true,
+    }),
+  ],
+});
+
+const silly = new (winston.Logger)({
+  transports: [
+    new (winston.transports.Console)({
+      level: 'silly',
+      colorize: true,
+    }),
+    new (winston.transports.File)({
+      filename: 'noframenet.log',
+      level: 'silly',
       colorize: true,
     }),
   ],
@@ -66,4 +80,5 @@ export default {
   verbose,
   info,
   debug,
+  silly,
 };

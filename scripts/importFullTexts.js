@@ -122,75 +122,78 @@ function getLabelMap(jsonixAnnoSet) {
 
 async function saveAnnoSets(jsonixSentence) {
   for (const jsonixAnnoSet of toJsonixSentenceAnnoSetArray(jsonixSentence)) {
-    const dbAnnoSet = await AnnotationSet.findOne().where('_id').equals(jsonixAnnoSet.id);
-    if (!dbAnnoSet) {
-      logger.debug(`Could not find annotationSet #${jsonixAnnoSet.id} in database`);
-      const nLabels = toJsonixLayerArray(jsonixAnnoSet)
-        .map(jsonixLayer => toJsonixLabelArray(jsonixLayer)
-          .map(jsonixLabel => new Label({
-            name: jsonixLabel.name,
-            type: jsonixLayer.name,
-            rank: jsonixLayer.rank,
-            startPos: jsonixLabel.start,
-            endPos: jsonixLabel.end,
-          })))
-        .reduce((a, b) => a.concat(b));
-      logger.debug(`nLabels = ${nLabels}`);
-      if (nLabels.length !== 0) {
-        await Label.insertMany(nLabels);
-      }
-      const annoSet = new AnnotationSet({
-        _id: jsonixAnnoSet.id,
-        lexUnit: jsonixAnnoSet.luID,
-        sentence: jsonixSentence.id,
-        labels: nLabels,
-      });
-      logger.debug(`new annoSet = ${annoSet}`);
-      if (isValidFNAnnoSet(jsonixAnnoSet)) {
-        logger.debug(`isValidFNAnnoSet = ${jsonixAnnoSet.id}`);
-        // Look for pattern and add to annoSet
-        const labelMap = getLabelMap(jsonixAnnoSet);
-        labelMap.forEach((value, key) => {
-          logger.debug(`labelMap contains ${key}: ${JSON.stringify(value)} pair`);
-        });
-        const vus = [];
-        for (const value of labelMap.values()) {
-          logger.debug(`Looking for valenceUnit = ${JSON.stringify(value)}`);
-          const vu = await ValenceUnit.findOne(value);
-          if (vu) {
-            logger.debug(`vu exists = ${JSON.stringify(vu._id)}`);
-            vus.add(vu._id);
-          } else {
-            logger.debug(`vu not found = ${JSON.stringify(value)}`);
-            const newVu = new ValenceUnit(value);
-            await newVu.save();
-            vus.add(newVu._id);
-          }
-        }
-        const pattern = await Pattern.findOne().where('valenceUnits').equals(vus);
-        if (pattern) {
-          logger.debug(`pattern found = ${pattern._id} with vus = ${vus}`);
-          annoSet.pattern = pattern._id;
-        } else {
-          logger.debug(`new pattern with vus = ${vus}`);
-          const newPattern = new Pattern({
-            valenceUnits: vus,
-          });
-          await newPattern.save();
-          annoSet.pattern = newPattern._id;
-        }
-      }
-      await annoSet.save();
+    logger.silly(`Processing AnnotationSet #${jsonixAnnoSet.id}`);
+    // In FrameNet 1.5 there are collisions in AnnotationSet IDs. When a
+    // collision is detected, replace by the fulltext reference
+    const nLabels = toJsonixLayerArray(jsonixAnnoSet)
+      .map(jsonixLayer => toJsonixLabelArray(jsonixLayer)
+        .map(jsonixLabel => new Label({
+          name: jsonixLabel.name,
+          type: jsonixLayer.name,
+          rank: jsonixLayer.rank,
+          startPos: jsonixLabel.start,
+          endPos: jsonixLabel.end,
+        })))
+      .reduce((a, b) => a.concat(b));
+    logger.silly(`nLabels = ${nLabels}`);
+    if (nLabels.length !== 0) {
+      await Label.insertMany(nLabels);
     }
+    const annoSet = new AnnotationSet({
+      _id: jsonixAnnoSet.id,
+      lexUnit: jsonixAnnoSet.luID,
+      sentence: jsonixSentence.id,
+      labels: nLabels,
+    });
+    logger.silly(`new annoSet = ${annoSet}`);
+    if (isValidFNAnnoSet(jsonixAnnoSet)) {
+      logger.silly(`isValidFNAnnoSet = ${jsonixAnnoSet.id}`);
+      // Look for pattern and add to annoSet
+      const labelMap = getLabelMap(jsonixAnnoSet);
+      labelMap.forEach((value, key) => {
+        logger.silly(`labelMap contains ${key}: ${JSON.stringify(value)} pair`);
+      });
+      const vus = [];
+      for (const value of labelMap.values()) {
+        logger.silly(`Looking for valenceUnit = ${JSON.stringify(value)}`);
+        const vu = await ValenceUnit.findOne(value);
+        if (vu) {
+          logger.silly(`vu exists = ${JSON.stringify(vu._id)}`);
+          vus.add(vu._id);
+        } else {
+          logger.silly(`vu not found = ${JSON.stringify(value)}`);
+          const newVu = new ValenceUnit(value);
+          await newVu.save();
+          vus.add(newVu._id);
+        }
+      }
+      const pattern = await Pattern.findOne().where('valenceUnits').equals(vus);
+      if (pattern) {
+        logger.silly(`pattern found = ${pattern._id} with vus = ${vus}`);
+        annoSet.pattern = pattern._id;
+      } else {
+        logger.silly(`new pattern with vus = ${vus}`);
+        const newPattern = new Pattern({
+          valenceUnits: vus,
+        });
+        await newPattern.save();
+        annoSet.pattern = newPattern._id;
+      }
+    }
+    await AnnotationSet.where({
+      _id: jsonixAnnoSet.id,
+    }).setOptions({
+      upsert: true,
+    }).update(annoSet);
   }
 }
 
 async function saveSentences(jsonixFullText) {
-  logger.debug('Saving sentences');
+  logger.silly('Saving sentences');
   for (const jsonixSentence of toJsonixDocumentSentenceArray(jsonixFullText)) {
     const dbSentence = await Sentence.findOne().where('_id').equals(jsonixSentence.id);
     if (!dbSentence) {
-      logger.debug(`Could not find sentence #${jsonixSentence.id} in database`);
+      logger.silly(`Could not find sentence #${jsonixSentence.id} in database`);
       const sentence = new Sentence({
         _id: jsonixSentence.id,
         text: jsonixSentence.text,
@@ -200,7 +203,7 @@ async function saveSentences(jsonixFullText) {
       });
       await sentence.save();
     } else {
-      logger.debug(`Sentence #${jsonixSentence.id} already in database`);
+      logger.silly(`Sentence #${jsonixSentence.id} already in database`);
     }
     await saveAnnoSets(jsonixSentence);
   }
@@ -243,6 +246,7 @@ async function saveCorpusAndDocument(jsonixFullText) {
 }
 
 async function importFile(file) {
+  logger.debug(`Importing fulltext file ${file}...`);
   const jsonixFullText = await marshaller.unmarshall(file);
   await saveCorpusAndDocument(jsonixFullText);
   await saveSentences(jsonixFullText);
@@ -253,13 +257,12 @@ async function importFile(file) {
  * importLexUnits script.
  */
 async function importFiles(files) {
+  logger.info('Importing fulltext files...');
   const fulltextProgressBar = new ProgressBar({
     total: files.length,
     clean: true,
   });
-  logger.info('Importing fulltext files...');
   for (const file of files) {
-    logger.debug(`Importing fullText file ${file}...`);
     try {
       await importFile(file); // eslint-disable-line no-await-in-loop
     } catch (err) {
@@ -292,4 +295,5 @@ if (require.main === module) {
 
 export default {
   importFullTextOnceConnectedToDb,
+  importFile,
 };
