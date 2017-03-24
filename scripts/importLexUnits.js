@@ -17,22 +17,23 @@ function convertToValenceUnits(jsonixPattern, valenceUnitsMap, frameElementsMap)
     const fe = frameElementsMap.get(jsonixValenceUnit.fe);
     if (!fe) {
       logger.verbose(`FE is undefined: ${jsonixValenceUnit.fe}`);
-    }
-    const key = fe._id + jsonixValenceUnit.pt + jsonixValenceUnit.gf;
-    let valenceUnit;
-    if (!valenceUnitsMap.has(key)) {
-      valenceUnit = new ValenceUnit({
-        FE: fe,
-        PT: jsonixValenceUnit.pt,
-        GF: jsonixValenceUnit.gf,
-      });
-      valenceUnitsMap.set(key, valenceUnit.toObject({
-        depopulate: true,
-      }));
     } else {
-      valenceUnit = valenceUnitsMap.get(key);
+      const key = fe._id + jsonixValenceUnit.pt + jsonixValenceUnit.gf;
+      let valenceUnit;
+      if (!valenceUnitsMap.has(key)) {
+        valenceUnit = new ValenceUnit({
+          FE: fe,
+          PT: jsonixValenceUnit.pt,
+          GF: jsonixValenceUnit.gf,
+        });
+        valenceUnitsMap.set(key, valenceUnit.toObject({
+          depopulate: true,
+        }));
+      } else {
+        valenceUnit = valenceUnitsMap.get(key);
+      }
+      return valenceUnit;
     }
-    return valenceUnit;
   });
 }
 

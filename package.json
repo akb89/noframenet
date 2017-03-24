@@ -1,6 +1,6 @@
 {
   "name": "noframenet",
-  "version": "2.0.8",
+  "version": "2.2.2",
   "description": "A set of scripts to import FrameNet XML data to a MongoDB database",
   "keywords": [
     "FrameNet",
@@ -18,7 +18,8 @@
     "importdev": "npm run cleandev && NODE_ENV=development ./node_modules/babel-cli/bin/babel-node.js ./scripts/pipeline.js",
     "fix": "NODE_ENV=production ./node_modules/babel-cli/bin/babel-node.js ./scripts/fix.js",
     "fixdev": "NODE_ENV=development ./node_modules/babel-cli/bin/babel-node.js ./scripts/fix.js",
-    "try": "npm run cleandev && NODE_ENV=development ./node_modules/babel-cli/bin/babel-node.js ./scripts/importFullTexts.js"
+    "try": "npm run cleandev && NODE_ENV=development ./node_modules/babel-cli/bin/babel-node.js ./scripts/importFullTexts.js",
+    "debug": "npm run cleandev && NODE_ENV=development ./node_modules/babel-cli/bin/babel-node.js ./scripts/debug.js"
   },
   "homepage": "https://github.com/akb89/noframenet#readme",
   "repository": {
