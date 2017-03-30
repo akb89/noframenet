@@ -1,9 +1,9 @@
 /**
  * Behavior tests for importSemTypes script
  */
-import chai from 'chai';
-import rewire from 'rewire';
-import marshaller from './../marshalling/unmarshaller';
+const chai = require('chai');
+const rewire = require('rewire');
+const marshaller = require('./../marshalling/unmarshaller');
 
 const should = chai.should();
 const getSemTypes = rewire('./../scripts/importSemTypes.js').__get__('getSemTypes');

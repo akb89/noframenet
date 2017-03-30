@@ -1,8 +1,8 @@
-import filesystem from 'fs';
-import path from 'path';
-import config from './../config';
+const filesystem = require('fs');
+const path = require('path');
+const config = require('./../config');
 
-const logger = config.default.logger;
+const logger = config.logger;
 
 function isValidXml(file) {
   return file.endsWith('.xml');
@@ -61,7 +61,7 @@ async function filter(dir) {
     .map(file => path.join(dir, file));
 }
 
-export default {
+module.exports = {
   filterAndChunk,
   filter,
 };

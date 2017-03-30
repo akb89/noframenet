@@ -4,16 +4,25 @@
  * everything synchronously as it first checks everything already in the
  * database
  */
+const AnnotationSet = require('noframenet-core').AnnotationSet;
+const Corpus = require('noframenet-core').Corpus;
+const Document = require('noframenet-core').Document;
+const Label = require('noframenet-core').Label;
+const Pattern = require('noframenet-core').Pattern;
+const Sentence = require('noframenet-core').Sentence;
+const ValenceUnit = require('noframenet-core').ValenceUnit;
+const ProgressBar = require('ascii-progress');
+const toJsonixDocumentArray = require('./../utils/jsonixUtils').toJsonixDocumentArray;
+const toJsonixDocumentSentenceArray = require('./../utils/jsonixUtils').toJsonixDocumentSentenceArray;
+const toJsonixLabelArray = require('./../utils/jsonixUtils').toJsonixLabelArray;
+const toJsonixLayerArray = require('./../utils/jsonixUtils').toJsonixLayerArray;
+const toJsonixSentenceAnnoSetArray = require('./../utils/jsonixUtils').toJsonixSentenceAnnoSetArray;
+const config = require('./../config');
+const driver = require('./../db/mongo');
+const marshaller = require('./../marshalling/unmarshaller');
+const utils = require('./../utils/utils');
 
-import { AnnotationSet, Corpus, Document, Label, Pattern, Sentence, ValenceUnit } from 'noframenet-core';
-import ProgressBar from 'ascii-progress';
-import { toJsonixDocumentArray, toJsonixDocumentSentenceArray, toJsonixLabelArray, toJsonixLayerArray, toJsonixSentenceAnnoSetArray } from './../utils/jsonixUtils';
-import config from './../config';
-import driver from './../db/mongo';
-import marshaller from './../marshalling/unmarshaller';
-import utils from './../utils/utils';
-
-const logger = config.default.logger;
+const logger = config.logger;
 
 function isValidFNAnnoSet(jsonixAnnoSet) {
   let isValidFELayer = false;
@@ -287,13 +296,13 @@ async function importFullText(fullTextDir, dbUri) {
 
 if (require.main === module) {
   const startTime = process.hrtime();
-  const dbUri = config.default.dbUri;
-  const fullTextDir = config.default.frameNetDir.concat('fulltext');
+  const dbUri = config.dbUri;
+  const fullTextDir = config.frameNetDir.concat('fulltext');
   importFullText(fullTextDir, dbUri)
     .then(() => logger.info(`Import process completed in ${process.hrtime(startTime)[0]}s`));
 }
 
-export default {
+module.exports = {
   importFullTextOnceConnectedToDb,
   importFile,
 };

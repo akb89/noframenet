@@ -1,4 +1,4 @@
-import logger from './../logger/logger';
+const logger = require('./../logger/logger');
 
 const config = {
   dbUri: 'mongodb://localhost:27017/noframenet15',
@@ -8,4 +8,4 @@ const config = {
   lexUnitChunkSize: 50,
 };
 
-export default config;
+module.exports = config;

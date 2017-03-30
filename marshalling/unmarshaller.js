@@ -1,10 +1,10 @@
-import Promise from 'bluebird';
-import jsonix from 'jsonix';
-import frameSchema from './../mappings/FrameSchema';
-import frameRelationSchema from './../mappings/FrameRelationSchema';
-import fullTextSchema from './../mappings/FullTextSchema';
-import lexUnitSchema from './../mappings/LexUnitSchema';
-import semTypeSchema from './../mappings/SemTypeSchema';
+const Promise = require('bluebird');
+const jsonix = require('jsonix');
+const frameSchema = require('./../mappings/FrameSchema');
+const frameRelationSchema = require('./../mappings/FrameRelationSchema');
+const fullTextSchema = require('./../mappings/FullTextSchema');
+const lexUnitSchema = require('./../mappings/LexUnitSchema');
+const semTypeSchema = require('./../mappings/SemTypeSchema');
 
 const Jsonix = jsonix.Jsonix;
 const FrameSchema = frameSchema.FrameSchema;
@@ -33,6 +33,6 @@ function unmarshall(file) {
   });
 }
 
-export default {
+module.exports = {
   unmarshall,
 };

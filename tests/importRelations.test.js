@@ -1,11 +1,14 @@
 /**
  * Behavior tests for importRelations script
  */
-import { FERelation, FrameRelation, FrameRelationType } from 'noframenet-core';
-import chai from 'chai';
-import rewire from 'rewire';
-import { toJsonixFrameRelationArray, toJsonixFrameRelationTypeArray } from './../utils/jsonixUtils';
-import marshaller from './../marshalling/unmarshaller';
+const FERelation = require('noframenet-core').FERelation;
+const FrameRelation = require('noframenet-core').FrameRelation;
+const FrameRelationType = require('noframenet-core').FrameRelationType;
+const chai = require('chai');
+const rewire = require('rewire');
+const toJsonixFrameRelationArray = require('./../utils/jsonixUtils').toJsonixFrameRelationArray;
+const toJsonixFrameRelationTypeArray = require('./../utils/jsonixUtils').toJsonixFrameRelationTypeArray;
+const marshaller = require('./../marshalling/unmarshaller');
 
 const should = chai.should();
 const convertToFERelations = rewire('./../scripts/importRelations.js').__get__('convertToFERelations');

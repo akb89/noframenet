@@ -1,6 +1,6 @@
-import chai from 'chai';
-import fs from 'fs';
-import utils from '../utils/utils';
+const chai = require('chai');
+const fs = require('fs');
+const utils = require('../utils/utils');
 
 const should = chai.should();
 
