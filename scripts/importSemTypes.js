@@ -1,14 +1,15 @@
 /**
  * Standalone script to import the content of semTypes.xml to MongoDB
  */
+const SemType = require('noframenet-core').SemType;
+const toJsonixSemTypesSemTypeArray = require('./../utils/jsonixUtils').toJsonixSemTypesSemTypeArray;
+const toJsonixSuperTypeArray = require('./../utils/jsonixUtils').toJsonixSuperTypeArray;
+const config = require('./../config');
+const driver = require('./../db/mongo');
+const marshaller = require('./../marshalling/unmarshaller');
 
-import { SemType } from 'noframenet-core';
-import { toJsonixSemTypesSemTypeArray, toJsonixSuperTypeArray } from './../utils/jsonixUtils';
-import config from './../config';
-import driver from './../db/mongo';
-import marshaller from './../marshalling/unmarshaller';
+const logger = config.logger;
 
-const logger = config.default.logger;
 
 function getSuperTypes(jsonixSemType) {
   return toJsonixSuperTypeArray(jsonixSemType)
@@ -62,11 +63,11 @@ async function importSemTypes(semTypesFilePath, dbUri) {
 
 if (require.main === module) {
   const startTime = process.hrtime();
-  const dbUri = config.default.dbUri;
-  const semTypesFilePath = config.default.frameNetDir.concat('semTypes.xml');
+  const dbUri = config.dbUri;
+  const semTypesFilePath = config.frameNetDir.concat('semTypes.xml');
   importSemTypes(semTypesFilePath, dbUri).then(() => logger.info(`Import completed in ${process.hrtime(startTime)[0]}s`));
 }
 
-export default {
+module.exports = {
   importSemTypesOnceConnectedToDb,
 };

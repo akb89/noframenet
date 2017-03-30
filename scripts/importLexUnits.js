@@ -1,16 +1,27 @@
 /**
  * Standalone script to import FrameNet lexical units to MongoDB.
  */
+const AnnotationSet = require('noframenet-core').AnnotationSet;
+const Frame = require('noframenet-core').Frame;
+const FrameElement = require('noframenet-core').FrameElement;
+const Label = require('noframenet-core').Label;
+const Pattern = require('noframenet-core').Pattern;
+const Sentence = require('noframenet-core').Sentence;
+const ValenceUnit = require('noframenet-core').ValenceUnit;
+const ProgressBar = require('ascii-progress');
+const toJsonixLabelArray = require('./../utils/jsonixUtils').toJsonixLabelArray;
+const toJsonixLayerArray = require('./../utils/jsonixUtils').toJsonixLayerArray;
+const toJsonixLexUnitSentenceArray = require('./../utils/jsonixUtils').toJsonixLexUnitSentenceArray;
+const toJsonixPatternAnnoSetArray = require('./../utils/jsonixUtils').toJsonixPatternAnnoSetArray;
+const toJsonixPatternArray = require('./../utils/jsonixUtils').toJsonixPatternArray;
+const toJsonixSentenceAnnoSetArray = require('./../utils/jsonixUtils').toJsonixSentenceAnnoSetArray;
+const toJsonixValenceUnitArray = require('./../utils/jsonixUtils').toJsonixValenceUnitArray;
+const config = require('./../config');
+const driver = require('./../db/mongo');
+const marshaller = require('./../marshalling/unmarshaller');
+const utils = require('./../utils/utils');
 
-import { AnnotationSet, Frame, FrameElement, Label, Pattern, Sentence, ValenceUnit } from 'noframenet-core';
-import ProgressBar from 'ascii-progress';
-import { toJsonixLabelArray, toJsonixLayerArray, toJsonixLexUnitSentenceArray, toJsonixPatternAnnoSetArray, toJsonixPatternArray, toJsonixSentenceAnnoSetArray, toJsonixValenceUnitArray } from './../utils/jsonixUtils';
-import config from './../config';
-import driver from './../db/mongo';
-import marshaller from './../marshalling/unmarshaller';
-import utils from './../utils/utils';
-
-const logger = config.default.logger;
+const logger = config.logger;
 
 function convertToValenceUnits(jsonixPattern, valenceUnitsMap, frameElementsMap) {
   return toJsonixValenceUnitArray(jsonixPattern).map((jsonixValenceUnit) => {
@@ -136,16 +147,14 @@ async function convertToObjects(batch, uniques) {
     const jsonixLexUnit = await marshaller.unmarshall(file);
     const frameElementsMap = await getFEMap(jsonixLexUnit.value.frameID);
     try {
-      processLexUnit(
-        jsonixLexUnit,
+      processLexUnit(jsonixLexUnit,
         uniques.annoSet2PatternMap,
         data.annotationSets,
         data.labels,
         uniques.patternsMap,
         data.sentences,
         uniques.valenceUnitsMap,
-        frameElementsMap,
-      );
+        frameElementsMap);
     } catch (err) {
       logger.verbose(`Ill-formed lexUnit detected: ID = ${jsonixLexUnit.value.id}`);
       logger.debug(err);
@@ -251,12 +260,12 @@ async function importLexUnits(lexUnitDir, chunkSize, dbUri) {
 
 if (require.main === module) {
   const startTime = process.hrtime();
-  const dbUri = config.default.dbUri;
-  const lexUnitDir = config.default.frameNetDir.concat('lu');
-  const lexUnitChunkSize = config.default.lexUnitChunkSize;
+  const dbUri = config.dbUri;
+  const lexUnitDir = config.frameNetDir.concat('lu');
+  const lexUnitChunkSize = config.lexUnitChunkSize;
   importLexUnits(lexUnitDir, lexUnitChunkSize, dbUri).then(() => logger.info(`Import process completed in ${process.hrtime(startTime)[0]}s`));
 }
 
-export default {
+module.exports = {
   importLexUnitsOnceConnectedToDb,
 };

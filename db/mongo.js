@@ -1,10 +1,10 @@
-import mongoose from 'mongoose';
-import mongodb from 'mongodb';
-import bluebird from 'bluebird';
-import config from './../config';
+const mongoose = require('mongoose');
+const mongodb = require('mongodb');
+const bluebird = require('bluebird');
+const config = require('./../config');
 
 const MongoClient = mongodb.MongoClient;
-const logger = config.default.logger;
+const logger = config.logger;
 
 mongoose.Promise = bluebird;
 
@@ -34,6 +34,6 @@ async function connectToDatabase(uri) {
   };
 }
 
-export default {
+module.exports = {
   connectToDatabase,
 };

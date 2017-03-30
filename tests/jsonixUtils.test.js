@@ -1,6 +1,18 @@
-import chai from 'chai';
-import { toJsonixDocumentArray, toJsonixDocumentSentenceArray, toJsonixFERelationArray, toJsonixFrameRelationArray, toJsonixFrameRelationTypeArray, toJsonixSemTypesSemTypeArray, toJsonixExcludesFEArray, toJsonixFECoreSetArray, toJsonixFECoreSetMemberArray, toJsonixFrameElementArray, toJsonixLexUnitArray, toJsonixRequiresFEArray, toJsonixSemTypeArray } from './../utils/jsonixUtils';
-import marshaller from './../marshalling//unmarshaller';
+const chai = require('chai');
+const marshaller = require('./../marshalling/unmarshaller');
+const toJsonixDocumentArray = require('./../utils/jsonixUtils').toJsonixDocumentArray;
+const toJsonixDocumentSentenceArray = require('./../utils/jsonixUtils').toJsonixDocumentSentenceArray;
+const toJsonixExcludesFEArray = require('./../utils/jsonixUtils').toJsonixExcludesFEArray;
+const toJsonixFECoreSetArray = require('./../utils/jsonixUtils').toJsonixFECoreSetArray;
+const toJsonixFECoreSetMemberArray = require('./../utils/jsonixUtils').toJsonixFECoreSetMemberArray;
+const toJsonixFrameElementArray = require('./../utils/jsonixUtils').toJsonixFrameElementArray;
+const toJsonixSemTypesSemTypeArray = require('./../utils/jsonixUtils').toJsonixSemTypesSemTypeArray;
+const toJsonixLexUnitArray = require('./../utils/jsonixUtils').toJsonixLexUnitArray;
+const toJsonixRequiresFEArray = require('./../utils/jsonixUtils').toJsonixRequiresFEArray;
+const toJsonixSemTypeArray = require('./../utils/jsonixUtils').toJsonixSemTypeArray;
+const toJsonixFERelationArray = require('./../utils/jsonixUtils').toJsonixFERelationArray;
+const toJsonixFrameRelationArray = require('./../utils/jsonixUtils').toJsonixFrameRelationArray;
+const toJsonixFrameRelationTypeArray = require('./../utils/jsonixUtils').toJsonixFrameRelationTypeArray;
 
 const should = chai.should();
 

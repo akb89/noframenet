@@ -1,4 +1,4 @@
-import winston from 'winston';
+const winston = require('winston');
 
 const error = new (winston.Logger)({
   transports: [
@@ -74,7 +74,7 @@ const silly = new (winston.Logger)({
   ],
 });
 
-export default {
+module.exports = {
   error,
   warn,
   verbose,

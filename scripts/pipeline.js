@@ -1,12 +1,12 @@
-import config from './../config';
-import driver from './../db/mongo';
-import importFrames from './importFrames';
-import importFullTexts from './importFullTexts';
-import importLexUnits from './importLexUnits';
-import importRelations from './importRelations';
-import importSemTypes from './importSemTypes';
+const config = require('./../config');
+const driver = require('./../db/mongo');
+const importFrames = require('./importFrames');
+const importFullTexts = require('./importFullTexts');
+const importLexUnits = require('./importLexUnits');
+const importRelations = require('./importRelations');
+const importSemTypes = require('./importSemTypes');
 
-const logger = config.default.logger;
+const logger = config.logger;
 
 async function importFrameNetData(dbUri, lexUnitDir, lexUnitChunkSize,
   frameDir, frameChunkSize, fullTextDir, relationsFilePath,
@@ -28,14 +28,14 @@ async function importFrameNetData(dbUri, lexUnitDir, lexUnitChunkSize,
 
 if (require.main === module) {
   const startTime = process.hrtime();
-  const dbUri = config.default.dbUri;
-  const lexUnitDir = config.default.frameNetDir.concat('lu');
-  const lexUnitChunkSize = config.default.lexUnitChunkSize;
-  const frameDir = config.default.frameNetDir.concat('frame');
-  const frameChunkSize = config.default.frameChunkSize;
-  const fullTextDir = config.default.frameNetDir.concat('fulltext');
-  const relationsFilePath = config.default.frameNetDir.concat('frRelation.xml');
-  const semTypesFilePath = config.default.frameNetDir.concat('semTypes.xml');
+  const dbUri = config.dbUri;
+  const lexUnitDir = config.frameNetDir.concat('lu');
+  const lexUnitChunkSize = config.lexUnitChunkSize;
+  const frameDir = config.frameNetDir.concat('frame');
+  const frameChunkSize = config.frameChunkSize;
+  const fullTextDir = config.frameNetDir.concat('fulltext');
+  const relationsFilePath = config.frameNetDir.concat('frRelation.xml');
+  const semTypesFilePath = config.frameNetDir.concat('semTypes.xml');
   importFrameNetData(dbUri, lexUnitDir, lexUnitChunkSize, frameDir,
     frameChunkSize, fullTextDir, relationsFilePath, semTypesFilePath)
     .then(() => logger.info(`Import completed in ${process.hrtime(startTime)[0]}s`));

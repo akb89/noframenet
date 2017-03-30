@@ -2,12 +2,12 @@
  * A script to compare the set of lexical units under frame files and the set
  * of lexical units under the lu directory, as those two sets do no match.
  */
-import utils from '../utils/utils';
-import { toJsonixLexUnitArray } from './../utils/jsonixUtils';
-import marshaller from './../marshalling/unmarshaller';
-import config from './../config';
+const utils = require('../utils/utils');
+const toJsonixLexUnitArray = require('./../utils/jsonixUtils').toJsonixLexUnitArray;
+const marshaller = require('./../marshalling/unmarshaller');
+const config = require('./../config');
 
-const logger = config.default.logger;
+const logger = config.logger;
 
 async function getLexUnitIDs(batch) {
   return Promise.all(batch.map(async file => parseInt(file.substring(file.lastIndexOf('lu') + 2, file.lastIndexOf('.xml')), 0)));
@@ -44,9 +44,9 @@ async function compare(frameDir, frameChunkSize, lexUnitDir, lexUnitChunkSize) {
 }
 
 if (require.main === module) {
-  const lexUnitDir = config.default.frameNetDir.concat('lu');
-  const lexUnitChunkSize = config.default.lexUnitChunkSize;
-  const frameDir = config.default.frameNetDir.concat('frame');
-  const frameChunkSize = config.default.frameChunkSize;
+  const lexUnitDir = config.frameNetDir.concat('lu');
+  const lexUnitChunkSize = config.lexUnitChunkSize;
+  const frameDir = config.frameNetDir.concat('frame');
+  const frameChunkSize = config.frameChunkSize;
   compare(frameDir, frameChunkSize, lexUnitDir, lexUnitChunkSize);
 }

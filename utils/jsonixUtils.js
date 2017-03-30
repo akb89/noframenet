@@ -3,7 +3,7 @@
  * @param jsonixPattern
  * @returns {Array}
  */
-export function toJsonixPatternAnnoSetArray(jsonixPattern) {
+function toJsonixPatternAnnoSetArray(jsonixPattern) {
   const annotationSets = [];
   let annotationSetIterator = 0;
   if ({}.hasOwnProperty.call(jsonixPattern, 'annoSet')) {
@@ -20,7 +20,7 @@ export function toJsonixPatternAnnoSetArray(jsonixPattern) {
  * @param jsonixSentence
  * @returns {Array}
  */
-export function toJsonixSentenceAnnoSetArray(jsonixSentence) {
+function toJsonixSentenceAnnoSetArray(jsonixSentence) {
   const annotationSets = [];
   let annoSetIterator = 0;
   if ({}.hasOwnProperty.call(jsonixSentence, 'annotationSet')) {
@@ -37,7 +37,7 @@ export function toJsonixSentenceAnnoSetArray(jsonixSentence) {
  * @param jsonixCorpus
  * @returns {Array}
  */
-export function toJsonixDocumentArray(jsonixCorpus) {
+function toJsonixDocumentArray(jsonixCorpus) {
   const documents = [];
   let documentIterator = 0;
   if ({}.hasOwnProperty.call(jsonixCorpus, 'document')) {
@@ -54,7 +54,7 @@ export function toJsonixDocumentArray(jsonixCorpus) {
  * @param  jsonixFE
  * @return {Array}
  */
-export function toJsonixExcludesFEArray(jsonixFE) {
+function toJsonixExcludesFEArray(jsonixFE) {
   const excludes = [];
   let excludeIterator = 0;
   if ({}.hasOwnProperty.call(jsonixFE, 'excludesFE')) {
@@ -71,7 +71,7 @@ export function toJsonixExcludesFEArray(jsonixFE) {
  * @param jsonixFrame
  * @returns {Array}
  */
-export function toJsonixFECoreSetArray(jsonixFrame) {
+function toJsonixFECoreSetArray(jsonixFrame) {
   const feCoreSets = [];
   let feCoreSetIterator = 0;
   if ({}.hasOwnProperty.call(jsonixFrame.value, 'fEcoreSet')) {
@@ -88,7 +88,7 @@ export function toJsonixFECoreSetArray(jsonixFrame) {
  * @param jsonixFECoreSet
  * @returns {Array}
  */
-export function toJsonixFECoreSetMemberArray(jsonixFECoreSet) {
+function toJsonixFECoreSetMemberArray(jsonixFECoreSet) {
   const members = [];
   let memberIterator = 0;
   if ({}.hasOwnProperty.call(jsonixFECoreSet, 'memberFE')) {
@@ -105,7 +105,7 @@ export function toJsonixFECoreSetMemberArray(jsonixFECoreSet) {
  * @param jsonixFrame
  * @returns {Array}
  */
-export function toJsonixFrameElementArray(jsonixFrame) {
+function toJsonixFrameElementArray(jsonixFrame) {
   const frameElements = [];
   let frameElementIterator = 0;
   if ({}.hasOwnProperty.call(jsonixFrame.value, 'fe')) {
@@ -122,7 +122,7 @@ export function toJsonixFrameElementArray(jsonixFrame) {
  * @param jsonixFrameRelation
  * @returns {Array}
  */
-export function toJsonixFERelationArray(jsonixFrameRelation) {
+function toJsonixFERelationArray(jsonixFrameRelation) {
   const feRelations = [];
   let feRelationIterator = 0;
   if ({}.hasOwnProperty.call(jsonixFrameRelation, 'feRelation')) {
@@ -139,7 +139,7 @@ export function toJsonixFERelationArray(jsonixFrameRelation) {
  * @param jsonixFrameRelationType
  * @returns {Array}
  */
-export function toJsonixFrameRelationArray(jsonixFrameRelationType) {
+function toJsonixFrameRelationArray(jsonixFrameRelationType) {
   const frameRelations = [];
   let frameRelationIterator = 0;
   if ({}.hasOwnProperty.call(jsonixFrameRelationType, 'frameRelation')) {
@@ -156,7 +156,7 @@ export function toJsonixFrameRelationArray(jsonixFrameRelationType) {
  * @param jsonixFrameRelations
  * @returns {Array}
  */
-export function toJsonixFrameRelationTypeArray(jsonixFrameRelations) {
+function toJsonixFrameRelationTypeArray(jsonixFrameRelations) {
   const frameRelationTypes = [];
   let frameRelationTypeIterator = 0;
   if ({}.hasOwnProperty.call(jsonixFrameRelations.value, 'frameRelationType')) {
@@ -174,7 +174,7 @@ export function toJsonixFrameRelationTypeArray(jsonixFrameRelations) {
  * @param jsonixAnnotationSet
  * @returns {Array}
  */
-export function toJsonixLayerArray(jsonixAnnotationSet) {
+function toJsonixLayerArray(jsonixAnnotationSet) {
   const layers = [];
   let layerIterator = 0;
   if ({}.hasOwnProperty.call(jsonixAnnotationSet, 'layer')) {
@@ -191,7 +191,7 @@ export function toJsonixLayerArray(jsonixAnnotationSet) {
  * @param jsonixLayer
  * @returns {Array}
  */
-export function toJsonixLabelArray(jsonixLayer) {
+function toJsonixLabelArray(jsonixLayer) {
   const labels = [];
   let labelIterator = 0;
   if ({}.hasOwnProperty.call(jsonixLayer, 'label')) {
@@ -208,7 +208,7 @@ export function toJsonixLabelArray(jsonixLayer) {
  * @param jsonixLexUnit
  * @returns {Array}
  */
-export function toJsonixLexemeArray(jsonixLexUnit) {
+function toJsonixLexemeArray(jsonixLexUnit) {
   const lexemes = [];
   let lexemeIterator = 0;
   if ({}.hasOwnProperty.call(jsonixLexUnit, 'lexeme')) {
@@ -225,7 +225,7 @@ export function toJsonixLexemeArray(jsonixLexUnit) {
  * @param jsonixFrame
  * @returns {Array}
  */
-export function toJsonixLexUnitArray(jsonixFrame) {
+function toJsonixLexUnitArray(jsonixFrame) {
   const lexUnits = [];
   let lexUnitIterator = 0;
   if ({}.hasOwnProperty.call(jsonixFrame.value, 'lexUnit')) {
@@ -242,7 +242,7 @@ export function toJsonixLexUnitArray(jsonixFrame) {
  * @param jsonixLexUnit
  * @returns {Array}
  */
-export function toJsonixPatternArray(jsonixLexUnit) {
+function toJsonixPatternArray(jsonixLexUnit) {
   const patterns = [];
   if ({}.hasOwnProperty.call(jsonixLexUnit.value, 'valences')) {
     const valences = jsonixLexUnit.value.valences;
@@ -269,7 +269,7 @@ export function toJsonixPatternArray(jsonixLexUnit) {
  * @param  jsonixFE
  * @return {Array}
  */
-export function toJsonixRequiresFEArray(jsonixFE) {
+function toJsonixRequiresFEArray(jsonixFE) {
   const requires = [];
   let requireIterator = 0;
   if ({}.hasOwnProperty.call(jsonixFE, 'requiresFE')) {
@@ -286,7 +286,7 @@ export function toJsonixRequiresFEArray(jsonixFE) {
  * @param  jsonixSemTypes
  * @return {Array}                     [description]
  */
-export function toJsonixSemTypesSemTypeArray(jsonixSemTypes) {
+function toJsonixSemTypesSemTypeArray(jsonixSemTypes) {
   const semTypes = [];
   let semTypeIterator = 0;
   if ({}.hasOwnProperty.call(jsonixSemTypes.value, 'semType')) {
@@ -303,7 +303,7 @@ export function toJsonixSemTypesSemTypeArray(jsonixSemTypes) {
  * @param jsonixElement can be either a jsonixFrame, a jsonixFrameElement or a jsonixLexUnit
  * @returns {Array}
  */
-export function toJsonixSemTypeArray(jsonixElement) {
+function toJsonixSemTypeArray(jsonixElement) {
   const semTypes = [];
   let semTypeIterator = 0;
   if (jsonixElement.value !== undefined && {}.hasOwnProperty.call(jsonixElement.value, 'semType')) {
@@ -326,7 +326,7 @@ export function toJsonixSemTypeArray(jsonixElement) {
  * @param  jsonixSemType
  * @return {Array}
  */
-export function toJsonixSuperTypeArray(jsonixSemType) {
+function toJsonixSuperTypeArray(jsonixSemType) {
   const superTypes = [];
   let superTypeIterator = 0;
   if ({}.hasOwnProperty.call(jsonixSemType, 'superType')) {
@@ -343,7 +343,7 @@ export function toJsonixSuperTypeArray(jsonixSemType) {
  * @param jsonixLexUnit
  * @returns {Array}
  */
-export function toJsonixLexUnitSentenceArray(jsonixLexUnit) {
+function toJsonixLexUnitSentenceArray(jsonixLexUnit) {
   const sentences = [];
   let subCorpusIterator = 0;
   if ({}.hasOwnProperty.call(jsonixLexUnit.value, 'subCorpus')) {
@@ -368,7 +368,7 @@ export function toJsonixLexUnitSentenceArray(jsonixLexUnit) {
  * @param jsonixFullText
  * @returns {Array}
  */
-export function toJsonixDocumentSentenceArray(jsonixFullText) {
+function toJsonixDocumentSentenceArray(jsonixFullText) {
   const sentences = [];
   let sentenceIterator = 0;
   if ({}.hasOwnProperty.call(jsonixFullText.value, 'sentence')) {
@@ -385,7 +385,7 @@ export function toJsonixDocumentSentenceArray(jsonixFullText) {
  * @param jsonixPattern
  * @returns {Array}
  */
-export function toJsonixValenceUnitArray(jsonixPattern) {
+function toJsonixValenceUnitArray(jsonixPattern) {
   const valenceUnits = [];
   let valenceUnitsIterator = 0;
   if ({}.hasOwnProperty.call(jsonixPattern, 'valenceUnit')) {
@@ -396,3 +396,28 @@ export function toJsonixValenceUnitArray(jsonixPattern) {
   }
   return valenceUnits;
 }
+
+module.exports = {
+  toJsonixPatternAnnoSetArray,
+  toJsonixSentenceAnnoSetArray,
+  toJsonixDocumentArray,
+  toJsonixExcludesFEArray,
+  toJsonixFECoreSetArray,
+  toJsonixFECoreSetMemberArray,
+  toJsonixFrameElementArray,
+  toJsonixFERelationArray,
+  toJsonixFrameRelationArray,
+  toJsonixFrameRelationTypeArray,
+  toJsonixLayerArray,
+  toJsonixLabelArray,
+  toJsonixLexemeArray,
+  toJsonixLexUnitArray,
+  toJsonixPatternArray,
+  toJsonixRequiresFEArray,
+  toJsonixSemTypesSemTypeArray,
+  toJsonixSemTypeArray,
+  toJsonixSuperTypeArray,
+  toJsonixLexUnitSentenceArray,
+  toJsonixDocumentSentenceArray,
+  toJsonixValenceUnitArray,
+};

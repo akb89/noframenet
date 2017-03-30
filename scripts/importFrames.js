@@ -1,16 +1,25 @@
 /**
  * Standalone script to import FrameNet frames to MongoDB.
  */
+const Frame = require('noframenet-core').Frame;
+const FrameElement = require('noframenet-core').FrameElement;
+const Lexeme = require('noframenet-core').Lexeme;
+const LexUnit = require('noframenet-core').LexUnit;
+const ProgressBar = require('ascii-progress');
+const toJsonixExcludesFEArray = require('./../utils/jsonixUtils').toJsonixExcludesFEArray;
+const toJsonixFECoreSetArray = require('./../utils/jsonixUtils').toJsonixFECoreSetArray;
+const toJsonixFECoreSetMemberArray = require('./../utils/jsonixUtils').toJsonixFECoreSetMemberArray;
+const toJsonixFrameElementArray = require('./../utils/jsonixUtils').toJsonixFrameElementArray;
+const toJsonixLexemeArray = require('./../utils/jsonixUtils').toJsonixLexemeArray;
+const toJsonixLexUnitArray = require('./../utils/jsonixUtils').toJsonixLexUnitArray;
+const toJsonixRequiresFEArray = require('./../utils/jsonixUtils').toJsonixRequiresFEArray;
+const toJsonixSemTypeArray = require('./../utils/jsonixUtils').toJsonixSemTypeArray;
+const config = require('./../config');
+const driver = require('./../db/mongo');
+const marshaller = require('./../marshalling/unmarshaller');
+const utils = require('./../utils/utils');
 
-import { Frame, FrameElement, Lexeme, LexUnit } from 'noframenet-core';
-import ProgressBar from 'ascii-progress';
-import { toJsonixExcludesFEArray, toJsonixFECoreSetArray, toJsonixFECoreSetMemberArray, toJsonixFrameElementArray, toJsonixLexemeArray, toJsonixLexUnitArray, toJsonixRequiresFEArray, toJsonixSemTypeArray } from './../utils/jsonixUtils';
-import config from './../config';
-import driver from './../db/mongo';
-import marshaller from './../marshalling/unmarshaller';
-import utils from './../utils/utils';
-
-const logger = config.default.logger;
+const logger = config.logger;
 
 function convertToLexemes(jsonixLexUnit) {
   return toJsonixLexemeArray(jsonixLexUnit)
@@ -175,13 +184,13 @@ async function importFrames(frameDir, chunkSize, dbUri) {
 
 if (require.main === module) {
   const startTime = process.hrtime();
-  const dbUri = config.default.dbUri;
-  const frameDir = config.default.frameNetDir.concat('frame');
-  const frameChunkSize = config.default.frameChunkSize;
+  const dbUri = config.dbUri;
+  const frameDir = config.frameNetDir.concat('frame');
+  const frameChunkSize = config.frameChunkSize;
   importFrames(frameDir, frameChunkSize, dbUri)
     .then(() => logger.info(`Import process completed in ${process.hrtime(startTime)[0]}s`));
 }
 
-export default {
+module.exports = {
   importFramesOnceConnectedToDb,
 };

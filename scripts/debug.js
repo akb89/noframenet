@@ -1,8 +1,8 @@
-import config from './../config';
-import driver from './../db/mongo';
-import importFullTexts from './importFullTexts';
+const config = require('./../config');
+const driver = require('./../db/mongo');
+const importFullTexts = require('./importFullTexts');
 
-const logger = config.default.logger;
+const logger = config.logger;
 
 async function debug(file, dbUri) {
   const db = await driver.connectToDatabase(dbUri);
@@ -18,8 +18,8 @@ async function debug(file, dbUri) {
 
 if (require.main === module) {
   const startTime = process.hrtime();
-  const dbUri = config.default.dbUri;
-  const fullTextDir = config.default.frameNetDir.concat('fulltext');
+  const dbUri = config.dbUri;
+  const fullTextDir = config.frameNetDir.concat('fulltext');
   const file = fullTextDir.concat('/LUCorpus-v0.3__20000420_xin_eng-NEW.xml');
   debug(file, dbUri)
     .then(() => logger.info(`Import process completed in ${process.hrtime(startTime)[0]}s`));

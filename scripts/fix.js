@@ -1,11 +1,12 @@
 /**
  * A script to fix the FrameNet database
  */
-import { Pattern, ValenceUnit } from 'noframenet-core';
-import config from './../config';
-import driver from './../db/mongo';
+const Pattern = require('noframenet-core').Pattern;
+const ValenceUnit = require('noframenet-core').ValenceUnit;
+const config = require('./../config');
+const driver = require('./../db/mongo');
 
-const logger = config.default.logger;
+const logger = config.logger;
 
 async function getGFSet() {
   return ValenceUnit
@@ -108,9 +109,9 @@ async function fix(dbUri) {
 }
 
 if (require.main === module) {
-  fix(config.default.dbUri);
+  fix(config.dbUri);
 }
 
-export default {
+module.exports = {
   fixOnceConnectedToDB,
 };

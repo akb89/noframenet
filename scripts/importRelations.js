@@ -1,14 +1,17 @@
 /**
  * Standalone script to import the content of frRelation.xml to MongoDB
  */
+const FERelation = require('noframenet-core').FERelation;
+const FrameRelation = require('noframenet-core').FrameRelation;
+const FrameRelationType = require('noframenet-core').FrameRelationType;
+const toJsonixFERelationArray = require('./../utils/jsonixUtils').toJsonixFERelationArray;
+const toJsonixFrameRelationArray = require('./../utils/jsonixUtils').toJsonixFrameRelationArray;
+const toJsonixFrameRelationTypeArray = require('./../utils/jsonixUtils').toJsonixFrameRelationTypeArray;
+const config = require('./../config');
+const driver = require('./../db/mongo');
+const marshaller = require('./../marshalling/unmarshaller');
 
-import { FERelation, FrameRelation, FrameRelationType } from 'noframenet-core';
-import { toJsonixFERelationArray, toJsonixFrameRelationArray, toJsonixFrameRelationTypeArray } from './../utils/jsonixUtils';
-import config from './../config';
-import driver from './../db/mongo';
-import marshaller from './../marshalling/unmarshaller';
-
-const logger = config.default.logger;
+const logger = config.logger;
 
 function convertToFERelations(jsonixFrameRelation) {
   return toJsonixFERelationArray(jsonixFrameRelation)
@@ -109,11 +112,11 @@ async function importRelations(relationsFilePath, dbUri) {
 
 if (require.main === module) {
   const startTime = process.hrtime();
-  const dbUri = config.default.dbUri;
-  const relationsFilePath = config.default.frameNetDir.concat('frRelation.xml');
+  const dbUri = config.dbUri;
+  const relationsFilePath = config.frameNetDir.concat('frRelation.xml');
   importRelations(relationsFilePath, dbUri).then(() => logger.info(`Import completed in ${process.hrtime(startTime)[0]}s`));
 }
 
-export default {
+module.exports = {
   importRelationsOnceConnectedToDb,
 };

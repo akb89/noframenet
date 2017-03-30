@@ -1,7 +1,7 @@
-import config from './../config';
-import driver from './../db/mongo';
+const config = require('./../config');
+const driver = require('./../db/mongo');
 
-const logger = config.default.logger;
+const logger = config.logger;
 
 async function clean(dbUri) {
   const db = await driver.connectToDatabase(dbUri);
@@ -13,6 +13,6 @@ async function clean(dbUri) {
 }
 
 if (require.main === module) {
-  const dbUri = config.default.dbUri;
+  const dbUri = config.dbUri;
   clean(dbUri);
 }
