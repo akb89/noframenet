@@ -27,7 +27,7 @@ function convertToValenceUnits(jsonixPattern, valenceUnitsMap, frameElementsMap)
   return toJsonixValenceUnitArray(jsonixPattern).map((jsonixValenceUnit) => {
     const fe = frameElementsMap.get(jsonixValenceUnit.fe);
     if (!fe) {
-      logger.verbose(`FE is undefined: ${jsonixValenceUnit.fe}`);
+      throw new Error(`FE is undefined: ${jsonixValenceUnit.fe}`);
     } else {
       const key = fe._id + jsonixValenceUnit.pt + jsonixValenceUnit.gf;
       let valenceUnit;
@@ -53,22 +53,26 @@ function processPatterns(jsonixLexUnit, annoSet2PatternMap, patternsMap,
   // Import patterns and valenceUnits.
   // Add all info regading patterns and lexUnits to AnnoSet objects
   toJsonixPatternArray(jsonixLexUnit).forEach((jsonixPattern) => {
-    const vus = convertToValenceUnits(jsonixPattern, valenceUnitsMap, frameElementsMap);
-    const key = vus.map(vu => vu._id).sort().join(''); // TODO test this
-    let pattern;
-    if (!patternsMap.has(key)) {
-      pattern = new Pattern({
-        valenceUnits: vus,
+    try {
+      const vus = convertToValenceUnits(jsonixPattern, valenceUnitsMap, frameElementsMap);
+      const key = vus.map(vu => vu._id).sort().join(''); // TODO test this
+      let pattern;
+      if (!patternsMap.has(key)) {
+        pattern = new Pattern({
+          valenceUnits: vus,
+        });
+        patternsMap.set(key, pattern.toObject({
+          depopulate: true,
+        }));
+      } else {
+        pattern = patternsMap.get(key);
+      }
+      toJsonixPatternAnnoSetArray(jsonixPattern).forEach((jsonixAnnoSet) => {
+        annoSet2PatternMap.set(jsonixAnnoSet.id, pattern._id);
       });
-      patternsMap.set(key, pattern.toObject({
-        depopulate: true,
-      }));
-    } else {
-      pattern = patternsMap.get(key);
+    } catch (err) {
+      logger.debug(`${err.message} in lexUnit #${jsonixLexUnit.value.id}`);
     }
-    toJsonixPatternAnnoSetArray(jsonixPattern).forEach((jsonixAnnoSet) => {
-      annoSet2PatternMap.set(jsonixAnnoSet.id, pattern._id);
-    });
   });
 }
 
