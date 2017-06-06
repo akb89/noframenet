@@ -1,6 +1,6 @@
 {
   "name": "noframenet",
-  "version": "3.0.4",
+  "version": "3.0.5",
   "description": "A set of scripts to import FrameNet XML data to a MongoDB database",
   "keywords": [
     "FrameNet",
@@ -16,6 +16,8 @@
     "cleandev": "NODE_ENV=development node ./scripts/clean.js",
     "import": "npm run clean && NODE_ENV=production node ./scripts/pipeline.js",
     "importdev": "npm run cleandev && NODE_ENV=development node ./scripts/pipeline.js",
+    "postimport": "npm run fix",
+    "postimportdev": "npm run fixdev",
     "fix": "NODE_ENV=production node ./scripts/fix.js",
     "fixdev": "NODE_ENV=development node ./scripts/fix.js",
     "try": "npm run cleandev && NODE_ENV=development node ./scripts/importFullTexts.js",
