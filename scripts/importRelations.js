@@ -88,6 +88,7 @@ async function importDataObjects(data, db) {
     await saveToDb(db.mongo, data);
   } catch (err) {
     logger.error(err);
+    logger.info('Exiting NoFrameNet');
     process.exit(1);
   }
 }
@@ -99,7 +100,14 @@ async function importUnmarshalledFrameRelations(jsonixFrameRelations, db) {
 
 async function importRelationsOnceConnectedToDb(relationsFilePath, db) {
   logger.info(`Processing file: ${relationsFilePath}`);
-  const jsonixFrameRelations = await marshaller.unmarshall(relationsFilePath);
+  let jsonixFrameRelations;
+  try {
+    jsonixFrameRelations = await marshaller.unmarshall(relationsFilePath);
+  } catch (err) {
+    logger.error(err);
+    logger.info('Exiting NoFrameNet');
+    process.exit(1);
+  }
   await importUnmarshalledFrameRelations(jsonixFrameRelations, db);
 }
 

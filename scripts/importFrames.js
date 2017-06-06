@@ -163,6 +163,7 @@ async function importBatchSet(batchSet, db) {
       await saveToDb(db.mongo, data); // eslint-disable-line no-await-in-loop
     } catch (err) {
       logger.error(err);
+      logger.info('Exiting NoFrameNet');
       process.exit(1);
     }
     counter += 1;
@@ -171,7 +172,14 @@ async function importBatchSet(batchSet, db) {
 }
 
 async function importFramesOnceConnectedToDb(frameDir, chunkSize, db) {
-  const batchSet = await utils.filterAndChunk(frameDir, chunkSize);
+  let batchSet;
+  try {
+    batchSet = await utils.filterAndChunk(frameDir, chunkSize);
+  } catch (err) {
+    logger.error(err);
+    logger.info('Exiting NoFrameNet');
+    process.exit(1);
+  }
   await importBatchSet(batchSet, db);
 }
 

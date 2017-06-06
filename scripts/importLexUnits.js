@@ -237,6 +237,7 @@ async function importBatchSet(batchSet, db) {
       await saveArraysToDb(db.mongo, data); // eslint-disable-line no-await-in-loop
     } catch (err) {
       logger.error(err);
+      logger.info('Exiting NoFrameNet');
       process.exit(1);
     }
     counter += 1;
@@ -246,12 +247,20 @@ async function importBatchSet(batchSet, db) {
     await saveMapsToDb(db.mongo, uniques);
   } catch (err) {
     logger.error(err);
+    logger.info('Exiting NoFrameNet');
     process.exit(1);
   }
 }
 
 async function importLexUnitsOnceConnectedToDb(lexUnitDir, chunkSize, db) {
-  const batchSet = await utils.filterAndChunk(lexUnitDir, chunkSize);
+  let batchSet;
+  try {
+    batchSet = await utils.filterAndChunk(lexUnitDir, chunkSize);
+  } catch (err) {
+    logger.error(err);
+    logger.info('Exiting NoFrameNet');
+    process.exit(1);
+  }
   await importBatchSet(batchSet, db);
 }
 

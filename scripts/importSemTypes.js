@@ -39,6 +39,7 @@ async function importSemTypeObjects(semTypes, db) {
     await saveToDb(db.mongo, semTypes);
   } catch (err) {
     logger.error(err);
+    logger.info('Exiting NoFrameNet');
     process.exit(1);
   }
 }
@@ -50,7 +51,14 @@ async function importUnmarshalledSemTypes(jsonixSemTypes, db) {
 
 async function importSemTypesOnceConnectedToDb(semTypesFilePath, db) {
   logger.info(`Processing file: ${semTypesFilePath}`);
-  const jsonixSemTypes = await marshaller.unmarshall(semTypesFilePath);
+  let jsonixSemTypes;
+  try {
+    jsonixSemTypes = await marshaller.unmarshall(semTypesFilePath);
+  } catch (err) {
+    logger.error(err);
+    logger.info('Exiting NoFrameNet');
+    process.exit(1);
+  }
   await importUnmarshalledSemTypes(jsonixSemTypes, db);
 }
 

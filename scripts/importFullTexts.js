@@ -276,6 +276,7 @@ async function importFiles(files) {
       await importFile(file); // eslint-disable-line no-await-in-loop
     } catch (err) {
       logger.error(err);
+      logger.info('Exiting NoFrameNet');
       process.exit(1);
     }
     fulltextProgressBar.tick();
@@ -283,7 +284,14 @@ async function importFiles(files) {
 }
 
 async function importFullTextOnceConnectedToDb(fullTextDir) {
-  const files = await utils.filter(fullTextDir);
+  let files;
+  try {
+    files = await utils.filter(fullTextDir);
+  } catch (err) {
+    logger.error(err);
+    logger.info('Exiting NoFrameNet');
+    process.exit(1);
+  }
   await importFiles(files);
 }
 
