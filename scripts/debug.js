@@ -10,6 +10,7 @@ async function debug(file, dbUri) {
     await importFullTexts.importFile(file);
   } catch (err) {
     logger.error(err);
+    logger.info('Exiting NoFrameNet');
     process.exit(1);
   }
   db.mongo.close();

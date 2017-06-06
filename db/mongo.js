@@ -25,6 +25,7 @@ async function connectToDatabase(uri) {
   // scalability and readability
   } catch (err) {
     logger.error(err);
+    logger.info('Exiting NoFrameNet');
     process.exit(1);
   }
   logger.info(`Connected to database: ${uri}`);
