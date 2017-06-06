@@ -1,3 +1,4 @@
+const path = require('path');
 const config = require('./../config');
 const driver = require('./../db/mongo');
 const importFrames = require('./importFrames');
@@ -29,13 +30,13 @@ async function importFrameNetData(dbUri, lexUnitDir, lexUnitChunkSize,
 if (require.main === module) {
   const startTime = process.hrtime();
   const dbUri = config.dbUri;
-  const lexUnitDir = config.frameNetDir.concat('lu');
+  const lexUnitDir = path.join(config.frameNetDir, 'lu');
   const lexUnitChunkSize = config.lexUnitChunkSize;
-  const frameDir = config.frameNetDir.concat('frame');
+  const frameDir = path.join(config.frameNetDir, 'frame');
   const frameChunkSize = config.frameChunkSize;
-  const fullTextDir = config.frameNetDir.concat('fulltext');
-  const relationsFilePath = config.frameNetDir.concat('frRelation.xml');
-  const semTypesFilePath = config.frameNetDir.concat('semTypes.xml');
+  const fullTextDir = path.join(config.frameNetDir, 'fulltext');
+  const relationsFilePath = path.join(config.frameNetDir, 'frRelation.xml');
+  const semTypesFilePath = path.join(config.frameNetDir, 'semTypes.xml');
   importFrameNetData(dbUri, lexUnitDir, lexUnitChunkSize, frameDir,
     frameChunkSize, fullTextDir, relationsFilePath, semTypesFilePath)
     .then(() => logger.info(`Import completed in ${process.hrtime(startTime)[0]}s`));
