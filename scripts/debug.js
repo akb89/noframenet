@@ -1,27 +1,79 @@
-const config = require('./../config');
+const mongoose = require('mongoose');
+const bluebird = require('bluebird');
 const driver = require('./../db/mongo');
-const importFullTexts = require('./importFullTexts');
 
-const logger = config.logger;
+mongoose.set('debug', true);
+mongoose.Promise = bluebird;
 
-async function debug(file, dbUri) {
-  const db = await driver.connectToDatabase(dbUri);
-  try {
-    await importFullTexts.importFile(file);
-  } catch (err) {
-    logger.error(err);
-    logger.info('Exiting NoFrameNet');
-    process.exit(1);
-  }
-  db.mongo.close();
-  db.mongoose.disconnect();
+const frameElementSchema = mongoose.Schema({
+  _id: {
+    type: Number,
+  },
+  name: {
+    type: String,
+    index: true,
+  },
+  definition: {
+    type: String,
+  },
+  coreType: {
+    type: String,
+    index: true,
+  },
+  cBy: {
+    type: String,
+  },
+  cDate: {
+    type: String,
+  },
+  fgColor: {
+    type: String,
+  },
+  bgColor: {
+    type: String,
+  },
+  abbrev: {
+    type: String,
+    index: true,
+  },
+  requires: [{
+    type: Number,
+    ref: 'FrameElement',
+  }],
+  excludes: [{
+    type: Number,
+    ref: 'FrameElement',
+  }],
+  semTypes: [{
+    type: Number,
+    ref: 'SemType',
+  }],
+});
+
+frameElementSchema.index({
+  requires: 1,
+});
+frameElementSchema.index({
+  excludes: 1,
+});
+frameElementSchema.index({
+  semTypes: 1,
+});
+frameElementSchema.index({
+  _id: 1,
+}, {
+  unique: true,
+});
+
+const FrameElement = mongoose.model('FrameElement', frameElementSchema);
+
+async function save() {
+  await driver.connectToDatabase('mongodb://localhost:27017/fn_en_d150_dev');
+  const test = new FrameElement();
+  //await testAnno.save();
 }
 
+
 if (require.main === module) {
-  const startTime = process.hrtime();
-  const dbUri = config.dbUri;
-  const fullTextDir = config.frameNetDir.concat('fulltext');
-  const file = fullTextDir.concat('/LUCorpus-v0.3__20000420_xin_eng-NEW.xml');
-  debug(file, dbUri)
-    .then(() => logger.info(`Import process completed in ${process.hrtime(startTime)[0]}s`));
+  save().then();
 }
