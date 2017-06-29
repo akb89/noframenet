@@ -1,6 +1,6 @@
 {
   "name": "noframenet",
-  "version": "3.0.8",
+  "version": "3.1.0",
   "description": "A set of scripts to import FrameNet XML data to a MongoDB database",
   "keywords": [
     "FrameNet",
@@ -14,12 +14,16 @@
     "posttest": "npm run lint",
     "clean": "NODE_ENV=production node ./scripts/clean.js",
     "cleandev": "NODE_ENV=development node ./scripts/clean.js",
+    "check": "NODE_ENV=production node ./scripts/check.js",
+    "checkdev": "NODE_ENV=development node ./scripts/check.js",
     "import": "npm run clean && NODE_ENV=production node ./scripts/pipeline.js",
     "importdev": "npm run cleandev && NODE_ENV=development node ./scripts/pipeline.js",
     "postimport": "npm run fix",
     "postimportdev": "npm run fixdev",
     "fix": "NODE_ENV=production node ./scripts/fix.js",
     "fixdev": "NODE_ENV=development node ./scripts/fix.js",
+    "postfix": "npm run check",
+    "postfixdev": "npm run checkdev",
     "try": "npm run cleandev && NODE_ENV=development node ./scripts/importFullTexts.js",
     "debug": "npm run cleandev && NODE_ENV=development node ./scripts/debug.js"
   },
@@ -35,8 +39,7 @@
     "ascii-progress": "^1.0.5",
     "bluebird": "^3.5.0",
     "jsonix": "^2.4.1",
-    "mongodb": "^2.2.29",
-    "mongoose": "^4.10.7",
+    "mongoose": "^4.10.8",
     "noframenet-core": "^3.2.3",
     "winston": "^2.3.1"
   },
