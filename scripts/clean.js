@@ -7,7 +7,7 @@ const logger = config.logger;
 
 async function clean(dbUri) {
   await driver.connectToDatabase(dbUri);
-  logger.info(`Cleaning up database ${dbUri.name}`);
+  logger.info(`Cleaning up database ${dbUri}`);
   await mongoose.connection.db.dropDatabase();
   await mongoose.disconnect();
 }
