@@ -1,6 +1,6 @@
 {
   "name": "noframenet",
-  "version": "3.0.6",
+  "version": "3.0.7",
   "description": "A set of scripts to import FrameNet XML data to a MongoDB database",
   "keywords": [
     "FrameNet",
@@ -41,7 +41,7 @@
     "winston": "^2.3.1"
   },
   "devDependencies": {
-    "chai": "^3.5.0",
+    "chai": "^4.0.2",
     "eslint": "^3.17.1",
     "eslint-config-airbnb": "^13.0.0",
     "eslint-plugin-import": "^2.2.0",
