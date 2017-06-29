@@ -64,15 +64,6 @@ async function check() { // eslint-disable-line
   logger.info(`Wrong VU = ${wrongpt}`);
 }
 
-/**
- * In FrameNet 1.6 there is one valenceUnit with a wrong PT:
- * vu = { _id: ...,
- * FE: '2085',
- * PT: 'Obj',
- * GF: 'Obj' }
- * @method fixOnceConnectedToDB
- * @return {Promise}              [description]
- */
 async function fixOnceConnectedToDB() {
   const wrongPTVU = await ValenceUnit.findOne({
     FE: 2085,
