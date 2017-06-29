@@ -18,9 +18,11 @@ const toJsonixLabelArray = require('./../utils/jsonixUtils').toJsonixLabelArray;
 const toJsonixLayerArray = require('./../utils/jsonixUtils').toJsonixLayerArray;
 const toJsonixSentenceAnnoSetArray = require('./../utils/jsonixUtils').toJsonixSentenceAnnoSetArray;
 const config = require('./../config');
-const driver = require('./../db/mongo');
+const driver = require('./../db/mongoose');
 const marshaller = require('./../marshalling/unmarshaller');
 const utils = require('./../utils/utils');
+const mongoose = require('mongoose');
+mongoose.Promise = require('bluebird');
 
 const logger = config.logger;
 
@@ -226,16 +228,14 @@ async function saveCorpusAndDocument(jsonixFullText) {
   const corpusId = jsonixFullText.value.header.corpus[0].id;
   const corpus = await Corpus.findOne().where('_id').equals(corpusId);
   const jsonixDocs = toJsonixDocumentArray(jsonixFullText.value.header.corpus[0]);
-  for (const jsonixDoc of jsonixDocs) {
-    const newDoc = new Document({
+  await Document.collection.insertMany(jsonixDocs.map(jsonixDoc =>
+    new Document({
       _id: jsonixDoc.id,
       name: jsonixDoc.name,
       description: jsonixDoc.description,
       sentences: toJsonixDocumentSentenceArray(jsonixFullText)
         .map(jsonixSentence => jsonixSentence.id),
-    });
-    await newDoc.save();
-  }
+    })));
   if (corpus) {
     corpus.documents.push(...jsonixDocs.map(jsonixDoc => jsonixDoc.id));
     await corpus.update({
@@ -244,13 +244,12 @@ async function saveCorpusAndDocument(jsonixFullText) {
       },
     });
   } else {
-    const newCorpus = new Corpus({
+    await (new Corpus({
       _id: corpusId,
       name: jsonixFullText.value.header.corpus[0].name,
       description: jsonixFullText.value.header.corpus[0].description,
-    });
-    newCorpus.documents = jsonixDocs.map(jsonixDoc => jsonixDoc.id);
-    await newCorpus.save();
+      documents: jsonixDocs.map(jsonixDoc => jsonixDoc.id),
+    })).save();
   }
 }
 
@@ -296,10 +295,9 @@ async function importFullTextOnceConnectedToDb(fullTextDir) {
 }
 
 async function importFullText(fullTextDir, dbUri) {
-  const db = await driver.connectToDatabase(dbUri);
+  await driver.connectToDatabase(dbUri);
   await importFullTextOnceConnectedToDb(fullTextDir);
-  db.mongo.close();
-  db.mongoose.disconnect();
+  await mongoose.disconnect();
 }
 
 if (require.main === module) {

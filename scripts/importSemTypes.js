@@ -5,8 +5,10 @@ const SemType = require('noframenet-core').SemType;
 const toJsonixSemTypesSemTypeArray = require('./../utils/jsonixUtils').toJsonixSemTypesSemTypeArray;
 const toJsonixSuperTypeArray = require('./../utils/jsonixUtils').toJsonixSuperTypeArray;
 const config = require('./../config');
-const driver = require('./../db/mongo');
+const driver = require('./../db/mongoose');
 const marshaller = require('./../marshalling/unmarshaller');
+const mongoose = require('mongoose');
+mongoose.Promise = require('bluebird');
 
 const logger = config.logger;
 
@@ -26,17 +28,14 @@ function getSemTypes(jsonixSemTypes) {
     }).toObject());
 }
 
-async function saveToDb(mongodb, semTypes) {
-  await mongodb.collection('semtypes').insertMany(semTypes, {
-    w: 0,
-    j: false,
-    ordered: false,
-  });
+async function saveToDb(semTypes) {
+  await SemType.collection.insertMany(semTypes,
+                                      { w: 0, j: false, ordered: false });
 }
 
-async function importSemTypeObjects(semTypes, db) {
+async function importSemTypeObjects(semTypes) {
   try {
-    await saveToDb(db.mongo, semTypes);
+    await saveToDb(semTypes);
   } catch (err) {
     logger.error(err);
     logger.info('Exiting NoFrameNet');
@@ -44,12 +43,12 @@ async function importSemTypeObjects(semTypes, db) {
   }
 }
 
-async function importUnmarshalledSemTypes(jsonixSemTypes, db) {
+async function importUnmarshalledSemTypes(jsonixSemTypes) {
   const semTypes = getSemTypes(jsonixSemTypes);
-  await importSemTypeObjects(semTypes, db);
+  await importSemTypeObjects(semTypes);
 }
 
-async function importSemTypesOnceConnectedToDb(semTypesFilePath, db) {
+async function importSemTypesOnceConnectedToDb(semTypesFilePath) {
   logger.info(`Processing file: ${semTypesFilePath}`);
   let jsonixSemTypes;
   try {
@@ -59,14 +58,13 @@ async function importSemTypesOnceConnectedToDb(semTypesFilePath, db) {
     logger.info('Exiting NoFrameNet');
     process.exit(1);
   }
-  await importUnmarshalledSemTypes(jsonixSemTypes, db);
+  await importUnmarshalledSemTypes(jsonixSemTypes);
 }
 
 async function importSemTypes(semTypesFilePath, dbUri) {
-  const db = await driver.connectToDatabase(dbUri);
-  await importSemTypesOnceConnectedToDb(semTypesFilePath, db);
-  db.mongo.close();
-  db.mongoose.disconnect();
+  await driver.connectToDatabase(dbUri);
+  await importSemTypesOnceConnectedToDb(semTypesFilePath);
+  await mongoose.disconnect();
 }
 
 if (require.main === module) {

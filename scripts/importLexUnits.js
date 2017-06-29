@@ -17,13 +17,16 @@ const toJsonixPatternArray = require('./../utils/jsonixUtils').toJsonixPatternAr
 const toJsonixSentenceAnnoSetArray = require('./../utils/jsonixUtils').toJsonixSentenceAnnoSetArray;
 const toJsonixValenceUnitArray = require('./../utils/jsonixUtils').toJsonixValenceUnitArray;
 const config = require('./../config');
-const driver = require('./../db/mongo');
+const driver = require('./../db/mongoose');
 const marshaller = require('./../marshalling/unmarshaller');
 const utils = require('./../utils/utils');
+const mongoose = require('mongoose');
+mongoose.Promise = require('bluebird');
 
 const logger = config.logger;
 
-function convertToValenceUnits(jsonixPattern, valenceUnitsMap, frameElementsMap) {
+function convertToValenceUnits(jsonixPattern, valenceUnitsMap,
+                               frameElementsMap) {
   return toJsonixValenceUnitArray(jsonixPattern).map((jsonixValenceUnit) => {
     const fe = frameElementsMap.get(jsonixValenceUnit.fe);
     if (!fe) {
@@ -49,7 +52,7 @@ function convertToValenceUnits(jsonixPattern, valenceUnitsMap, frameElementsMap)
 }
 
 function processPatterns(jsonixLexUnit, annoSet2PatternMap, patternsMap,
-  valenceUnitsMap, frameElementsMap) {
+                         valenceUnitsMap, frameElementsMap) {
   // Import patterns and valenceUnits.
   // Add all info regading patterns and lexUnits to AnnoSet objects
   toJsonixPatternArray(jsonixLexUnit).forEach((jsonixPattern) => {
@@ -118,13 +121,12 @@ function convertToSentences(jsonixLexUnit, annotationSets, labels) {
 
 // Lemma and Lexeme information is updated via
 // importLemmasAndLexemes script
-function processLexUnit(jsonixLexUnit, annoSet2PatternMap,
-  annotationSets, labels, patternsMap, sentences, valenceUnitsMap,
-  frameElementsMap) {
-  sentences.push(...convertToSentences(jsonixLexUnit,
-    annotationSets, labels));
+function processLexUnit(jsonixLexUnit, annoSet2PatternMap, annotationSets,
+                        labels, patternsMap, sentences, valenceUnitsMap,
+                        frameElementsMap) {
+  sentences.push(...convertToSentences(jsonixLexUnit, annotationSets, labels));
   processPatterns(jsonixLexUnit, annoSet2PatternMap, patternsMap,
-    valenceUnitsMap, frameElementsMap);
+                  valenceUnitsMap, frameElementsMap);
 }
 
 // A Map of FEName -> full noframenet-core.FrameElement
@@ -151,14 +153,9 @@ async function convertToObjects(batch, uniques) {
     const jsonixLexUnit = await marshaller.unmarshall(file);
     const frameElementsMap = await getFEMap(jsonixLexUnit.value.frameID);
     try {
-      processLexUnit(jsonixLexUnit,
-        uniques.annoSet2PatternMap,
-        data.annotationSets,
-        data.labels,
-        uniques.patternsMap,
-        data.sentences,
-        uniques.valenceUnitsMap,
-        frameElementsMap);
+      processLexUnit(jsonixLexUnit, uniques.annoSet2PatternMap,
+                     data.annotationSets, data.labels, uniques.patternsMap,
+                     data.sentences, uniques.valenceUnitsMap, frameElementsMap);
     } catch (err) {
       logger.verbose(`Ill-formed lexUnit detected: ID = ${jsonixLexUnit.value.id}`);
       logger.debug(err);
@@ -167,37 +164,20 @@ async function convertToObjects(batch, uniques) {
   return data;
 }
 
-async function saveArraysToDb(mongodb, data) {
-  await mongodb.collection('annotationsets').insertMany(data.annotationSets, {
-    w: 0,
-    j: false,
-    ordered: false,
-  });
-  await mongodb.collection('labels').insertMany(data.labels, {
-    w: 0,
-    j: false,
-    ordered: false,
-  });
-  await mongodb.collection('sentences').insertMany(data.sentences, {
-    w: 0,
-    j: false,
-    ordered: false,
-  });
+async function saveArraysToDb(data) {
+  await AnnotationSet.collection.insertMany(data.annotationSets,
+                                 { w: 0, j: false, ordered: false });
+  await Label.collection.insertMany(data.labels,
+                                    { w: 0, j: false, ordered: false });
+  await Sentence.collection.insertMany(data.sentences,
+                                       { w: 0, j: false, ordered: false });
 }
 
-async function saveMapsToDb(mongodb, maps) {
-  await mongodb.collection('patterns')
-    .insertMany(Array.from(maps.patternsMap), {
-      w: 0,
-      j: false,
-      ordered: false,
-    });
-  await mongodb.collection('valenceunits')
-    .insertMany(Array.from(maps.valenceUnitsMap), {
-      w: 0,
-      j: false,
-      ordered: false,
-    });
+async function saveMapsToDb(maps) {
+  await Pattern.collection.insertMany(Array.from(maps.patternsMap),
+                                      { w: 0, j: false, ordered: false });
+  await ValenceUnit.collection.insertMany(Array.from(maps.valenceUnitsMap),
+                                          { w: 0, j: false, ordered: false });
   logger.info('Updating annotatioSets\' pattern references...');
   const annoSetProgressBar = new ProgressBar({
     total: maps.annoSet2PatternMap.size,
@@ -206,19 +186,13 @@ async function saveMapsToDb(mongodb, maps) {
   for (const entry of maps.annoSet2PatternMap) {
     const annoSetId = entry[0];
     const patternId = entry[1];
-    await mongodb.collection('annotationsets') // eslint-disable-line no-await-in-loop
-      .update({
-        _id: annoSetId,
-      }, {
-        $set: {
-          pattern: patternId,
-        },
-      });
+    await AnnotationSet.collection.update({ _id: annoSetId }, // eslint-disable-line
+                                          { $set: { pattern: patternId } });
     annoSetProgressBar.tick(1000);
   }
 }
 
-async function importBatchSet(batchSet, db) {
+async function importBatchSet(batchSet) {
   let counter = 1;
   const lexUnitProgressBar = new ProgressBar({
     total: batchSet.length,
@@ -234,7 +208,7 @@ async function importBatchSet(batchSet, db) {
     logger.debug(`Importing lexUnit batch ${counter} out of ${batchSet.length}...`);
     const data = await convertToObjects(batch, uniques); // eslint-disable-line no-await-in-loop
     try {
-      await saveArraysToDb(db.mongo, data); // eslint-disable-line no-await-in-loop
+      await saveArraysToDb(data); // eslint-disable-line no-await-in-loop
     } catch (err) {
       logger.error(err);
       logger.info('Exiting NoFrameNet');
@@ -244,7 +218,7 @@ async function importBatchSet(batchSet, db) {
     lexUnitProgressBar.tick();
   }
   try {
-    await saveMapsToDb(db.mongo, uniques);
+    await saveMapsToDb(uniques);
   } catch (err) {
     logger.error(err);
     logger.info('Exiting NoFrameNet');
@@ -252,7 +226,7 @@ async function importBatchSet(batchSet, db) {
   }
 }
 
-async function importLexUnitsOnceConnectedToDb(lexUnitDir, chunkSize, db) {
+async function importLexUnitsOnceConnectedToDb(lexUnitDir, chunkSize) {
   let batchSet;
   try {
     batchSet = await utils.filterAndChunk(lexUnitDir, chunkSize);
@@ -261,14 +235,13 @@ async function importLexUnitsOnceConnectedToDb(lexUnitDir, chunkSize, db) {
     logger.info('Exiting NoFrameNet');
     process.exit(1);
   }
-  await importBatchSet(batchSet, db);
+  await importBatchSet(batchSet);
 }
 
 async function importLexUnits(lexUnitDir, chunkSize, dbUri) {
-  const db = await driver.connectToDatabase(dbUri);
-  await importLexUnitsOnceConnectedToDb(lexUnitDir, chunkSize, db);
-  await db.mongo.close();
-  await db.mongoose.disconnect();
+  await driver.connectToDatabase(dbUri);
+  await importLexUnitsOnceConnectedToDb(lexUnitDir, chunkSize);
+  await mongoose.disconnect();
 }
 
 if (require.main === module) {

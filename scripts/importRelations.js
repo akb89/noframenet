@@ -8,8 +8,10 @@ const toJsonixFERelationArray = require('./../utils/jsonixUtils').toJsonixFERela
 const toJsonixFrameRelationArray = require('./../utils/jsonixUtils').toJsonixFrameRelationArray;
 const toJsonixFrameRelationTypeArray = require('./../utils/jsonixUtils').toJsonixFrameRelationTypeArray;
 const config = require('./../config');
-const driver = require('./../db/mongo');
+const driver = require('./../db/mongoose');
 const marshaller = require('./../marshalling/unmarshaller');
+const mongoose = require('mongoose');
+mongoose.Promise = require('bluebird');
 
 const logger = config.logger;
 
@@ -57,35 +59,26 @@ function convertToObjects(jsonixFrameRelations) {
     frameRelations: [],
     feRelations: [],
   };
-  data.frameRelationTypes.push(
-    ...convertToRelationTypes(
-      jsonixFrameRelations,
-      data.frameRelations,
-      data.feRelations));
+  data.frameRelationTypes.push(...convertToRelationTypes(jsonixFrameRelations,
+                                                         data.frameRelations,
+                                                         data.feRelations));
   return data;
 }
 
 async function saveToDb(mongodb, data) {
-  await mongodb.collection('framerelationtypes').insertMany(data.frameRelationTypes, {
-    w: 0,
-    j: false,
-    ordered: false,
-  });
-  await mongodb.collection('framerelations').insertMany(data.frameRelations, {
-    w: 0,
-    j: false,
-    ordered: false,
-  });
-  await mongodb.collection('ferelations').insertMany(data.feRelations, {
-    w: 0,
-    j: false,
-    ordered: false,
-  });
+  await FrameRelationType.collection.insertMany(data.frameRelationTypes,
+                                                { w: 0,
+                                                  j: false,
+                                                  ordered: false });
+  await FrameRelation.collection.insertMany(data.frameRelations,
+                                            { w: 0, j: false, ordered: false });
+  await FERelation.collection.insertMany(data.feRelations,
+                                         { w: 0, j: false, ordered: false });
 }
 
-async function importDataObjects(data, db) {
+async function importDataObjects(data) {
   try {
-    await saveToDb(db.mongo, data);
+    await saveToDb(data);
   } catch (err) {
     logger.error(err);
     logger.info('Exiting NoFrameNet');
@@ -93,12 +86,12 @@ async function importDataObjects(data, db) {
   }
 }
 
-async function importUnmarshalledFrameRelations(jsonixFrameRelations, db) {
+async function importUnmarshalledFrameRelations(jsonixFrameRelations) {
   const data = convertToObjects(jsonixFrameRelations);
-  await importDataObjects(data, db);
+  await importDataObjects(data);
 }
 
-async function importRelationsOnceConnectedToDb(relationsFilePath, db) {
+async function importRelationsOnceConnectedToDb(relationsFilePath) {
   logger.info(`Processing file: ${relationsFilePath}`);
   let jsonixFrameRelations;
   try {
@@ -108,14 +101,13 @@ async function importRelationsOnceConnectedToDb(relationsFilePath, db) {
     logger.info('Exiting NoFrameNet');
     process.exit(1);
   }
-  await importUnmarshalledFrameRelations(jsonixFrameRelations, db);
+  await importUnmarshalledFrameRelations(jsonixFrameRelations);
 }
 
 async function importRelations(relationsFilePath, dbUri) {
-  const db = await driver.connectToDatabase(dbUri);
-  await importRelationsOnceConnectedToDb(relationsFilePath, db);
-  db.mongo.close();
-  db.mongoose.disconnect();
+  await driver.connectToDatabase(dbUri);
+  await importRelationsOnceConnectedToDb(relationsFilePath);
+  await mongoose.disconnect();
 }
 
 if (require.main === module) {

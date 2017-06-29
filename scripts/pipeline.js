@@ -1,6 +1,6 @@
 const path = require('path');
 const config = require('./../config');
-const driver = require('./../db/mongo');
+const driver = require('./../db/mongoose');
 const importFrames = require('./importFrames');
 const importFullTexts = require('./importFullTexts');
 const importLexUnits = require('./importLexUnits');
@@ -10,20 +10,20 @@ const importSemTypes = require('./importSemTypes');
 const logger = config.logger;
 
 async function importFrameNetData(dbUri, lexUnitDir, lexUnitChunkSize,
-  frameDir, frameChunkSize, fullTextDir, relationsFilePath,
-  semTypesFilePath) {
+                                  frameDir, frameChunkSize, fullTextDir,
+                                  relationsFilePath, semTypesFilePath) {
   const db = await driver.connectToDatabase(dbUri);
-  await importFrames.importFramesOnceConnectedToDb(frameDir, frameChunkSize, db);
+  await importFrames.importFramesOnceConnectedToDb(frameDir, frameChunkSize);
   logger.info('Frames import completed');
-  await importRelations.importRelationsOnceConnectedToDb(relationsFilePath, db);
+  await importRelations.importRelationsOnceConnectedToDb(relationsFilePath);
   logger.info('Relations import completed');
-  await importSemTypes.importSemTypesOnceConnectedToDb(semTypesFilePath, db);
+  await importSemTypes.importSemTypesOnceConnectedToDb(semTypesFilePath);
   logger.info('SemTypes import completed');
-  await importLexUnits.importLexUnitsOnceConnectedToDb(lexUnitDir, lexUnitChunkSize, db);
+  await importLexUnits.importLexUnitsOnceConnectedToDb(lexUnitDir,
+                                                       lexUnitChunkSize);
   logger.info('LexUnits import completed');
   await importFullTexts.importFullTextOnceConnectedToDb(fullTextDir);
   logger.info('FullTexts import completed');
-  db.mongo.close();
   db.mongoose.disconnect();
 }
 
@@ -38,6 +38,7 @@ if (require.main === module) {
   const relationsFilePath = path.join(config.frameNetDir, 'frRelation.xml');
   const semTypesFilePath = path.join(config.frameNetDir, 'semTypes.xml');
   importFrameNetData(dbUri, lexUnitDir, lexUnitChunkSize, frameDir,
-    frameChunkSize, fullTextDir, relationsFilePath, semTypesFilePath)
+                     frameChunkSize, fullTextDir, relationsFilePath,
+                     semTypesFilePath)
     .then(() => logger.info(`Import completed in ${process.hrtime(startTime)[0]}s`));
 }

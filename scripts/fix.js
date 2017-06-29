@@ -4,7 +4,9 @@
 const Pattern = require('noframenet-core').Pattern;
 const ValenceUnit = require('noframenet-core').ValenceUnit;
 const config = require('./../config');
-const driver = require('./../db/mongo');
+const driver = require('./../db/mongoose');
+const mongoose = require('mongoose');
+mongoose.Promise = require('bluebird');
 
 const logger = config.logger;
 
@@ -102,10 +104,9 @@ async function fixOnceConnectedToDB() {
 }
 
 async function fix(dbUri) {
-  const db = await driver.connectToDatabase(dbUri);
+  await driver.connectToDatabase(dbUri);
   await fixOnceConnectedToDB();
-  db.mongo.close();
-  db.mongoose.disconnect();
+  await mongoose.disconnect();
 }
 
 if (require.main === module) {

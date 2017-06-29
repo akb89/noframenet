@@ -15,9 +15,11 @@ const toJsonixLexUnitArray = require('./../utils/jsonixUtils').toJsonixLexUnitAr
 const toJsonixRequiresFEArray = require('./../utils/jsonixUtils').toJsonixRequiresFEArray;
 const toJsonixSemTypeArray = require('./../utils/jsonixUtils').toJsonixSemTypeArray;
 const config = require('./../config');
-const driver = require('./../db/mongo');
+const driver = require('./../db/mongoose');
 const marshaller = require('./../marshalling/unmarshaller');
 const utils = require('./../utils/utils');
+const mongoose = require('mongoose');
+mongoose.Promise = require('bluebird');
 
 const logger = config.logger;
 
@@ -118,38 +120,27 @@ async function convertToObjects(batch) {
   return data;
 }
 
-async function saveToDb(mongodb, data) {
-  await mongodb.collection('frames')
-    .insertMany(data.frames, {
-      writeConcern: 0,
-      j: false,
-      ordered: false,
-    });
-  await mongodb.collection('frameelements')
-    .insertMany(data.frameElements, {
-      writeConcern: 0,
-      j: false,
-      ordered: false,
-    });
-  await mongodb.collection('lexunits')
-    .insertMany(data.lexUnits, {
-      writeConcern: 0,
-      j: false,
-      ordered: false,
-    });
-  await mongodb.collection('lexemes')
-    .insertMany(data.lexemes, {
-      writeConcern: 0,
-      j: false,
-      ordered: false,
-    });
+async function saveToDb(data) {
+  await Frame.collection.insertMany(data.frames, { writeConcern: 0,
+                                                   j: false,
+                                                   ordered: false });
+  await FrameElement.collection.insertMany(data.frameElements,
+                                           { writeConcern: 0,
+                                             j: false,
+                                             ordered: false });
+  await LexUnit.collection.insertMany(data.lexUnits, { writeConcern: 0,
+                                                       j: false,
+                                                       ordered: false });
+  await Lexeme.collection.insertMany(data.lexemes, { writeConcern: 0,
+                                                     j: false,
+                                                     ordered: false });
 }
 
 /**
  * Only import info related to Frames, FEs, LexUnits and Lexemes. Info
  * regarding relations will be imported in separate scripts.
  */
-async function importBatchSet(batchSet, db) {
+async function importBatchSet(batchSet) {
   let counter = 1;
   const frameProgressBar = new ProgressBar({
     total: batchSet.length,
@@ -160,7 +151,7 @@ async function importBatchSet(batchSet, db) {
     logger.debug(`Importing frame batch ${counter} out of ${batchSet.length}...`);
     const data = await convertToObjects(batch); // eslint-disable-line no-await-in-loop
     try {
-      await saveToDb(db.mongo, data); // eslint-disable-line no-await-in-loop
+      await saveToDb(data); // eslint-disable-line no-await-in-loop
     } catch (err) {
       logger.error(err);
       logger.info('Exiting NoFrameNet');
@@ -171,7 +162,7 @@ async function importBatchSet(batchSet, db) {
   }
 }
 
-async function importFramesOnceConnectedToDb(frameDir, chunkSize, db) {
+async function importFramesOnceConnectedToDb(frameDir, chunkSize) {
   let batchSet;
   try {
     batchSet = await utils.filterAndChunk(frameDir, chunkSize);
@@ -180,14 +171,13 @@ async function importFramesOnceConnectedToDb(frameDir, chunkSize, db) {
     logger.info('Exiting NoFrameNet');
     process.exit(1);
   }
-  await importBatchSet(batchSet, db);
+  await importBatchSet(batchSet);
 }
 
 async function importFrames(frameDir, chunkSize, dbUri) {
-  const db = await driver.connectToDatabase(dbUri);
-  await importFramesOnceConnectedToDb(frameDir, chunkSize, db);
-  db.mongo.close();
-  db.mongoose.disconnect();
+  await driver.connectToDatabase(dbUri);
+  await importFramesOnceConnectedToDb(frameDir, chunkSize);
+  await mongoose.disconnect();
 }
 
 if (require.main === module) {

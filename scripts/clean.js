@@ -1,15 +1,15 @@
 const config = require('./../config');
-const driver = require('./../db/mongo');
+const driver = require('./../db/mongoose');
+const mongoose = require('mongoose');
+mongoose.Promise = require('bluebird');
 
 const logger = config.logger;
 
 async function clean(dbUri) {
-  const db = await driver.connectToDatabase(dbUri);
-  const dbName = db.mongo.s.databaseName;
-  logger.info(`Cleaning up database ${dbName}`);
-  await db.mongo.dropDatabase(dbName);
-  await db.mongo.close();
-  await db.mongoose.disconnect();
+  await driver.connectToDatabase(dbUri);
+  logger.info(`Cleaning up database ${dbUri.name}`);
+  await mongoose.connection.db.dropDatabase();
+  await mongoose.disconnect();
 }
 
 if (require.main === module) {
