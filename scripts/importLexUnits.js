@@ -48,7 +48,12 @@ function convertToValenceUnits(jsonixPattern, valenceUnitsMap,
       }
       return valenceUnit;
     }
-  });
+  }).reduce((vuArray, vu) => {
+    if (vu._id) {
+      vuArray.push(vu);
+    }
+    return vuArray;
+  }, []);
 }
 
 function processPatterns(jsonixLexUnit, annoSet2PatternMap, patternsMap,
@@ -57,22 +62,25 @@ function processPatterns(jsonixLexUnit, annoSet2PatternMap, patternsMap,
   // Add all info regading patterns and lexUnits to AnnoSet objects
   toJsonixPatternArray(jsonixLexUnit).forEach((jsonixPattern) => {
     try {
-      const vus = convertToValenceUnits(jsonixPattern, valenceUnitsMap, frameElementsMap);
-      const key = vus.map(vu => vu._id).sort().join(''); // TODO test this
-      let pattern;
-      if (!patternsMap.has(key)) {
-        pattern = new Pattern({
-          valenceUnits: vus,
+      const vus = convertToValenceUnits(jsonixPattern, valenceUnitsMap,
+                                        frameElementsMap);
+      if (vus.length !== 0) {
+        const key = vus.map(vu => vu._id).sort().join(''); // TODO test this
+        let pattern;
+        if (!patternsMap.has(key)) {
+          pattern = new Pattern({
+            valenceUnits: vus,
+          });
+          patternsMap.set(key, pattern.toObject({
+            depopulate: true,
+          }));
+        } else {
+          pattern = patternsMap.get(key);
+        }
+        toJsonixPatternAnnoSetArray(jsonixPattern).forEach((jsonixAnnoSet) => {
+          annoSet2PatternMap.set(jsonixAnnoSet.id, pattern._id);
         });
-        patternsMap.set(key, pattern.toObject({
-          depopulate: true,
-        }));
-      } else {
-        pattern = patternsMap.get(key);
       }
-      toJsonixPatternAnnoSetArray(jsonixPattern).forEach((jsonixAnnoSet) => {
-        annoSet2PatternMap.set(jsonixAnnoSet.id, pattern._id);
-      });
     } catch (err) {
       logger.debug(`${err.message} in lexUnit #${jsonixLexUnit.value.id}`);
     }
