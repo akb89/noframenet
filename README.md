@@ -25,16 +25,16 @@ npm install
 Modify the `config/production.js` file
 ```
 const config = {
-  dbUri: 'mongodb://localhost:27017/noframenet15',
+  dbUri: 'mongodb://localhost:27017/fn_en_d170',
   logger: logger.info,
-  frameNetDir: '/Users/AKB/Desktop/fndata-1.5/',
+  frameNetDir: '/Users/AKB/Dropbox/FrameNetData/fndata-1.7',
   frameChunkSize: 100,
   lexUnitChunkSize: 50,
 };
 ```
 The `frameNetDir` parameter should refer to the absolute path of the unzipped FrameNet data directory.
 
-You can tweak the `frameChunkSize` and `lexUnitChunkSize`parameters to improve import speed by specifying how many frame or lu files should be processed at once.  
+You can tweak the `frameChunkSize` and `lexUnitChunkSize`parameters to improve import speed by specifying how many frame or lexunit files should be processed at once.  
 
 ### 5. Start the full import process
 Run the following command in your terminal, under the NoFrameNet directory:
@@ -47,10 +47,7 @@ The import process usually takes about 20min to 30min in total (tested on a MacB
 ## Data Fix
 ### Wrong Phrase Type
 In Sentence#1492916 , _'Before his death Edward IV had also initiated military activity against France , following Louis XI 's renunciation of some of the key terms of the 1475 treaty of Picquigny .'_, the Phrase Type of the 'Activity' frame element corresponding to the 'initiate.v' lexical unit is mistakenly marked as an 'Obj'.
-To replace the 'Obj' with an 'NP', run the following command after import:
-```
-npm run fix
-```
+Data are fixed automatically after import via the `fix` script. Check the
 
 ## Models
 Details about the underlying Mongoose models can be found on [NoFrameNet-Core](https://github.com/akb89/noframenet-core)
