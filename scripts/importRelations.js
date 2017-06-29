@@ -65,7 +65,7 @@ function convertToObjects(jsonixFrameRelations) {
   return data;
 }
 
-async function saveToDb(mongodb, data) {
+async function saveToDb(data) {
   await FrameRelationType.collection.insertMany(data.frameRelationTypes,
                                                 { w: 0,
                                                   j: false,
