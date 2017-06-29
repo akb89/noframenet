@@ -79,28 +79,30 @@ async function fixOnceConnectedToDB() {
     PT: 'Obj',
     GF: 'Obj',
   });
-  logger.verbose(`Invalid PT ValenceUnit: ${JSON.stringify(wrongPTVU)}`);
+  logger.info(`Invalid PT ValenceUnit: ${JSON.stringify(wrongPTVU)}`);
   const correctPTVU = await ValenceUnit.findOne({
     FE: 2085,
     PT: 'NP',
     GF: 'Obj',
   });
-  logger.verbose(`To be replaced by: ${JSON.stringify(correctPTVU)}`);
+  logger.info(`To be replaced by: ${JSON.stringify(correctPTVU)}`);
   const wrongpatterns = await Pattern.find({
     valenceUnits: wrongPTVU,
   });
-  logger.verbose(`Patterns with incorrect ValenceUnit: ${JSON.stringify(wrongpatterns)}`);
-  await Pattern.update({
-    _id: {
-      $in: wrongpatterns,
-    },
-    valenceUnits: wrongPTVU,
-  }, {
-    $set: {
-      'valenceUnits.$': correctPTVU,
-    },
-  });
-  await ValenceUnit.remove(wrongPTVU);
+  logger.info(`Patterns with incorrect ValenceUnit: ${JSON.stringify(wrongpatterns)}`);
+  if (wrongPTVU.length !== 0) {
+    await Pattern.update({
+      _id: {
+        $in: wrongpatterns,
+      },
+      valenceUnits: wrongPTVU,
+    }, {
+      $set: {
+        'valenceUnits.$': correctPTVU,
+      },
+    });
+    await ValenceUnit.remove(wrongPTVU);
+  }
 }
 
 async function fix(dbUri) {
