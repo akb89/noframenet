@@ -6,13 +6,15 @@ const importFullTexts = require('./importFullTexts');
 const importLexUnits = require('./importLexUnits');
 const importRelations = require('./importRelations');
 const importSemTypes = require('./importSemTypes');
+const mongoose = require('mongoose');
+mongoose.Promise = require('bluebird');
 
 const logger = config.logger;
 
 async function importFrameNetData(dbUri, lexUnitDir, lexUnitChunkSize,
                                   frameDir, frameChunkSize, fullTextDir,
                                   relationsFilePath, semTypesFilePath) {
-  const db = await driver.connectToDatabase(dbUri);
+  await driver.connectToDatabase(dbUri);
   await importFrames.importFramesOnceConnectedToDb(frameDir, frameChunkSize);
   logger.info('Frames import completed');
   await importRelations.importRelationsOnceConnectedToDb(relationsFilePath);
@@ -24,7 +26,7 @@ async function importFrameNetData(dbUri, lexUnitDir, lexUnitChunkSize,
   logger.info('LexUnits import completed');
   await importFullTexts.importFullTextOnceConnectedToDb(fullTextDir);
   logger.info('FullTexts import completed');
-  db.mongoose.disconnect();
+  await mongoose.disconnect();
 }
 
 if (require.main === module) {
