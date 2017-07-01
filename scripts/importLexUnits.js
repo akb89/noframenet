@@ -132,12 +132,18 @@ function convertToSentences(jsonixLexUnit, annotationSets, labels) {
     });
 }
 
+function processSentences(jsonixLexUnit, annoSetsMap, sentencesMap, labels) {
+  toJsonixLexUnitSentenceArray(jsonixLexUnit).forEach((jsonixSentence) => {
+
+  });
+}
+
 // Lemma and Lexeme information is updated via
 // importLemmasAndLexemes script
-function processLexUnit(jsonixLexUnit, annoSetID2PatternIDmap, annotationSets,
-                        labels, patternsMap, sentences, valenceUnitsMap,
-                        feName2IDmap) {
-  sentences.push(...convertToSentences(jsonixLexUnit, annotationSets, labels));
+function processLexUnit(jsonixLexUnit, annoSetsMap, patternsMap, sentencesMap,
+                        valenceUnitsMap, labels, feName2IDmap) {
+  //sentences.push(...convertToSentences(jsonixLexUnit, annotationSets, labels));
+  processSentences(jsonixLexUnit, annoSetsMap, sentencesMap, labels);
   processPatterns(jsonixLexUnit, annoSetID2PatternIDmap, patternsMap,
                   valenceUnitsMap, feName2IDmap);
 }
@@ -158,9 +164,9 @@ async function getFEName2IDmap(frameID) {
 
 async function convertToObjects(batch, uniques) {
   const data = {
-    annotationSets: [],
+    //annotationSets: [],
     labels: [],
-    sentences: [],
+    //sentences: [],
   };
   await Promise.all(batch.map(async (file) => {
     const jsonixLexUnit = await marshaller.unmarshall(file);
@@ -178,16 +184,19 @@ async function convertToObjects(batch, uniques) {
 }
 
 async function saveArraysToDb(data) {
-  await AnnotationSet.collection.insertMany(data.annotationSets);
+  //await AnnotationSet.collection.insertMany(data.annotationSets);
   await Label.collection.insertMany(data.labels);
-  await Sentence.collection.insertMany(data.sentences);
+  //await Sentence.collection.insertMany(data.sentences);
 }
 
 async function saveMapsToDb(maps) {
+  await AnnotationSet.collection.insertMany(
+    Array.from(maps.annoSetsMap.values()));
   await Pattern.collection.insertMany(Array.from(maps.patternsMap.values()));
+  await Sentence.collection.insertMany(Array.from(maps.sentencesMap.values()));
   await ValenceUnit.collection.insertMany(
     Array.from(maps.valenceUnitsMap.values()));
-  logger.info('Updating annotatioSets\' pattern references...');
+  /*logger.info('Updating annotatioSets\' pattern references...');
   const annoSetProgressBar = new ProgressBar({
     total: maps.annoSetID2PatternIDmap.size,
     clean: true,
@@ -207,7 +216,7 @@ async function saveMapsToDb(maps) {
     } if (count === maps.annoSetID2PatternIDmap.size) {
       annoSetProgressBar.tick(maps.annoSetID2PatternIDmap.size - tickCount);
     }
-  }
+  }*/
 }
 
 async function importBatchSet(batchSet) {
@@ -218,8 +227,10 @@ async function importBatchSet(batchSet) {
   });
   logger.info('Importing lexical units by batch...');
   const uniques = {
-    annoSetID2PatternIDmap: new Map(),
+    //annoSetID2PatternIDmap: new Map(),
+    annoSetsMap: new Map(),
     patternsMap: new Map(),
+    sentencesMap: new Map(),
     valenceUnitsMap: new Map(),
   };
   for (const batch of batchSet) {
