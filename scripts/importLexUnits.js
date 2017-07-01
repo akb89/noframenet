@@ -26,63 +26,68 @@ mongoose.Promise = require('bluebird');
 const logger = config.logger;
 
 function convertToValenceUnits(jsonixPattern, valenceUnitsMap,
-                               frameElementsMap) {
+                               feName2IDmap) {
   return toJsonixValenceUnitArray(jsonixPattern).map((jsonixValenceUnit) => {
-    const fe = frameElementsMap.get(jsonixValenceUnit.fe);
-    if (!fe) {
+    const feID = feName2IDmap.get(jsonixValenceUnit.fe);
+    if (!feID) {
       throw new Error(`FE is undefined: ${jsonixValenceUnit.fe}`);
     } else {
-      const key = fe._id + jsonixValenceUnit.pt + jsonixValenceUnit.gf;
+      const key = `${feID}#${jsonixValenceUnit.pt}#${jsonixValenceUnit.gf}`;
+      // Note that here feID is a Number as we are using the original
+      // FrameNet id. So we don't need to stringify feID
       let valenceUnit;
       if (!valenceUnitsMap.has(key)) {
         valenceUnit = new ValenceUnit({
-          FE: fe,
+          FE: feID,
           PT: jsonixValenceUnit.pt,
           GF: jsonixValenceUnit.gf,
         });
-        valenceUnitsMap.set(key, valenceUnit.toObject({
-          depopulate: true,
-        }));
+        valenceUnitsMap.set(key, valenceUnit.toObject());
       } else {
         valenceUnit = valenceUnitsMap.get(key);
       }
       return valenceUnit;
     }
-  }).reduce((vuArray, vu) => {
-    if (vu._id) {
-      vuArray.push(vu);
-    }
-    return vuArray;
-  }, []);
+  });
 }
 
-function processPatterns(jsonixLexUnit, annoSet2PatternMap, patternsMap,
-                         valenceUnitsMap, frameElementsMap) {
+function processPatterns(jsonixLexUnit, annoSetID2PatternIDmap, patternsMap,
+                         valenceUnitsMap, feName2IDmap) {
   // Import patterns and valenceUnits.
   // Add all info regading patterns and lexUnits to AnnoSet objects
   toJsonixPatternArray(jsonixLexUnit).forEach((jsonixPattern) => {
     try {
       const vus = convertToValenceUnits(jsonixPattern, valenceUnitsMap,
-                                        frameElementsMap);
-      if (vus.length !== 0) {
-        const key = vus.map(vu => vu._id).sort().join(''); // TODO test this
-        let pattern;
-        if (!patternsMap.has(key)) {
-          pattern = new Pattern({
-            valenceUnits: vus,
-          });
-          patternsMap.set(key, pattern.toObject({
-            depopulate: true,
-          }));
-        } else {
-          pattern = patternsMap.get(key);
-        }
-        toJsonixPatternAnnoSetArray(jsonixPattern).forEach((jsonixAnnoSet) => {
-          annoSet2PatternMap.set(jsonixAnnoSet.id, pattern._id);
-        });
+                                        feName2IDmap);
+      if (vus.length === 0) {
+        logger.error('vus.length === 0');
       }
+      vus.forEach((vu) => {
+        //logger.info(`vu._id = ${vu._id}, vu.id = ${vu.id}`);
+        if (!vu._id) {
+          logger.error(`vu._id does not exist: ${vu._id}`);
+        } else if (vu._id === null || vu._id === undefined) {
+          logger.error(`vu._id is null or undefined: ${vu._id}`);
+        }
+      });
+      if (vus.length === 0) {
+        logger.error('vus.length === 0');
+      }
+      const key = vus.map(vu => vu._id.toString()).sort().join('#');
+      let pattern;
+      if (!patternsMap.has(key)) {
+        pattern = new Pattern({
+          valenceUnits: vus.map(vu => vu._id),
+        });
+        patternsMap.set(key, pattern.toObject());
+      } else {
+        pattern = patternsMap.get(key);
+      }
+      toJsonixPatternAnnoSetArray(jsonixPattern).forEach((jsonixAnnoSet) => {
+        annoSetID2PatternIDmap.set(jsonixAnnoSet.id, pattern._id);
+      });
     } catch (err) {
-      logger.debug(`${err.message} in lexUnit #${jsonixLexUnit.value.id}`);
+      logger.verbose(`${err.message} in lexUnit #${jsonixLexUnit.value.id}`);
     }
   });
 }
@@ -129,24 +134,24 @@ function convertToSentences(jsonixLexUnit, annotationSets, labels) {
 
 // Lemma and Lexeme information is updated via
 // importLemmasAndLexemes script
-function processLexUnit(jsonixLexUnit, annoSet2PatternMap, annotationSets,
+function processLexUnit(jsonixLexUnit, annoSetID2PatternIDmap, annotationSets,
                         labels, patternsMap, sentences, valenceUnitsMap,
-                        frameElementsMap) {
+                        feName2IDmap) {
   sentences.push(...convertToSentences(jsonixLexUnit, annotationSets, labels));
-  processPatterns(jsonixLexUnit, annoSet2PatternMap, patternsMap,
-                  valenceUnitsMap, frameElementsMap);
+  processPatterns(jsonixLexUnit, annoSetID2PatternIDmap, patternsMap,
+                  valenceUnitsMap, feName2IDmap);
 }
 
-// A Map of FEName -> full noframenet-core.FrameElement
-async function getFEMap(frameID) {
+// A Map of FEName -> full noframenet-core.FrameElement for a given Frame
+async function getFEName2IDmap(frameID) {
   const feMap = new Map();
-  const frame = await Frame.findOne().where('_id').equals(frameID);
+  const frame = await Frame.findById(frameID);
   if (!frame) {
     logger.error(`frame is null for _id = ${frameID}`);
   }
   const fes = await FrameElement.find().where('_id').in(frame.frameElements);
   fes.forEach((fe) => {
-    feMap.set(fe.name, fe);
+    feMap.set(fe.name, fe._id);
   });
   return feMap;
 }
@@ -159,11 +164,11 @@ async function convertToObjects(batch, uniques) {
   };
   await Promise.all(batch.map(async (file) => {
     const jsonixLexUnit = await marshaller.unmarshall(file);
-    const frameElementsMap = await getFEMap(jsonixLexUnit.value.frameID);
+    const feName2IDmap = await getFEName2IDmap(jsonixLexUnit.value.frameID);
     try {
-      processLexUnit(jsonixLexUnit, uniques.annoSet2PatternMap,
+      processLexUnit(jsonixLexUnit, uniques.annoSetID2PatternIDmap,
                      data.annotationSets, data.labels, uniques.patternsMap,
-                     data.sentences, uniques.valenceUnitsMap, frameElementsMap);
+                     data.sentences, uniques.valenceUnitsMap, feName2IDmap);
     } catch (err) {
       logger.verbose(`Ill-formed lexUnit detected: ID = ${jsonixLexUnit.value.id}`);
       logger.debug(err);
@@ -173,30 +178,35 @@ async function convertToObjects(batch, uniques) {
 }
 
 async function saveArraysToDb(data) {
-  await AnnotationSet.collection.insertMany(data.annotationSets,
-                                 { w: 0, j: false, ordered: false });
-  await Label.collection.insertMany(data.labels,
-                                    { w: 0, j: false, ordered: false });
-  await Sentence.collection.insertMany(data.sentences,
-                                       { w: 0, j: false, ordered: false });
+  await AnnotationSet.collection.insertMany(data.annotationSets);
+  await Label.collection.insertMany(data.labels);
+  await Sentence.collection.insertMany(data.sentences);
 }
 
 async function saveMapsToDb(maps) {
-  await Pattern.collection.insertMany(Array.from(maps.patternsMap),
-                                      { w: 0, j: false, ordered: false });
-  await ValenceUnit.collection.insertMany(Array.from(maps.valenceUnitsMap),
-                                          { w: 0, j: false, ordered: false });
+  await Pattern.collection.insertMany(Array.from(maps.patternsMap.values()));
+  await ValenceUnit.collection.insertMany(
+    Array.from(maps.valenceUnitsMap.values()));
   logger.info('Updating annotatioSets\' pattern references...');
   const annoSetProgressBar = new ProgressBar({
-    total: maps.annoSet2PatternMap.size,
+    total: maps.annoSetID2PatternIDmap.size,
     clean: true,
   });
-  for (const entry of maps.annoSet2PatternMap) {
+  let count = 0;
+  let tickCount = 0;
+  for (const entry of maps.annoSetID2PatternIDmap) {
     const annoSetId = entry[0];
     const patternId = entry[1];
-    await AnnotationSet.collection.update({ _id: annoSetId }, // eslint-disable-line
+    await AnnotationSet.collection.update({ _id: annoSetId },
                                           { $set: { pattern: patternId } });
-    annoSetProgressBar.tick(1000);
+    count += 1;
+    if (count === 1000) {
+      annoSetProgressBar.tick(1000);
+      tickCount += 1000;
+      count = 0;
+    } if (count === maps.annoSetID2PatternIDmap.size) {
+      annoSetProgressBar.tick(maps.annoSetID2PatternIDmap.size - tickCount);
+    }
   }
 }
 
@@ -208,15 +218,15 @@ async function importBatchSet(batchSet) {
   });
   logger.info('Importing lexical units by batch...');
   const uniques = {
-    annoSet2PatternMap: new Map(),
+    annoSetID2PatternIDmap: new Map(),
     patternsMap: new Map(),
     valenceUnitsMap: new Map(),
   };
   for (const batch of batchSet) {
     logger.debug(`Importing lexUnit batch ${counter} out of ${batchSet.length}...`);
-    const data = await convertToObjects(batch, uniques); // eslint-disable-line no-await-in-loop
+    const data = await convertToObjects(batch, uniques);
     try {
-      await saveArraysToDb(data); // eslint-disable-line no-await-in-loop
+      await saveArraysToDb(data);
     } catch (err) {
       logger.error(err);
       logger.info('Exiting NoFrameNet');

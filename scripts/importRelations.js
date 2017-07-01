@@ -66,14 +66,9 @@ function convertToObjects(jsonixFrameRelations) {
 }
 
 async function saveToDb(data) {
-  await FrameRelationType.collection.insertMany(data.frameRelationTypes,
-                                                { w: 0,
-                                                  j: false,
-                                                  ordered: false });
-  await FrameRelation.collection.insertMany(data.frameRelations,
-                                            { w: 0, j: false, ordered: false });
-  await FERelation.collection.insertMany(data.feRelations,
-                                         { w: 0, j: false, ordered: false });
+  await FrameRelationType.collection.insertMany(data.frameRelationTypes);
+  await FrameRelation.collection.insertMany(data.frameRelations);
+  await FERelation.collection.insertMany(data.feRelations);
 }
 
 async function importDataObjects(data) {

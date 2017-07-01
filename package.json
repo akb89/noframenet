@@ -1,6 +1,6 @@
 {
   "name": "noframenet",
-  "version": "3.1.0",
+  "version": "4.0.0alpha",
   "description": "A set of scripts to import FrameNet XML data to a MongoDB database",
   "keywords": [
     "FrameNet",
@@ -40,7 +40,7 @@
     "bluebird": "^3.5.0",
     "jsonix": "^2.4.1",
     "mongoose": "^4.10.8",
-    "noframenet-core": "^3.2.3",
+    "noframenet-core": "^4.0.0beta",
     "winston": "^2.3.1"
   },
   "devDependencies": {

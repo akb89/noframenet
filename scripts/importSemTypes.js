@@ -29,8 +29,7 @@ function getSemTypes(jsonixSemTypes) {
 }
 
 async function saveToDb(semTypes) {
-  await SemType.collection.insertMany(semTypes,
-                                      { w: 0, j: false, ordered: false });
+  await SemType.collection.insertMany(semTypes);
 }
 
 async function importSemTypeObjects(semTypes) {

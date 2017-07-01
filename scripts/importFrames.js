@@ -121,19 +121,10 @@ async function convertToObjects(batch) {
 }
 
 async function saveToDb(data) {
-  await Frame.collection.insertMany(data.frames, { writeConcern: 0,
-                                                   j: false,
-                                                   ordered: false });
-  await FrameElement.collection.insertMany(data.frameElements,
-                                           { writeConcern: 0,
-                                             j: false,
-                                             ordered: false });
-  await LexUnit.collection.insertMany(data.lexUnits, { writeConcern: 0,
-                                                       j: false,
-                                                       ordered: false });
-  await Lexeme.collection.insertMany(data.lexemes, { writeConcern: 0,
-                                                     j: false,
-                                                     ordered: false });
+  await Frame.collection.insertMany(data.frames);
+  await FrameElement.collection.insertMany(data.frameElements);
+  await LexUnit.collection.insertMany(data.lexUnits);
+  await Lexeme.collection.insertMany(data.lexemes);
 }
 
 /**

@@ -26,6 +26,9 @@ mongoose.Promise = require('bluebird');
 
 const logger = config.logger;
 
+let notFound = 0;
+let found = 0;
+
 function isValidFNAnnoSet(jsonixAnnoSet) {
   let isValidFELayer = false;
   let isValidPTLayer = false;
@@ -161,34 +164,38 @@ async function saveAnnoSets(jsonixSentence) {
       logger.silly(`isValidFNAnnoSet = ${jsonixAnnoSet.id}`);
       // Look for pattern and add to annoSet
       const labelMap = getLabelMap(jsonixAnnoSet);
-      labelMap.forEach((value, key) => {
+      /*labelMap.forEach((value, key) => {
         logger.silly(`labelMap contains ${key}: ${JSON.stringify(value)} pair`);
-      });
+      });*/
       const vus = [];
       for (const value of labelMap.values()) {
         logger.silly(`Looking for valenceUnit = ${JSON.stringify(value)}`);
         const vu = await ValenceUnit.findOne(value);
         if (vu) {
           logger.silly(`vu exists = ${JSON.stringify(vu._id)}`);
-          vus.add(vu._id);
+          vus.push(vu._id);
         } else {
           logger.silly(`vu not found = ${JSON.stringify(value)}`);
           const newVu = new ValenceUnit(value);
           await newVu.save();
-          vus.add(newVu._id);
+          vus.push(newVu._id);
         }
       }
-      const pattern = await Pattern.findOne().where('valenceUnits').equals(vus);
-      if (pattern) {
-        logger.silly(`pattern found = ${pattern._id} with vus = ${vus}`);
-        annoSet.pattern = pattern._id;
-      } else {
-        logger.silly(`new pattern with vus = ${vus}`);
-        const newPattern = new Pattern({
-          valenceUnits: vus,
-        });
-        await newPattern.save();
-        annoSet.pattern = newPattern._id;
+      if (vus.length !== 0) {
+        const pattern = await Pattern.collection.find({ valenceUnits: { $all: vus } });
+        if (pattern.length > 0) {
+          logger.silly(`pattern found = ${pattern._id} with vus = ${vus}`);
+          annoSet.pattern = pattern._id;
+          found += 1;
+        } else {
+          logger.silly(`new pattern with vus = ${vus}`);
+          const newPattern = new Pattern({
+            valenceUnits: vus,
+          });
+          notFound += 1;
+          await newPattern.save();
+          annoSet.pattern = newPattern._id;
+        }
       }
     }
     await AnnotationSet.where({
@@ -202,7 +209,7 @@ async function saveAnnoSets(jsonixSentence) {
 async function saveSentences(jsonixFullText) {
   logger.silly('Saving sentences');
   for (const jsonixSentence of toJsonixDocumentSentenceArray(jsonixFullText)) {
-    const dbSentence = await Sentence.findOne().where('_id').equals(jsonixSentence.id);
+    const dbSentence = await Sentence.findById(jsonixSentence.id);
     if (!dbSentence) {
       logger.silly(`Could not find sentence #${jsonixSentence.id} in database`);
       const sentence = new Sentence({
@@ -226,7 +233,7 @@ async function saveSentences(jsonixFullText) {
  */
 async function saveCorpusAndDocument(jsonixFullText) {
   const corpusId = jsonixFullText.value.header.corpus[0].id;
-  const corpus = await Corpus.findOne().where('_id').equals(corpusId);
+  const corpus = await Corpus.findById(corpusId);
   const jsonixDocs = toJsonixDocumentArray(jsonixFullText.value.header.corpus[0]);
   await Document.collection.insertMany(jsonixDocs.map(jsonixDoc =>
     new Document({
@@ -292,6 +299,8 @@ async function importFullTextOnceConnectedToDb(fullTextDir) {
     process.exit(1);
   }
   await importFiles(files);
+  logger.info(`found = ${found}`);
+  logger.info(`notFound = ${notFound}`);
 }
 
 async function importFullText(fullTextDir, dbUri) {
