@@ -140,9 +140,9 @@ async function importBatchSet(batchSet) {
   logger.info('Importing frames by batch...');
   for (const batch of batchSet) {
     logger.debug(`Importing frame batch ${counter} out of ${batchSet.length}...`);
-    const data = await convertToObjects(batch); // eslint-disable-line no-await-in-loop
+    const data = await convertToObjects(batch);
     try {
-      await saveToDb(data); // eslint-disable-line no-await-in-loop
+      await saveToDb(data);
     } catch (err) {
       logger.error(err);
       logger.info('Exiting NoFrameNet');

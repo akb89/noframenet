@@ -164,9 +164,6 @@ async function saveAnnoSets(jsonixSentence) {
       logger.silly(`isValidFNAnnoSet = ${jsonixAnnoSet.id}`);
       // Look for pattern and add to annoSet
       const labelMap = getLabelMap(jsonixAnnoSet);
-      /*labelMap.forEach((value, key) => {
-        logger.silly(`labelMap contains ${key}: ${JSON.stringify(value)} pair`);
-      });*/
       const vus = [];
       for (const value of labelMap.values()) {
         logger.silly(`Looking for valenceUnit = ${JSON.stringify(value)}`);
@@ -182,7 +179,7 @@ async function saveAnnoSets(jsonixSentence) {
         }
       }
       if (vus.length !== 0) {
-        const pattern = await Pattern.collection.find({ valenceUnits: { $all: vus } });
+        const pattern = await Pattern.find({ valenceUnits: { $all: vus } });
         if (pattern.length > 0) {
           logger.silly(`pattern found = ${pattern._id} with vus = ${vus}`);
           annoSet.pattern = pattern._id;
@@ -279,7 +276,7 @@ async function importFiles(files) {
   });
   for (const file of files) {
     try {
-      await importFile(file); // eslint-disable-line no-await-in-loop
+      await importFile(file);
     } catch (err) {
       logger.error(err);
       logger.info('Exiting NoFrameNet');
