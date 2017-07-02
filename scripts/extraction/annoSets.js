@@ -34,7 +34,8 @@ function getLabelObjectsMap(jsonixAnnoSet) {
   const labelOmap = new Map();
   toJsonixLayerArray(jsonixAnnoSet).forEach((jsonixLayer) => {
     toJsonixLabelArray(jsonixLayer).forEach((jsonixLabel) => {
-      if ((jsonixLabel.start !== undefined && jsonixLabel.end !== undefined) || jsonixLabel.itype !== undefined) {
+      if ((jsonixLabel.start !== undefined && jsonixLabel.end !== undefined) ||
+          jsonixLabel.itype !== undefined) {
         const key = `${jsonixLabel.start}#${jsonixLabel.end}#${jsonixLayer.rank}`;
         if (!labelOmap.has(key)) {
           labelOmap.set(key, {});
