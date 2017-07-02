@@ -40,10 +40,6 @@ async function saveFullTextDataToDatabase(annoSetsMap, corporaMap, documentsMap,
   ]);
 }
 
-async function saveLabelsToDatabase(labels) {
-  return Label.collection.insertMany(labels);
-}
-
 async function saveRelationsAndSemTypesToDatabase(feRelations, frameRelations,
                                                   frameRelationTypes, semTypes) {
   return Promise.all([
@@ -99,13 +95,13 @@ async function importFrameNetData(dbUri, lexUnitDir, lexUnitChunkSize,
   await relationsExtractor.extractRelations(relationsFilePath, feRelations,
                                             frameRelations, frameRelationTypes);
   logger.info('Done extracting relations');
-  logger.info(` frameRelationTypes.length = ${frameRelationTypes.length}`);
-  logger.info(` frameRelations.length = ${frameRelations.length}`);
-  logger.info(` feRelations.length = ${feRelations.length}`);
+  logger.verbose(`   frameRelationTypes.length = ${frameRelationTypes.length}`);
+  logger.verbose(`   frameRelations.length = ${frameRelations.length}`);
+  logger.verbose(`   feRelations.length = ${feRelations.length}`);
 
   await semTypesExtractor.extractSemTypes(semTypesFilePath, semTypes);
   logger.info('Done extracting semTypes');
-  logger.info(` semTypes.length = ${semTypes.length}`);
+  logger.verbose(`  semTypes.length = ${semTypes.length}`);
 
   await saveRelationsAndSemTypesToDatabase(feRelations, frameRelations,
                                            frameRelationTypes, semTypes);
@@ -115,29 +111,34 @@ async function importFrameNetData(dbUri, lexUnitDir, lexUnitChunkSize,
                                           sentencesMap, valenceUnitsMap);
   logger.info('Done extracting lexUnits');
 
-  await saveLabelsToDatabase(labels);
+  // Label.collection.insertMany(labels); // Do not await this as it takes a
+  // long time to process
 
-  labels = []; // Free some memory
-  await fullTextsExtractor.importFullTexts(fullTextDir, annoSetsMap, corporaMap,
-                                           documentsMap, labels, patternsMap,
-                                           sentencesMap, valenceUnitsMap);
+  const labelCount = labels.length;
+  labels = []; // Free some memory. Does this work as intended if saveLabels is
+              // asynchronous?
+  await fullTextsExtractor.extractFullTexts(fullTextDir, annoSetsMap,
+                                            corporaMap, documentsMap, labels,
+                                            patternsMap, sentencesMap,
+                                            valenceUnitsMap);
   logger.info('Done extracting fullTexts');
 
   await saveFullTextDataToDatabase(annoSetsMap, corporaMap, documentsMap,
                                    labels, patternsMap, sentencesMap,
                                    valenceUnitsMap);
 
-  logger.info(`annoSetsMap.size = ${annoSetsMap.size}`);
-  logger.info(`corporaMap.size = ${corporaMap.size}`);
-  logger.info(`documentsMap.size = ${documentsMap.size}`);
-  logger.info(`fesMap.size = ${fesMap.size}`);
-  logger.info(`framesMap.size = ${framesMap.size}`);
-  logger.info(`lexemes.length = ${lexemes.length}`);
-  logger.info(`lexUnitsMap.size = ${lexUnitsMap.size}`);
-  logger.info(`patternsMap.size = ${patternsMap.size}`);
-  logger.info(`sentencesMap.size = ${sentencesMap.size}`);
-  logger.info(`valenceUnitsMap.size = ${valenceUnitsMap.size}`);
-  await mongoose.disconnect();
+  logger.verbose(`  annoSetsMap.size = ${annoSetsMap.size}`);
+  logger.verbose(`  corporaMap.size = ${corporaMap.size}`);
+  logger.verbose(`  documentsMap.size = ${documentsMap.size}`);
+  logger.verbose(`  fesMap.size = ${fesMap.size}`);
+  logger.verbose(`  framesMap.size = ${framesMap.size}`);
+  logger.verbose(`  labels.length = ${labels.length + labelCount}`);
+  logger.verbose(`  lexemes.length = ${lexemes.length}`);
+  logger.verbose(`  lexUnitsMap.size = ${lexUnitsMap.size}`);
+  logger.verbose(`  patternsMap.size = ${patternsMap.size}`);
+  logger.verbose(`  sentencesMap.size = ${sentencesMap.size}`);
+  logger.verbose(`  valenceUnitsMap.size = ${valenceUnitsMap.size}`);
+  await mongoose.disconnect(); // TODO: remove this?
 }
 
 if (require.main === module) {
