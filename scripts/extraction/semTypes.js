@@ -25,11 +25,7 @@ function getSemTypes(jsonixSemTypes) {
     }).toObject());
 }
 
-function processSemTypes(jsonixSemTypes, semTypes) {
-  semTypes.push(...getSemTypes(jsonixSemTypes));
-}
-
-async function importSemTypes(semTypesFilePath, semTypes) {
+async function extractSemTypes(semTypesFilePath, semTypes) {
   logger.info(`Extracting semTypes from file: ${semTypesFilePath}`);
   let jsonixSemTypes;
   try {
@@ -39,9 +35,9 @@ async function importSemTypes(semTypesFilePath, semTypes) {
     logger.info('Exiting NoFrameNet');
     process.exit(1);
   }
-  await processSemTypes(jsonixSemTypes, semTypes);
+  semTypes.push(...getSemTypes(jsonixSemTypes));
 }
 
 module.exports = {
-  importSemTypes,
+  extractSemTypes,
 };
