@@ -29,19 +29,36 @@ const logger = config.logger;
 async function saveFullTextDataToDatabase(annoSetsMap, corporaMap, documentsMap,
                                           labels, patternsMap, sentencesMap,
                                           valenceUnitsMap) {
+  /*const startTime = process.hrtime();
+  const annosets = Array.from(annoSetsMap.values());
+  const corpora = Array.from(corporaMap.values());
+  const documents = Array.from(documentsMap.values());
+  const patterns = Array.from(patternsMap.values());
+  const sentences = Array.from(sentencesMap.values());
+  const valenceUnits = Array.from(valenceUnitsMap.values());
+  logger.info(`Completed arrayification in ${process.hrtime(startTime)[0]}s`);
   return Promise.all([
-    AnnotationSet.collection.insertMany(Array.from(annoSetsMap.values())),
-    Corpus.collection.insertMany(Array.from(corporaMap.values())),
-    Document.collection.insertMany(Array.from(documentsMap.values())),
-    Label.collection.insertMany(labels),
-    Pattern.collection.insertMany(Array.from(patternsMap.values())),
-    Sentence.collection.insertMany(Array.from(sentencesMap.values())),
-    ValenceUnit.collection.insertMany(Array.from(valenceUnitsMap.values())),
+    AnnotationSet.collection.insertMany(annosets, { ordered: false }),
+    Corpus.collection.insertMany(corpora, { ordered: false }),
+    Document.collection.insertMany(documents, { ordered: false }),
+    Label.collection.insertMany(labels, { ordered: false }),
+    Pattern.collection.insertMany(patterns, { ordered: false }),
+    Sentence.collection.insertMany(sentences, { ordered: false }),
+    ValenceUnit.collection.insertMany(valenceUnits, { ordered: false }),
+  ]);*/
+  return Promise.all([
+    AnnotationSet.collection.insertMany(Array.from(annoSetsMap.values()), { ordered: false }),
+    Corpus.collection.insertMany(Array.from(corporaMap.values()), { ordered: false }),
+    Document.collection.insertMany(Array.from(documentsMap.values()), { ordered: false }),
+    Label.collection.insertMany(labels, { ordered: false }),
+    Pattern.collection.insertMany(Array.from(patternsMap.values()), { ordered: false }),
+    Sentence.collection.insertMany(Array.from(sentencesMap.values()), { ordered: false }),
+    ValenceUnit.collection.insertMany(Array.from(valenceUnitsMap.values()), { ordered: false }),
   ]);
 }
 
-async function saveRelationsAndSemTypesToDatabase(feRelations, frameRelations,
-                                                  frameRelationTypes, semTypes) {
+function saveRelationsAndSemTypesToDatabase(feRelations, frameRelations,
+                                            frameRelationTypes, semTypes) {
   return Promise.all([
     FERelation.collection.insertMany(feRelations),
     FrameRelation.collection.insertMany(frameRelations),
@@ -50,13 +67,12 @@ async function saveRelationsAndSemTypesToDatabase(feRelations, frameRelations,
   ]);
 }
 
-async function saveFramesDataToDatabase(framesMap, fesMap, lexUnitsMap,
-                                        lexemes) {
+function saveFramesDataToDatabase(framesMap, fesMap, lexUnitsMap, lexemes) {
   return Promise.all([
-    Frame.collection.insertMany(Array.from(framesMap.values())),
-    FrameElement.collection.insertMany(Array.from(fesMap.values())),
-    LexUnit.collection.insertMany(Array.from(lexUnitsMap.values())),
-    Lexeme.collection.insertMany(lexemes),
+    Frame.collection.insertMany(Array.from(framesMap.values()), { ordered: false }),
+    FrameElement.collection.insertMany(Array.from(fesMap.values()), { ordered: false }),
+    LexUnit.collection.insertMany(Array.from(lexUnitsMap.values()), { ordered: false }),
+    Lexeme.collection.insertMany(lexemes, { ordered: false }),
   ]);
 }
 
@@ -81,7 +97,7 @@ async function importFrameNetData(dbUri, lexUnitDir, lexUnitChunkSize,
   const frameRelations = [];
   const frameRelationTypes = [];
   const feRelations = [];
-  let labels = []; // We'll need this twice and the array can get pretty big.
+  const labels = []; // We'll need this twice and the array can get pretty big.
                   // It will be useful to empty the array to free some memory.
   const lexemes = [];
   const semTypes = [];
@@ -89,15 +105,19 @@ async function importFrameNetData(dbUri, lexUnitDir, lexUnitChunkSize,
   await framesExtractor.extractFrames(frameDir, frameChunkSize, framesMap,
                                       fesMap, lexUnitsMap, lexemes);
   logger.info('Done extracting frames');
+  logger.verbose(`  framesMap.size = ${framesMap.size}`);
+  logger.verbose(`  fesMap.size = ${fesMap.size}`);
+  logger.verbose(`  lexUnitsMap.size = ${lexUnitsMap.size}`);
+  logger.verbose(`  lexemes.length = ${lexemes.length}`);
 
   await saveFramesDataToDatabase(framesMap, fesMap, lexUnitsMap, lexemes);
 
   await relationsExtractor.extractRelations(relationsFilePath, feRelations,
                                             frameRelations, frameRelationTypes);
   logger.info('Done extracting relations');
-  logger.verbose(`   frameRelationTypes.length = ${frameRelationTypes.length}`);
-  logger.verbose(`   frameRelations.length = ${frameRelations.length}`);
-  logger.verbose(`   feRelations.length = ${feRelations.length}`);
+  logger.verbose(`  frameRelationTypes.length = ${frameRelationTypes.length}`);
+  logger.verbose(`  frameRelations.length = ${frameRelations.length}`);
+  logger.verbose(`  feRelations.length = ${feRelations.length}`);
 
   await semTypesExtractor.extractSemTypes(semTypesFilePath, semTypes);
   logger.info('Done extracting semTypes');
@@ -111,34 +131,37 @@ async function importFrameNetData(dbUri, lexUnitDir, lexUnitChunkSize,
                                           sentencesMap, valenceUnitsMap);
   logger.info('Done extracting lexUnits');
 
-  // Label.collection.insertMany(labels); // Do not await this as it takes a
-  // long time to process
+  /*Label.collection.insertMany(labels, { w: 0, j: 0, ordered: false }).then(() => {
+    logger.warn('Done saving lexUnitsExtraction labels to database');
+  });
+  // Do not await this as it takes a long time to process
+  */
 
-  const labelCount = labels.length;
-  labels = []; // Free some memory. Does this work as intended if saveLabels is
+  //const labelCount = labels.length;
+  //labels = []; // Free some memory. Does this work as intended if saveLabels is
               // asynchronous?
   await fullTextsExtractor.extractFullTexts(fullTextDir, annoSetsMap,
                                             corporaMap, documentsMap, labels,
                                             patternsMap, sentencesMap,
                                             valenceUnitsMap);
   logger.info('Done extracting fullTexts');
-
+  logger.info('Saving data to database. This can take several minutes...');
   await saveFullTextDataToDatabase(annoSetsMap, corporaMap, documentsMap,
                                    labels, patternsMap, sentencesMap,
                                    valenceUnitsMap);
-
+  logger.info('Done saving data to database');
   logger.verbose(`  annoSetsMap.size = ${annoSetsMap.size}`);
   logger.verbose(`  corporaMap.size = ${corporaMap.size}`);
   logger.verbose(`  documentsMap.size = ${documentsMap.size}`);
   logger.verbose(`  fesMap.size = ${fesMap.size}`);
   logger.verbose(`  framesMap.size = ${framesMap.size}`);
-  logger.verbose(`  labels.length = ${labels.length + labelCount}`);
+  logger.verbose(`  labels.length = ${labels.length}`);
   logger.verbose(`  lexemes.length = ${lexemes.length}`);
   logger.verbose(`  lexUnitsMap.size = ${lexUnitsMap.size}`);
   logger.verbose(`  patternsMap.size = ${patternsMap.size}`);
   logger.verbose(`  sentencesMap.size = ${sentencesMap.size}`);
   logger.verbose(`  valenceUnitsMap.size = ${valenceUnitsMap.size}`);
-  await mongoose.disconnect(); // TODO: remove this?
+  await mongoose.disconnect();
 }
 
 if (require.main === module) {
@@ -154,5 +177,5 @@ if (require.main === module) {
   importFrameNetData(dbUri, lexUnitDir, lexUnitChunkSize, frameDir,
                      frameChunkSize, fullTextDir, relationsFilePath,
                      semTypesFilePath)
-    .then(() => logger.info(`Import completed in ${process.hrtime(startTime)[0]}s`));
+    .then(() => logger.info(`FrameNet data import completed in ${process.hrtime(startTime)[0]}s`));
 }

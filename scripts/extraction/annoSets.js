@@ -45,7 +45,7 @@ function getLabelObjectsMap(jsonixAnnoSet) {
         } else if (jsonixLabel.itype !== undefined) {
           // iType is PT. See lexUnits xml files.
           labelOmap.get(key).PT = jsonixLabel.itype;
-        } else {
+        } else if (jsonixLayer.name === 'PT' || jsonixLayer.name === 'GF') {
           labelOmap.get(key)[jsonixLayer.name] = jsonixLabel.name;
         }
       }
@@ -59,17 +59,21 @@ function getPatternKey(vuIDs) {
 }
 
 function getVUids(jsonixAnnoSet, valenceUnitsMap) {
-  return Array.from(getLabelObjectsMap(jsonixAnnoSet).values()).map((labelO) => {
-    const key = `${labelO.FE}#${labelO.PT}#${labelO.GF}`;
-    if (!valenceUnitsMap.has(key)) {
-      valenceUnitsMap.set(key, new ValenceUnit({
-        FE: labelO.FE,
-        PT: labelO.PT,
-        GF: labelO.GF,
-      }).toObject());
+  const vuIDs = [];
+  for (const labelO of getLabelObjectsMap(jsonixAnnoSet).values()) {
+    if (Object.keys(labelO).length !== 0 && 'FE' in labelO) {
+      const key = `${labelO.FE}#${labelO.PT}#${labelO.GF}`;
+      if (!valenceUnitsMap.has(key)) {
+        valenceUnitsMap.set(key, new ValenceUnit({
+          FE: labelO.FE,
+          PT: labelO.PT,
+          GF: labelO.GF,
+        }).toObject());
+      }
+      vuIDs.push(valenceUnitsMap.get(key)._id);
     }
-    return valenceUnitsMap.get(key)._id;
-  });
+  }
+  return vuIDs;
 }
 
 function getPatternID(jsonixAnnoSet, patternsMap, valenceUnitsMap) {
