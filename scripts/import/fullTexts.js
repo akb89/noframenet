@@ -87,6 +87,9 @@ function getVUids(jsonixAnnoSet, valenceUnitsMap) {
 
 function getPatternID(jsonixAnnoSet, patternsMap, valenceUnitsMap) {
   const vuIDs = getVUids(jsonixAnnoSet, valenceUnitsMap);
+  if (vuIDs.length === 0) {
+    logger.error(`vuIDs.length === 0 in annoationSet.id = ${jsonixAnnoSet.id}`);
+  }
   const key = getPatternKey(vuIDs);
   if (!patternsMap.has(key)) {
     patternsMap.set(key, new Pattern({
@@ -124,6 +127,10 @@ function processAnnotationSets(jsonixSentence, annoSetsMap, labels,
       labels: getLabelIDs(jsonixAnnoSet, labels),
     }).toObject();
     if (isValidFNAnnoSet(jsonixAnnoSet)) {
+      const patternID = getPatternID(jsonixAnnoSet, patternsMap, valenceUnitsMap);
+      if (!patternID) {
+        logger.error(`patternID = ${patternID}`);
+      }
       annoSet.pattern = getPatternID(jsonixAnnoSet, patternsMap, valenceUnitsMap);
     }
     annoSetsMap.set(Number(jsonixAnnoSet.id), annoSet); // Replace if found

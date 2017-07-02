@@ -22,6 +22,12 @@ const logger = config.logger;
 
 function assignPatternIDtoAnnoSets(jsonixPattern, patternID, annoSetsMap) {
   toJsonixPatternAnnoSetArray(jsonixPattern).forEach((jsonixAnnoSet) => {
+    if (!patternID) {
+      logger.error(`patternID = ${patternID}`);
+    }
+    if (!annoSetsMap.get(Number(jsonixAnnoSet.id))) {
+      logger.error(`Could not find annoSet.id = ${jsonixAnnoSet.id} in lexunit #`);
+    }
     annoSetsMap.get(Number(jsonixAnnoSet.id)).pattern = patternID;
   });
 }
@@ -37,7 +43,8 @@ function getPatternKey(vuIDs) {
 function getVUids(jsonixPattern, valenceUnitsMap, feName2IDmap) {
   return toJsonixValenceUnitArray(jsonixPattern).map((jsonixValenceUnit) => {
     const feID = feName2IDmap.get(jsonixValenceUnit.fe);
-    if (!feID) {
+    if (feID === undefined) {
+      logger.error(`feID = ${feID}`);
       throw new Error(`FE '${jsonixValenceUnit.fe}' is undefined`);
     }
     const key = getValenceUnitKey(feID, jsonixValenceUnit.pt, jsonixValenceUnit.gf);
@@ -59,6 +66,9 @@ function processPatterns(jsonixLexUnit, annoSetsMap, patternsMap,
   toJsonixPatternArray(jsonixLexUnit).forEach((jsonixPattern) => {
     try {
       const vuIDs = getVUids(jsonixPattern, valenceUnitsMap, feName2IDmap);
+      if (vuIDs.length === 0) {
+        logger.error(`vuIDs.length === 0 in lexUnit #${jsonixLexUnit.value.id}`);
+      }
       const key = getPatternKey(vuIDs);
       if (!patternsMap.has(key)) {
         patternsMap.set(key, new Pattern({
@@ -68,7 +78,7 @@ function processPatterns(jsonixLexUnit, annoSetsMap, patternsMap,
       assignPatternIDtoAnnoSets(jsonixPattern, patternsMap.get(key)._id,
                                 annoSetsMap);
     } catch (err) {
-      logger.debug(`${err.message} in lexUnit #${jsonixLexUnit.value.id}`);
+      logger.error(`${err.message} in lexUnit #${jsonixLexUnit.value.id}`);
     }
   });
 }
@@ -145,13 +155,8 @@ async function processBatch(batch, annoSetsMap, fesMap, framesMap, patternsMap,
     const jsonixLexUnit = await marshaller.unmarshall(file);
     const frameID = Number(jsonixLexUnit.value.frameID);
     const feName2IDmap = await getFEName2IDmap(frameID, fesMap, framesMap);
-    try {
-      processLexUnit(jsonixLexUnit, annoSetsMap, patternsMap, sentencesMap,
-                     valenceUnitsMap, labels, feName2IDmap);
-    } catch (err) {
-      logger.error(`Ill-formed lexUnit detected: ID = ${jsonixLexUnit.value.id}`);
-      logger.error(err);
-    }
+    processLexUnit(jsonixLexUnit, annoSetsMap, patternsMap, sentencesMap,
+                   valenceUnitsMap, labels, feName2IDmap);
   }));
 }
 
