@@ -92,7 +92,7 @@ async function extractFullText(file, annoSetsMap, corporaMap, documentsMap,
  */
 async function extractFiles(files, annoSetsMap, corporaMap, documentsMap,
                             labels, patternsMap, sentencesMap, valenceUnitsMap) {
-  logger.info('Extracting fulltext files...');
+  logger.info('Extracting fullTexts...');
   const fulltextProgressBar = new ProgressBar({
     total: files.length,
     clean: true,
