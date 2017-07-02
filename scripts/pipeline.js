@@ -50,8 +50,8 @@ async function importFrameNetData(dbUri, lexUnitDir, lexUnitChunkSize,
                   // It will be useful to empty the array to free some memory.
   const lexemes = [];
 
-  await frames.importFrames(frameDir, frameChunkSize, framesMap, fesMap,
-                            lexUnitsMap, lexemes);
+  await frames.extractFrames(frameDir, frameChunkSize, framesMap, fesMap,
+                             lexUnitsMap, lexemes);
   logger.info('Done processing frames');
   logger.info(`framesMap.size = ${framesMap.size}`);
   logger.info(`lexUnitsMap.size = ${lexUnitsMap.size}`);
@@ -60,14 +60,14 @@ async function importFrameNetData(dbUri, lexUnitDir, lexUnitChunkSize,
 
   await saveFramesStepDataToDatabase(framesMap, fesMap, lexUnitsMap, lexemes);
 
-  await relations.importRelations(relationsFilePath, frameRelationTypes,
-                                  frameRelations, feRelations);
-  logger.info('Done processing relations');
-  await semTypes.importSemTypes(semTypesFilePath, semTypes);
-  logger.info('Done processing semTypes');
-  await lexUnits.importLexUnits(lexUnitDir, lexUnitChunkSize, annoSetsMap,
-                                labels, patternsMap, sentencesMap,
-                                valenceUnitsMap);
+  await relations.extractRelations(relationsFilePath, frameRelationTypes,
+                                   frameRelations, feRelations);
+  logger.info('Done extracting relations');
+  await semTypes.extractSemTypes(semTypesFilePath, semTypes);
+  logger.info('Done extracting semTypes');
+  await lexUnits.extractLexUnits(lexUnitDir, lexUnitChunkSize, annoSetsMap,
+                                 labels, patternsMap, sentencesMap,
+                                 valenceUnitsMap);
   logger.info('Done processing lexUnits');
   labels = []; // Free some memory
   await fullTexts.importFullTexts(fullTextDir, annoSetsMap, corporaMap,

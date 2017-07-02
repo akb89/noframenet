@@ -101,13 +101,8 @@ function getFEids(jsonixFrame, fesMap) {
   });
 }
 
-function processFrame(jsonixFrame, framesMap, fesMap, lexUnitsMap, lexemes) {
+function extractFrame(jsonixFrame, framesMap, fesMap, lexUnitsMap, lexemes) {
   const frameID = Number(jsonixFrame.value.id);
-  if (framesMap.has(frameID)) {
-    logger.error(`Trying to import a Frame already processed: frame.id = ${jsonixFrame.value.id}`);
-    logger.info('Exiting NoFrameNet');
-    process.exit(1);
-  }
   framesMap.set(frameID, new Frame({
     _id: jsonixFrame.value.id,
     name: jsonixFrame.value.name,
@@ -121,10 +116,10 @@ function processFrame(jsonixFrame, framesMap, fesMap, lexUnitsMap, lexemes) {
   }));
 }
 
-async function processBatch(batch, framesMap, fesMap, lexUnitsMap, lexemes) {
+async function extractBatch(batch, framesMap, fesMap, lexUnitsMap, lexemes) {
   await Promise.all(batch.map(async (file) => {
     const jsonixFrame = await marshaller.unmarshall(file);
-    processFrame(jsonixFrame, framesMap, fesMap, lexUnitsMap, lexemes);
+    extractFrame(jsonixFrame, framesMap, fesMap, lexUnitsMap, lexemes);
   }));
 }
 
@@ -132,22 +127,22 @@ async function processBatch(batch, framesMap, fesMap, lexUnitsMap, lexemes) {
  * Only import info related to Frames, FEs, LexUnits and Lexemes. Info
  * regarding relations will be imported in separate scripts.
  */
-async function importBatchSet(batchSet, framesMap, fesMap, lexUnitsMap, lexemes) {
+async function extractBatchSet(batchSet, framesMap, fesMap, lexUnitsMap, lexemes) {
   let counter = 1;
   const frameProgressBar = new ProgressBar({
     total: batchSet.length,
     clean: true,
   });
-  logger.info('Importing frames by batch...');
+  logger.info('Extracting frames by batch...');
   for (const batch of batchSet) {
-    logger.debug(`Importing frame batch ${counter} out of ${batchSet.length}...`);
-    await processBatch(batch, framesMap, fesMap, lexUnitsMap, lexemes);
+    logger.debug(`Extracting frame batch ${counter} out of ${batchSet.length}...`);
+    await extractBatch(batch, framesMap, fesMap, lexUnitsMap, lexemes);
     counter += 1;
     frameProgressBar.tick();
   }
 }
 
-async function importFrames(frameDir, chunkSize, framesMap, fesMap, lexUnitsMap, lexemes) {
+async function extractFrames(frameDir, chunkSize, framesMap, fesMap, lexUnitsMap, lexemes) {
   let batchSet;
   try {
     batchSet = await utils.filterAndChunk(frameDir, chunkSize);
@@ -156,9 +151,9 @@ async function importFrames(frameDir, chunkSize, framesMap, fesMap, lexUnitsMap,
     logger.info('Exiting NoFrameNet');
     process.exit(1);
   }
-  await importBatchSet(batchSet, framesMap, fesMap, lexUnitsMap, lexemes);
+  await extractBatchSet(batchSet, framesMap, fesMap, lexUnitsMap, lexemes);
 }
 
 module.exports = {
-  importFrames,
+  extractFrames,
 };

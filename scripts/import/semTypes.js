@@ -30,7 +30,7 @@ function processSemTypes(jsonixSemTypes, semTypes) {
 }
 
 async function importSemTypes(semTypesFilePath, semTypes) {
-  logger.info(`Processing file: ${semTypesFilePath}`);
+  logger.info(`Extracting semTypes from file: ${semTypesFilePath}`);
   let jsonixSemTypes;
   try {
     jsonixSemTypes = await marshaller.unmarshall(semTypesFilePath);

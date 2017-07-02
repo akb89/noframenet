@@ -57,7 +57,7 @@ function getDocumentIDs(jsonixFullText, annoSetsMap, documentsMap, labels,
   });
 }
 
-function processCorpus(jsonixFullText, annoSetsMap, corporaMap, documentsMap,
+function extractCorpus(jsonixFullText, annoSetsMap, corporaMap, documentsMap,
                        labels, patternsMap, sentencesMap, valenceUnitsMap) {
   const corpusID = Number(jsonixFullText.value.header.corpus[0].id);
   if (!corporaMap.has(corpusID)) {
@@ -77,12 +77,12 @@ function processCorpus(jsonixFullText, annoSetsMap, corporaMap, documentsMap,
                                                             valenceUnitsMap));
 }
 
-async function importFullText(file, annoSetsMap, corporaMap, documentsMap,
-                              labels, patternsMap, sentencesMap,
-                              valenceUnitsMap) {
-  logger.debug(`Importing fulltext file ${file}...`);
+async function extractFullText(file, annoSetsMap, corporaMap, documentsMap,
+                               labels, patternsMap, sentencesMap,
+                               valenceUnitsMap) {
+  logger.debug(`Extracting fulltext file ${file}...`);
   const jsonixFullText = await marshaller.unmarshall(file);
-  processCorpus(jsonixFullText, annoSetsMap, corporaMap, documentsMap,
+  extractCorpus(jsonixFullText, annoSetsMap, corporaMap, documentsMap,
                 labels, patternsMap, sentencesMap, valenceUnitsMap);
 }
 
@@ -90,17 +90,17 @@ async function importFullText(file, annoSetsMap, corporaMap, documentsMap,
  * Sentences, AnnotationSets and Labels will be imported with the
  * importLexUnits script.
  */
-async function importFiles(files, annoSetsMap, corporaMap, documentsMap,
-                           labels, patternsMap, sentencesMap, valenceUnitsMap) {
-  logger.info('Importing fulltext files...');
+async function extractFiles(files, annoSetsMap, corporaMap, documentsMap,
+                            labels, patternsMap, sentencesMap, valenceUnitsMap) {
+  logger.info('Extracting fulltext files...');
   const fulltextProgressBar = new ProgressBar({
     total: files.length,
     clean: true,
   });
   for (const file of files) {
     try {
-      await importFullText(file, annoSetsMap, corporaMap, documentsMap,
-                           labels, patternsMap, sentencesMap, valenceUnitsMap);
+      await extractFullText(file, annoSetsMap, corporaMap, documentsMap,
+                            labels, patternsMap, sentencesMap, valenceUnitsMap);
     } catch (err) {
       logger.error(err);
       logger.info('Exiting NoFrameNet');
@@ -110,9 +110,9 @@ async function importFiles(files, annoSetsMap, corporaMap, documentsMap,
   }
 }
 
-async function importFullTexts(fullTextDir, annoSetsMap, corporaMap,
-                               documentsMap, labels, patternsMap, sentencesMap,
-                               valenceUnitsMap) {
+async function extractFullTexts(fullTextDir, annoSetsMap, corporaMap,
+                                documentsMap, labels, patternsMap, sentencesMap,
+                                valenceUnitsMap) {
   let files;
   try {
     files = await utils.filter(fullTextDir);
@@ -121,10 +121,10 @@ async function importFullTexts(fullTextDir, annoSetsMap, corporaMap,
     logger.info('Exiting NoFrameNet');
     process.exit(1);
   }
-  await importFiles(files, annoSetsMap, corporaMap, documentsMap,
-                    labels, patternsMap, sentencesMap, valenceUnitsMap);
+  await extractFiles(files, annoSetsMap, corporaMap, documentsMap,
+                     labels, patternsMap, sentencesMap, valenceUnitsMap);
 }
 
 module.exports = {
-  importFullTexts,
+  extractFullTexts,
 };
