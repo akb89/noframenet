@@ -24,7 +24,7 @@
     "fixdev": "NODE_ENV=development node ./scripts/fix.js",
     "postfix": "npm run check",
     "postfixdev": "npm run checkdev",
-    "try": "npm run cleandev && NODE_ENV=development node --max-old-space-size=4096 ./scripts/pipeline.js",
+    "try": "npm run cleandev && NODE_ENV=development node --max-old-space-size=4096 ./scripts/extract.js",
     "debug": "npm run cleandev && NODE_ENV=development node ./scripts/debug.js"
   },
   "homepage": "https://github.com/akb89/noframenet#readme",
