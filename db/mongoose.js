@@ -25,10 +25,6 @@ async function connectToDatabase(uri) {
         },
       },
     };
-    /*await mongoose.connect(uri, { reconnectTries: Number.MAX_VALUE,
-                                  keepAlive: 120,
-                                  connectTimeoutMS: 0,
-                                  socketTimeoutMS: 0 });*/
 
     await mongoose.connect(uri, options);
   } catch (err) {

@@ -29,23 +29,6 @@ const logger = config.logger;
 async function saveFullTextDataToDatabase(annoSetsMap, corporaMap, documentsMap,
                                           labels, patternsMap, sentencesMap,
                                           valenceUnitsMap) {
-  /*const startTime = process.hrtime();
-  const annosets = Array.from(annoSetsMap.values());
-  const corpora = Array.from(corporaMap.values());
-  const documents = Array.from(documentsMap.values());
-  const patterns = Array.from(patternsMap.values());
-  const sentences = Array.from(sentencesMap.values());
-  const valenceUnits = Array.from(valenceUnitsMap.values());
-  logger.info(`Completed arrayification in ${process.hrtime(startTime)[0]}s`);
-  return Promise.all([
-    AnnotationSet.collection.insertMany(annosets, { ordered: false }),
-    Corpus.collection.insertMany(corpora, { ordered: false }),
-    Document.collection.insertMany(documents, { ordered: false }),
-    Label.collection.insertMany(labels, { ordered: false }),
-    Pattern.collection.insertMany(patterns, { ordered: false }),
-    Sentence.collection.insertMany(sentences, { ordered: false }),
-    ValenceUnit.collection.insertMany(valenceUnits, { ordered: false }),
-  ]);*/
   return Promise.all([
     AnnotationSet.collection.insertMany(Array.from(annoSetsMap.values()), { ordered: false }),
     Corpus.collection.insertMany(Array.from(corporaMap.values()), { ordered: false }),
@@ -81,8 +64,7 @@ async function importFrameNetData(dbUri, lexUnitDir, lexUnitChunkSize,
                                   relationsFilePath, semTypesFilePath) {
   await driver.connectToDatabase(dbUri);
 
-  // Maps represent unique objects which are inserted to the database
-  // in the end of the pipeline
+  // Maps are for unique documents
   const annoSetsMap = new Map();
   const corporaMap = new Map();
   const documentsMap = new Map();
@@ -92,13 +74,10 @@ async function importFrameNetData(dbUri, lexUnitDir, lexUnitChunkSize,
   const patternsMap = new Map();
   const sentencesMap = new Map();
   const valenceUnitsMap = new Map();
-  // Arrays are inserted to the database as import goes on. They gather
-  // objects with no unicity constraints.
   const frameRelations = [];
   const frameRelationTypes = [];
   const feRelations = [];
-  const labels = []; // We'll need this twice and the array can get pretty big.
-                  // It will be useful to empty the array to free some memory.
+  const labels = [];
   const lexemes = [];
   const semTypes = [];
 
@@ -131,15 +110,6 @@ async function importFrameNetData(dbUri, lexUnitDir, lexUnitChunkSize,
                                           sentencesMap, valenceUnitsMap);
   logger.info('Done extracting lexUnits');
 
-  /*Label.collection.insertMany(labels, { w: 0, j: 0, ordered: false }).then(() => {
-    logger.warn('Done saving lexUnitsExtraction labels to database');
-  });
-  // Do not await this as it takes a long time to process
-  */
-
-  //const labelCount = labels.length;
-  //labels = []; // Free some memory. Does this work as intended if saveLabels is
-              // asynchronous?
   await fullTextsExtractor.extractFullTexts(fullTextDir, annoSetsMap,
                                             corporaMap, documentsMap, labels,
                                             patternsMap, sentencesMap,
