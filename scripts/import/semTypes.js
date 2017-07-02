@@ -2,13 +2,10 @@
  * Standalone script to import the content of semTypes.xml to MongoDB
  */
 const SemType = require('noframenet-core').SemType;
-const toJsonixSemTypesSemTypeArray = require('./../utils/jsonixUtils').toJsonixSemTypesSemTypeArray;
-const toJsonixSuperTypeArray = require('./../utils/jsonixUtils').toJsonixSuperTypeArray;
-const config = require('./../config');
-const driver = require('./../db/mongoose');
-const marshaller = require('./../marshalling/unmarshaller');
-const mongoose = require('mongoose');
-mongoose.Promise = require('bluebird');
+const toJsonixSemTypesSemTypeArray = require('./../../utils/jsonixUtils').toJsonixSemTypesSemTypeArray;
+const toJsonixSuperTypeArray = require('./../../utils/jsonixUtils').toJsonixSuperTypeArray;
+const config = require('./../../config');
+const marshaller = require('./../../marshalling/unmarshaller');
 
 const logger = config.logger;
 
@@ -28,26 +25,11 @@ function getSemTypes(jsonixSemTypes) {
     }).toObject());
 }
 
-async function saveToDb(semTypes) {
-  await SemType.collection.insertMany(semTypes);
+function processSemTypes(jsonixSemTypes, semTypes) {
+  semTypes.push(...getSemTypes(jsonixSemTypes));
 }
 
-async function importSemTypeObjects(semTypes) {
-  try {
-    await saveToDb(semTypes);
-  } catch (err) {
-    logger.error(err);
-    logger.info('Exiting NoFrameNet');
-    process.exit(1);
-  }
-}
-
-async function importUnmarshalledSemTypes(jsonixSemTypes) {
-  const semTypes = getSemTypes(jsonixSemTypes);
-  await importSemTypeObjects(semTypes);
-}
-
-async function importSemTypesOnceConnectedToDb(semTypesFilePath) {
+async function importSemTypes(semTypesFilePath, semTypes) {
   logger.info(`Processing file: ${semTypesFilePath}`);
   let jsonixSemTypes;
   try {
@@ -57,22 +39,9 @@ async function importSemTypesOnceConnectedToDb(semTypesFilePath) {
     logger.info('Exiting NoFrameNet');
     process.exit(1);
   }
-  await importUnmarshalledSemTypes(jsonixSemTypes);
-}
-
-async function importSemTypes(semTypesFilePath, dbUri) {
-  await driver.connectToDatabase(dbUri);
-  await importSemTypesOnceConnectedToDb(semTypesFilePath);
-  await mongoose.disconnect();
-}
-
-if (require.main === module) {
-  const startTime = process.hrtime();
-  const dbUri = config.dbUri;
-  const semTypesFilePath = config.frameNetDir.concat('semTypes.xml');
-  importSemTypes(semTypesFilePath, dbUri).then(() => logger.info(`Import completed in ${process.hrtime(startTime)[0]}s`));
+  await processSemTypes(jsonixSemTypes, semTypes);
 }
 
 module.exports = {
-  importSemTypesOnceConnectedToDb,
+  importSemTypes,
 };

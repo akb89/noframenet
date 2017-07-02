@@ -10,6 +10,7 @@ const Sentence = require('noframenet-core').Sentence;
 const ProgressBar = require('ascii-progress');
 const toJsonixDocumentArray = require('./../../utils/jsonixUtils').toJsonixDocumentArray;
 const toJsonixDocumentSentenceArray = require('./../../utils/jsonixUtils').toJsonixDocumentSentenceArray;
+const annoSetsImport = require('./annoSets');
 const config = require('./../../config');
 const marshaller = require('./../../marshalling/unmarshaller');
 const utils = require('./../../utils/utils');
@@ -19,7 +20,8 @@ const logger = config.logger;
 function getSentenceIDs(jsonixFullText, annoSetsMap, labels, patternsMap,
                         sentencesMap, valenceUnitsMap) {
   return toJsonixDocumentSentenceArray(jsonixFullText).map((jsonixSentence) => {
-    processAnnotationSets(jsonixSentence, annoSetsMap, labels, null, patternsMap, valenceUnitsMap);
+    annoSetsImport.processAnnotationSets(jsonixSentence, annoSetsMap, labels,
+                                         null, patternsMap, valenceUnitsMap);
     const sentenceID = Number(jsonixSentence.id);
     if (!sentencesMap.has(sentenceID)) {
       sentencesMap.set(sentenceID, new Sentence({

@@ -17,10 +17,10 @@ function isValidFNAnnoSet(jsonixAnnoSet) {
     if (jsonixLayer.name === 'FE' && jsonixLayer.label) {
       isValidFELayer = true;
     }
-    if (jsonixLayer.name === 'PT' && jsonixLayer.label) {
+    if (jsonixLayer.name === 'PT') {
       isValidPTLayer = true;
     }
-    if (jsonixLayer.name === 'GF' && jsonixLayer.label) {
+    if (jsonixLayer.name === 'GF') {
       isValidGFLayer = true;
     }
   });
@@ -34,7 +34,7 @@ function getLabelObjectsMap(jsonixAnnoSet) {
   const labelOmap = new Map();
   toJsonixLayerArray(jsonixAnnoSet).forEach((jsonixLayer) => {
     toJsonixLabelArray(jsonixLayer).forEach((jsonixLabel) => {
-      if (jsonixLabel.start !== undefined && jsonixLabel.end !== undefined) {
+      if ((jsonixLabel.start !== undefined && jsonixLabel.end !== undefined) || jsonixLabel.itype !== undefined) {
         const key = `${jsonixLabel.start}#${jsonixLabel.end}#${jsonixLayer.rank}`;
         if (!labelOmap.has(key)) {
           labelOmap.set(key, {});
@@ -101,8 +101,11 @@ function getLabelIDs(jsonixAnnoSet, labels) {
       })).reduce((a, b) => a.concat(b));
 }
 
-function processAnnotationSets(jsonixSentence, annoSetsMap, labels, lexUnitID, patternsMap, valenceUnitsMap) {
-  // In FrameNet 1.5 there are collisions in AnnotationSet IDs. This will replace all collisions by fullText references as fullText import is processed after lexUnit import
+function processAnnotationSets(jsonixSentence, annoSetsMap, labels, lexUnitID,
+                               patternsMap, valenceUnitsMap) {
+  // In FrameNet 1.5 there are collisions in AnnotationSet IDs. This will
+  // replace all collisions by fullText references as fullText import is
+  // processed after lexUnit import
   toJsonixSentenceAnnoSetArray(jsonixSentence).forEach((jsonixAnnoSet) => {
     const annoSet = new AnnotationSet({
       _id: jsonixAnnoSet.id,
@@ -111,10 +114,6 @@ function processAnnotationSets(jsonixSentence, annoSetsMap, labels, lexUnitID, p
       labels: getLabelIDs(jsonixAnnoSet, labels),
     }).toObject();
     if (isValidFNAnnoSet(jsonixAnnoSet)) {
-      const patternID = getPatternID(jsonixAnnoSet, patternsMap, valenceUnitsMap);
-      if (!patternID) {
-        logger.error(`patternID = ${patternID}`);
-      }
       annoSet.pattern = getPatternID(jsonixAnnoSet, patternsMap, valenceUnitsMap);
     }
     annoSetsMap.set(Number(jsonixAnnoSet.id), annoSet); // Replace if found
