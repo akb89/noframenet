@@ -1,22 +1,36 @@
 const path = require('path');
 const Frame = require('noframenet-core').Frame;
 const FrameElement = require('noframenet-core').FrameElement;
+const FERelation = require('noframenet-core').FERelation;
+const FrameRelation = require('noframenet-core').FrameRelation;
+const FrameRelationType = require('noframenet-core').FrameRelationType;
 const LexUnit = require('noframenet-core').LexUnit;
 const Lexeme = require('noframenet-core').Lexeme;
+const SemType = require('noframenet-core').SemType;
 const config = require('./../config');
 const driver = require('./../db/mongoose');
-const frames = require('./import/frames');
-const fullTexts = require('./import/fullTexts');
-const lexUnits = require('./import/lexUnits');
-const relations = require('./import/relations');
-const semTypes = require('./import/semTypes');
+const framesExtractor = require('./extraction/frames');
+const fullTextsExtractor = require('./extraction/fullTexts');
+const lexUnitsExtractor = require('./extraction/lexUnits');
+const relationsExtractor = require('./extraction/relations');
+const semTypesExtractor = require('./extraction/semTypes');
 const mongoose = require('mongoose');
 mongoose.Promise = require('bluebird');
 
 const logger = config.logger;
 
-async function saveFramesStepDataToDatabase(framesMap, fesMap, lexUnitsMap,
-                                            lexemes) {
+async function saveRelationsAndSemTypesToDatabase(feRelations, frameRelations,
+                                                  frameRelationTypes, semTypes) {
+  await Promise.all([
+    FERelation.collection.insertMany(feRelations),
+    FrameRelation.collection.insertMany(frameRelations),
+    FrameRelationType.collection.insertMany(frameRelationTypes),
+    SemType.collection.insertMany(semTypes),
+  ]);
+}
+
+async function saveFramesDataToDatabase(framesMap, fesMap, lexUnitsMap,
+                                        lexemes) {
   await Promise.all([
     Frame.collection.insertMany(Array.from(framesMap.values())),
     FrameElement.collection.insertMany(Array.from(fesMap.values())),
@@ -49,34 +63,47 @@ async function importFrameNetData(dbUri, lexUnitDir, lexUnitChunkSize,
   let labels = []; // We'll need this twice and the array can get pretty big.
                   // It will be useful to empty the array to free some memory.
   const lexemes = [];
+  const relations = [];
+  const semTypes = [];
 
-  await frames.extractFrames(frameDir, frameChunkSize, framesMap, fesMap,
-                             lexUnitsMap, lexemes);
-  logger.info('Done processing frames');
-  logger.info(`framesMap.size = ${framesMap.size}`);
-  logger.info(`lexUnitsMap.size = ${lexUnitsMap.size}`);
-  logger.info(`fesMap.size = ${fesMap.size}`);
-  logger.info(`lexemes.length = ${lexemes.length}`);
+  await framesExtractor.extractFrames(frameDir, frameChunkSize, framesMap,
+                                      fesMap, lexUnitsMap, lexemes);
+  logger.info('Done extracting frames');
 
-  await saveFramesStepDataToDatabase(framesMap, fesMap, lexUnitsMap, lexemes);
+  await saveFramesDataToDatabase(framesMap, fesMap, lexUnitsMap, lexemes);
 
-  await relations.extractRelations(relationsFilePath, frameRelationTypes,
-                                   frameRelations, feRelations);
+  await relationsExtractor.extractRelations(relationsFilePath,
+                                            frameRelationTypes, frameRelations,
+                                            feRelations);
   logger.info('Done extracting relations');
-  await semTypes.extractSemTypes(semTypesFilePath, semTypes);
+
+  await semTypesExtractor.extractSemTypes(semTypesFilePath, semTypes);
   logger.info('Done extracting semTypes');
-  await lexUnits.extractLexUnits(lexUnitDir, lexUnitChunkSize, annoSetsMap,
-                                 labels, patternsMap, sentencesMap,
-                                 valenceUnitsMap);
-  logger.info('Done processing lexUnits');
+
+  await saveRelationsAndSemTypesToDatabase(relations, semTypes);
+
+  await lexUnitsExtractor.extractLexUnits(lexUnitDir, lexUnitChunkSize,
+                                          annoSetsMap, labels, patternsMap,
+                                          sentencesMap, valenceUnitsMap);
+  logger.info('Done extracting lexUnits');
+
+  await saveLabelsToDatabase();
+
   labels = []; // Free some memory
-  await fullTexts.importFullTexts(fullTextDir, annoSetsMap, corporaMap,
-                                  documentsMap, labels, patternsMap,
-                                  sentencesMap, valenceUnitsMap);
-  logger.info('Done processing fullTexts');
+  await fullTextsExtractor.importFullTexts(fullTextDir, annoSetsMap, corporaMap,
+                                           documentsMap, labels, patternsMap,
+                                           sentencesMap, valenceUnitsMap);
+  logger.info('Done extracting fullTexts');
+
+  await saveFullTextDataToDatabase();
+
   logger.info(`annoSetsMap.size = ${annoSetsMap.size}`);
   logger.info(`corporaMap.size = ${corporaMap.size}`);
   logger.info(`documentsMap.size = ${documentsMap.size}`);
+  logger.info(`fesMap.size = ${fesMap.size}`);
+  logger.info(`framesMap.size = ${framesMap.size}`);
+  logger.info(`lexemes.length = ${lexemes.length}`);
+  logger.info(`lexUnitsMap.size = ${lexUnitsMap.size}`);
   logger.info(`patternsMap.size = ${patternsMap.size}`);
   logger.info(`sentencesMap.size = ${sentencesMap.size}`);
   logger.info(`valenceUnitsMap.size = ${valenceUnitsMap.size}`);
