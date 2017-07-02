@@ -134,8 +134,8 @@ function processLexUnit(jsonixLexUnit, annoSetsMap, patternsMap, sentencesMap,
                         valenceUnitsMap, labels, feName2IDmap) {
   processSentences(jsonixLexUnit, annoSetsMap, sentencesMap, labels,
                    jsonixLexUnit.value.id);
-  processPatterns(jsonixLexUnit, annoSetsMap, patternsMap,
-                  valenceUnitsMap, feName2IDmap);
+  /*processPatterns(jsonixLexUnit, annoSetsMap, patternsMap,
+                  valenceUnitsMap, feName2IDmap);*/
 }
 
 // A Map of FEName -> full noframenet-core.FrameElement for a given Frame
