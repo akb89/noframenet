@@ -1,12 +1,19 @@
 const path = require('path');
+const AnnotationSet = require('noframenet-core').AnnotationSet;
+const Corpus = require('noframenet-core').Corpus;
+const Document = require('noframenet-core').Document;
 const Frame = require('noframenet-core').Frame;
 const FrameElement = require('noframenet-core').FrameElement;
 const FERelation = require('noframenet-core').FERelation;
 const FrameRelation = require('noframenet-core').FrameRelation;
 const FrameRelationType = require('noframenet-core').FrameRelationType;
+const Label = require('noframenet-core').Label;
 const LexUnit = require('noframenet-core').LexUnit;
 const Lexeme = require('noframenet-core').Lexeme;
+const Pattern = require('noframenet-core').Pattern;
 const SemType = require('noframenet-core').SemType;
+const Sentence = require('noframenet-core').Sentence;
+const ValenceUnit = require('noframenet-core').ValenceUnit;
 const config = require('./../config');
 const driver = require('./../db/mongoose');
 const framesExtractor = require('./extraction/frames');
@@ -19,9 +26,27 @@ mongoose.Promise = require('bluebird');
 
 const logger = config.logger;
 
+async function saveFullTextDataToDatabase(annoSetsMap, corporaMap, documentsMap,
+                                          labels, patternsMap, sentencesMap,
+                                          valenceUnitsMap) {
+  return Promise.all([
+    AnnotationSet.collection.insertMany(Array.from(annoSetsMap.values())),
+    Corpus.collection.insertMany(Array.from(corporaMap.values())),
+    Document.collection.insertMany(Array.from(documentsMap.values())),
+    Label.collection.insertMany(labels),
+    Pattern.collection.insertMany(Array.from(patternsMap.values())),
+    Sentence.collection.insertMany(Array.from(sentencesMap.values())),
+    ValenceUnit.collection.insertMany(Array.from(valenceUnitsMap.values())),
+  ]);
+}
+
+async function saveLabelsToDatabase(labels) {
+  return Label.collection.insertMany(labels);
+}
+
 async function saveRelationsAndSemTypesToDatabase(feRelations, frameRelations,
                                                   frameRelationTypes, semTypes) {
-  await Promise.all([
+  return Promise.all([
     FERelation.collection.insertMany(feRelations),
     FrameRelation.collection.insertMany(frameRelations),
     FrameRelationType.collection.insertMany(frameRelationTypes),
@@ -31,7 +56,7 @@ async function saveRelationsAndSemTypesToDatabase(feRelations, frameRelations,
 
 async function saveFramesDataToDatabase(framesMap, fesMap, lexUnitsMap,
                                         lexemes) {
-  await Promise.all([
+  return Promise.all([
     Frame.collection.insertMany(Array.from(framesMap.values())),
     FrameElement.collection.insertMany(Array.from(fesMap.values())),
     LexUnit.collection.insertMany(Array.from(lexUnitsMap.values())),
@@ -87,7 +112,7 @@ async function importFrameNetData(dbUri, lexUnitDir, lexUnitChunkSize,
                                           sentencesMap, valenceUnitsMap);
   logger.info('Done extracting lexUnits');
 
-  await saveLabelsToDatabase();
+  await saveLabelsToDatabase(labels);
 
   labels = []; // Free some memory
   await fullTextsExtractor.importFullTexts(fullTextDir, annoSetsMap, corporaMap,
@@ -95,7 +120,9 @@ async function importFrameNetData(dbUri, lexUnitDir, lexUnitChunkSize,
                                            sentencesMap, valenceUnitsMap);
   logger.info('Done extracting fullTexts');
 
-  await saveFullTextDataToDatabase();
+  await saveFullTextDataToDatabase(annoSetsMap, corporaMap, documentsMap,
+                                   labels, patternsMap, sentencesMap,
+                                   valenceUnitsMap);
 
   logger.info(`annoSetsMap.size = ${annoSetsMap.size}`);
   logger.info(`corporaMap.size = ${corporaMap.size}`);
