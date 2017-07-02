@@ -35,8 +35,7 @@ function getFrameRelations(jsonixFrameRelationType, feRelations) {
     });
 }
 
-function getRelationTypes(jsonixFrameRelations, frameRelations,
-                          feRelations) {
+function getRelationTypes(jsonixFrameRelations, feRelations, frameRelations) {
   return toJsonixFrameRelationTypeArray(jsonixFrameRelations)
     .map((jsonixFrameRelationType) => {
       frameRelations.push(...getFrameRelations(jsonixFrameRelationType,
@@ -50,15 +49,15 @@ function getRelationTypes(jsonixFrameRelations, frameRelations,
     });
 }
 
-function extractRelationTypes(jsonixFrameRelations, frameRelationTypes,
-                              frameRelations, feRelations) {
+function extractRelationTypes(jsonixFrameRelations, feRelations, frameRelations,
+                              frameRelationTypes) {
   frameRelationTypes.push(...getRelationTypes(jsonixFrameRelations,
-                                              frameRelations,
-                                              feRelations));
+                                              feRelations,
+                                              frameRelations));
 }
 
-async function extractRelations(relationsFilePath, frameRelationTypes,
-                                frameRelations, feRelations) {
+async function extractRelations(relationsFilePath, feRelations, frameRelations,
+                                frameRelationTypes) {
   logger.info(`Extracting relations from file: ${relationsFilePath}`);
   let jsonixFrameRelations;
   try {
@@ -68,8 +67,8 @@ async function extractRelations(relationsFilePath, frameRelationTypes,
     logger.info('Exiting NoFrameNet');
     process.exit(1);
   }
-  extractRelationTypes(jsonixFrameRelations, frameRelationTypes,
-                       frameRelations, feRelations);
+  extractRelationTypes(jsonixFrameRelations, feRelations, frameRelations,
+                       frameRelationTypes);
 }
 
 module.exports = {

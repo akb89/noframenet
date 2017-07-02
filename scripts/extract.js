@@ -88,7 +88,6 @@ async function importFrameNetData(dbUri, lexUnitDir, lexUnitChunkSize,
   let labels = []; // We'll need this twice and the array can get pretty big.
                   // It will be useful to empty the array to free some memory.
   const lexemes = [];
-  const relations = [];
   const semTypes = [];
 
   await framesExtractor.extractFrames(frameDir, frameChunkSize, framesMap,
@@ -97,15 +96,19 @@ async function importFrameNetData(dbUri, lexUnitDir, lexUnitChunkSize,
 
   await saveFramesDataToDatabase(framesMap, fesMap, lexUnitsMap, lexemes);
 
-  await relationsExtractor.extractRelations(relationsFilePath,
-                                            frameRelationTypes, frameRelations,
-                                            feRelations);
+  await relationsExtractor.extractRelations(relationsFilePath, feRelations,
+                                            frameRelations, frameRelationTypes);
   logger.info('Done extracting relations');
+  logger.info(` frameRelationTypes.length = ${frameRelationTypes.length}`);
+  logger.info(` frameRelations.length = ${frameRelations.length}`);
+  logger.info(` feRelations.length = ${feRelations.length}`);
 
   await semTypesExtractor.extractSemTypes(semTypesFilePath, semTypes);
   logger.info('Done extracting semTypes');
+  logger.info(` semTypes.length = ${semTypes.length}`);
 
-  await saveRelationsAndSemTypesToDatabase(relations, semTypes);
+  await saveRelationsAndSemTypesToDatabase(feRelations, frameRelations,
+                                           frameRelationTypes, semTypes);
 
   await lexUnitsExtractor.extractLexUnits(lexUnitDir, lexUnitChunkSize,
                                           annoSetsMap, labels, patternsMap,
