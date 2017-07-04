@@ -45,10 +45,10 @@ const counts = {
    labels: 7443313,
    lexemes: 14706,
    lexunits: 13631,
-   patterns: 68942,
+   patterns: 51470,
    semtypes: 109,
-   sentences: 182641,
-   valenceunits: 37827,
+   sentences: 182650,
+   valenceunits: 26563,
  },
 };
 
