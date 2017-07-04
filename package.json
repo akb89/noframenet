@@ -1,6 +1,6 @@
 {
   "name": "noframenet",
-  "version": "4.0.0alpha",
+  "version": "4.0.0",
   "description": "A set of scripts to import FrameNet XML data to a MongoDB database",
   "keywords": [
     "FrameNet",
@@ -16,15 +16,15 @@
     "cleandev": "NODE_ENV=development node ./scripts/clean.js",
     "check": "NODE_ENV=production node ./scripts/check.js",
     "checkdev": "NODE_ENV=development node ./scripts/check.js",
-    "import": "npm run clean && NODE_ENV=production node --max-old-space-size=4096 ./scripts/pipeline.js",
-    "importdev": "npm run cleandev && NODE_ENV=development node ./scripts/pipeline.js",
+    "import": "npm run clean && NODE_ENV=production node --max-old-space-size=8192 ./scripts/extract.js",
+    "importdev": "npm run cleandev && NODE_ENV=development node --max-old-space-size=8192 ./scripts/extract.js",
     "postimport": "npm run fix",
     "postimportdev": "npm run fixdev",
     "fix": "NODE_ENV=production node ./scripts/fix.js",
     "fixdev": "NODE_ENV=development node ./scripts/fix.js",
     "postfix": "npm run check",
     "postfixdev": "npm run checkdev",
-    "try": "npm run cleandev && NODE_ENV=development node ./scripts/importFullTexts.js",
+    "try": "npm run cleandev && NODE_ENV=development node --max-old-space-size=8192 ./scripts/extract.js",
     "debug": "npm run cleandev && NODE_ENV=development node ./scripts/debug.js"
   },
   "homepage": "https://github.com/akb89/noframenet#readme",
@@ -40,7 +40,7 @@
     "bluebird": "^3.5.0",
     "jsonix": "^2.4.1",
     "mongoose": "4.10.8",
-    "noframenet-core": "^4.0.0-beta2",
+    "noframenet-core": "^4.0.0",
     "winston": "^2.3.1"
   },
   "devDependencies": {
