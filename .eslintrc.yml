@@ -33,3 +33,9 @@ rules:
 
   #Allow param-reassign on annoSetLabelMap in importFullTexts:
   no-param-reassign: [error, {props: true, ignorePropertyModificationsFor: [annoSetLabelMap]}]
+
+  #Allow (pep) Python-style parameters indentation and alignment
+  indent: [error, 2, {FunctionDeclaration: {parameters: first}, FunctionExpression: {parameters: first}, CallExpression: {arguments: first}, ArrayExpression: first, ObjectExpression: first}]
+
+  #Allow await-in-loop while we look for a better solution
+  no-await-in-loop: [warn]

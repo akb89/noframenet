@@ -6,7 +6,7 @@ const rewire = require('rewire');
 const marshaller = require('./../marshalling/unmarshaller');
 
 const should = chai.should();
-const getSemTypes = rewire('./../scripts/importSemTypes.js').__get__('getSemTypes');
+const getSemTypes = rewire('./../scripts/extraction/semTypes.js').__get__('getSemTypes');
 
 describe('importSemTypes', () => {
   let jsonixSemTypes;
