@@ -1,9 +1,9 @@
 const logger = require('./../logger/logger');
 
 const config = {
-  dbUri: 'mongodb://localhost:27017/fn_en_d150',
+  dbUri: 'mongodb://localhost:27017/fn_en_d160',
   logger: logger.info,
-  frameNetDir: '/Users/AKB/Dropbox/FrameNetData/fndata-1.5',
+  frameNetDir: '/Users/AKB/Dropbox/FrameNetData/fndata-1.6',
   frameChunkSize: 150,
   lexUnitChunkSize: 200,
 };
