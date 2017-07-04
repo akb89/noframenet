@@ -28,10 +28,10 @@ const counts = {
    labels: 7242380,
    lexemes: 14315,
    lexunits: 13315,
-   patterns: 58861,
+   patterns: 48777,
    semtypes: 102,
-   sentences: 179792,
-   valenceunits: 37172,
+   sentences: 179801,
+   valenceunits: 24036,
  },
  'fndata-1.7': {
    annotationsets: 385554,
