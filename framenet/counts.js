@@ -11,10 +11,10 @@ const counts = {
    labels: 5019189,
    lexemes: 12741,
    lexunits: 11942,
-   patterns: 45284,
+   patterns: 42752,
    semtypes: 73,
    sentences: 158698,
-   valenceunits: 19611,
+   valenceunits: 20809,
  },
  'fndata-1.6': {
    annotationsets: 380594,
