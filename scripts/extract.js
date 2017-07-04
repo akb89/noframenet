@@ -22,21 +22,29 @@ const lexUnitsExtractor = require('./extraction/lexUnits');
 const relationsExtractor = require('./extraction/relations');
 const semTypesExtractor = require('./extraction/semTypes');
 const mongoose = require('mongoose');
-mongoose.Promise = require('bluebird');
+const Promise = require('bluebird');
+
+mongoose.Promise = Promise;
 
 const logger = config.logger;
 
-async function saveFullTextDataToDatabase(annoSetsMap, corporaMap, documentsMap,
-                                          labels, patternsMap, sentencesMap,
-                                          valenceUnitsMap) {
+function saveFullTextDataToDatabase(annoSetsMap, corporaMap, documentsMap,
+                                    labels, patternsMap, sentencesMap,
+                                    valenceUnitsMap) {
+  const annosets = Array.from(annoSetsMap.values());
+  const corpora = Array.from(corporaMap.values());
+  const documents = Array.from(documentsMap.values());
+  const patterns = Array.from(patternsMap.values());
+  const sentences = Array.from(sentencesMap.values());
+  const valenceUnits = Array.from(valenceUnitsMap.values());
   return Promise.all([
-    AnnotationSet.collection.insertMany(Array.from(annoSetsMap.values()), { ordered: false }),
-    Corpus.collection.insertMany(Array.from(corporaMap.values()), { ordered: false }),
-    Document.collection.insertMany(Array.from(documentsMap.values()), { ordered: false }),
+    AnnotationSet.collection.insertMany(annosets, { ordered: false }),
+    Corpus.collection.insertMany(corpora, { ordered: false }),
+    Document.collection.insertMany(documents, { ordered: false }),
     Label.collection.insertMany(labels, { ordered: false }),
-    Pattern.collection.insertMany(Array.from(patternsMap.values()), { ordered: false }),
-    Sentence.collection.insertMany(Array.from(sentencesMap.values()), { ordered: false }),
-    ValenceUnit.collection.insertMany(Array.from(valenceUnitsMap.values()), { ordered: false }),
+    Pattern.collection.insertMany(patterns, { ordered: false }),
+    Sentence.collection.insertMany(sentences, { ordered: false }),
+    ValenceUnit.collection.insertMany(valenceUnits, { ordered: false }),
   ]);
 }
 
