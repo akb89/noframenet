@@ -28,7 +28,7 @@ mongoose.Promise = Promise;
 
 const logger = config.logger;
 
-function saveFullTextDataToDatabase(annoSetsMap, corporaMap, documentsMap,
+async function saveFullTextDataToDatabase(annoSetsMap, corporaMap, documentsMap,
                                     labels, patternsMap, sentencesMap,
                                     valenceUnitsMap) {
   const annosets = Array.from(annoSetsMap.values());
@@ -37,7 +37,14 @@ function saveFullTextDataToDatabase(annoSetsMap, corporaMap, documentsMap,
   const patterns = Array.from(patternsMap.values());
   const sentences = Array.from(sentencesMap.values());
   const valenceUnits = Array.from(valenceUnitsMap.values());
-  return Promise.all([
+  await AnnotationSet.collection.insertMany(annosets, { ordered: false });
+  await Corpus.collection.insertMany(corpora, { ordered: false });
+  await Document.collection.insertMany(documents, { ordered: false });
+  await Label.collection.insertMany(labels, { ordered: false });
+  await Pattern.collection.insertMany(patterns, { ordered: false });
+  await Sentence.collection.insertMany(sentences, { ordered: false });
+  await ValenceUnit.collection.insertMany(valenceUnits, { ordered: false });
+  /*return Promise.all([
     AnnotationSet.collection.insertMany(annosets, { ordered: false }),
     Corpus.collection.insertMany(corpora, { ordered: false }),
     Document.collection.insertMany(documents, { ordered: false }),
@@ -45,7 +52,7 @@ function saveFullTextDataToDatabase(annoSetsMap, corporaMap, documentsMap,
     Pattern.collection.insertMany(patterns, { ordered: false }),
     Sentence.collection.insertMany(sentences, { ordered: false }),
     ValenceUnit.collection.insertMany(valenceUnits, { ordered: false }),
-  ]);
+  ]);*/
 }
 
 function saveRelationsAndSemTypesToDatabase(feRelations, frameRelations,
