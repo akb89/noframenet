@@ -34,17 +34,22 @@ function getLabelObjectsMap(jsonixAnnoSet) {
   const labelOmap = new Map();
   toJsonixLayerArray(jsonixAnnoSet).forEach((jsonixLayer) => {
     toJsonixLabelArray(jsonixLayer).forEach((jsonixLabel) => {
-      if ((jsonixLabel.start !== undefined && jsonixLabel.end !== undefined) ||
-          jsonixLabel.itype !== undefined) {
-        const key = `${jsonixLabel.start}#${jsonixLabel.end}#${jsonixLayer.rank}`;
+      let key;
+      if (jsonixLabel.start !== undefined && jsonixLabel.end !== undefined) {
+        key = `${jsonixLabel.start}#${jsonixLabel.end}#${jsonixLayer.rank}`;
+      } else if (jsonixLabel.itype !== undefined) {
+        key = `${jsonixLabel.feID}#${jsonixLabel.itype}#${jsonixLayer.rank}`;
+      }
+      if (key !== undefined) {
         if (!labelOmap.has(key)) {
           labelOmap.set(key, {});
         }
         if (jsonixLayer.name === 'FE') {
           labelOmap.get(key).FE = jsonixLabel.feID;
-        } else if (jsonixLabel.itype !== undefined) {
-          // iType is PT. See lexUnits xml files.
-          labelOmap.get(key).PT = jsonixLabel.itype;
+          if (jsonixLabel.itype !== undefined) {
+            // iType is PT. See lexUnits xml files.
+            labelOmap.get(key).PT = jsonixLabel.itype;
+          }
         } else if (jsonixLayer.name === 'PT' || jsonixLayer.name === 'GF') {
           labelOmap.get(key)[jsonixLayer.name] = jsonixLabel.name;
         }
