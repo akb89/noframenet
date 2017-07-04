@@ -11,9 +11,9 @@ const toJsonixFrameRelationTypeArray = require('./../utils/jsonixUtils').toJsoni
 const marshaller = require('./../marshalling/unmarshaller');
 
 const should = chai.should();
-const convertToFERelations = rewire('./../scripts/importRelations.js').__get__('convertToFERelations');
-const convertToFrameRelations = rewire('./../scripts/importRelations.js').__get__('convertToFrameRelations');
-const convertToRelationTypes = rewire('./../scripts/importRelations.js').__get__('convertToRelationTypes');
+const convertToFERelations = rewire('./../scripts/extraction/relations.js').__get__('getFERelations');
+const convertToFrameRelations = rewire('./../scripts/extraction/relations.js').__get__('getFrameRelations');
+const convertToRelationTypes = rewire('./../scripts/extraction/relations.js').__get__('getRelationTypes');
 
 describe('importRelations', () => {
   let jsonixFrameRelations;
@@ -24,7 +24,7 @@ describe('importRelations', () => {
     jsonixFrameRelationTypeArray = toJsonixFrameRelationTypeArray(jsonixFrameRelations);
     jsonixFrameRelationArray = toJsonixFrameRelationArray(jsonixFrameRelationTypeArray[0]);
   });
-  it('#convertToFERelations should return a properly formatted array of FrameElementRelation objects', () => {
+  it('#getFERelations should return a properly formatted array of FrameElementRelation objects', () => {
     const feRelations = convertToFERelations(jsonixFrameRelationArray[0]);
     feRelations.length.should.equal(4);
     feRelations[0]._id.should.equal(808);
@@ -32,7 +32,7 @@ describe('importRelations', () => {
     feRelations[0].supFE.should.equal(1446);
     feRelations[0].frameRelation.should.equal(2);
   });
-  it('#convertToFERelations should return plain javascript objects converted with Mongoose Document#toObject', () => {
+  it('#getFERelations should return plain javascript objects converted with Mongoose Document#toObject', () => {
     const feRelations = convertToFERelations(jsonixFrameRelationArray[0]);
     const testFERelation = new FERelation({
       _id: 123,
@@ -45,7 +45,7 @@ describe('importRelations', () => {
     feRelations[0].constructor.should.not.equal(FERelation);
     testFERelation.constructor.should.equal(FERelation);
   });
-  it('#convertToFrameRelations should return a properly formatted array of FrameRelation objects', () => {
+  it('#getFrameRelations should return a properly formatted array of FrameRelation objects', () => {
     const frameRelations = convertToFrameRelations(jsonixFrameRelationTypeArray[0], []);
     frameRelations.length.should.equal(2);
     frameRelations[0]._id.should.equal(2);
@@ -53,7 +53,7 @@ describe('importRelations', () => {
     frameRelations[0].supFrame.should.equal(187);
     frameRelations[0].type.should.equal(1);
   });
-  it('#convertToFrameRelations should return plain javascript objects converted with Mongoose Document#toObject', () => {
+  it('#getFrameRelations should return plain javascript objects converted with Mongoose Document#toObject', () => {
     const frameRelations = convertToFrameRelations(jsonixFrameRelationTypeArray[0], []);
     const testFrameRelation = new FrameRelation({
       _id: 123,
@@ -66,7 +66,7 @@ describe('importRelations', () => {
     frameRelations[0].constructor.should.not.equal(FrameRelation);
     testFrameRelation.constructor.should.equal(FrameRelation);
   });
-  it('#convertToRelationTypes should return a properly formatted array of FrameRelationType objects', () => {
+  it('#getRelationTypes should return a properly formatted array of FrameRelationType objects', () => {
     const relationTypes = convertToRelationTypes(jsonixFrameRelations, [], []);
     relationTypes.length.should.equal(3);
     relationTypes[0]._id.should.equal(1);
@@ -74,7 +74,7 @@ describe('importRelations', () => {
     relationTypes[0].subFrameName.should.equal('Child');
     relationTypes[0].supFrameName.should.equal('Parent');
   });
-  it('#convertToRelationTypes should return plain javascript objects converted with Mongoose Document#toObject', () => {
+  it('#getRelationTypes should return plain javascript objects converted with Mongoose Document#toObject', () => {
     const relationTypes = convertToRelationTypes(jsonixFrameRelations, [], []);
     const testFrameRelationType = new FrameRelationType({
       _id: 123,
