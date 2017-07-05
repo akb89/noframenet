@@ -37,13 +37,27 @@ async function saveFullTextDataToDatabase(annoSetsMap, corporaMap, documentsMap,
   const patterns = Array.from(patternsMap.values());
   const sentences = Array.from(sentencesMap.values());
   const valenceUnits = Array.from(valenceUnitsMap.values());
+  logger.info('Importing AnnotationSet documents...');
   await AnnotationSet.collection.insertMany(annosets, { ordered: false });
+  logger.info('Done importing AnnotationSet documents');
+  logger.info('Importing Corpus documents...');
   await Corpus.collection.insertMany(corpora, { ordered: false });
+  logger.info('Done importing Corpus documents');
+  logger.info('Importing Document documents...');
   await Document.collection.insertMany(documents, { ordered: false });
+  logger.info('Done importing Document documents');
+  logger.info('Importing Label documents...');
   await Label.collection.insertMany(labels, { ordered: false });
+  logger.info('Done importing Label documents');
+  logger.info('Importing Pattern documents...');
   await Pattern.collection.insertMany(patterns, { ordered: false });
+  logger.info('Done importing Pattern documents');
+  logger.info('Importing Sentence documents...');
   await Sentence.collection.insertMany(sentences, { ordered: false });
+  logger.info('Done importing Sentence documents');
+  logger.info('Importing ValenceUnit documents...');
   await ValenceUnit.collection.insertMany(valenceUnits, { ordered: false });
+  logger.info('Done importing ValenceUnit documents');
   /*return Promise.all([
     AnnotationSet.collection.insertMany(annosets, { ordered: false }),
     Corpus.collection.insertMany(corpora, { ordered: false }),
