@@ -28,9 +28,9 @@ mongoose.Promise = Promise;
 
 const logger = config.logger;
 
-async function saveFullTextDataToDatabase(annoSetsMap, corporaMap, documentsMap,
-                                    labels, patternsMap, sentencesMap,
-                                    valenceUnitsMap) {
+async function saveDataToDatabase(annoSetsMap, corporaMap, documentsMap,
+                                  labels, patternsMap, sentencesMap,
+                                  valenceUnitsMap) {
   const annosets = Array.from(annoSetsMap.values());
   const corpora = Array.from(corporaMap.values());
   const documents = Array.from(documentsMap.values());
@@ -58,15 +58,6 @@ async function saveFullTextDataToDatabase(annoSetsMap, corporaMap, documentsMap,
   logger.info('Importing ValenceUnit documents...');
   await ValenceUnit.collection.insertMany(valenceUnits, { ordered: false });
   logger.info('Done importing ValenceUnit documents');
-  /*return Promise.all([
-    AnnotationSet.collection.insertMany(annosets, { ordered: false }),
-    Corpus.collection.insertMany(corpora, { ordered: false }),
-    Document.collection.insertMany(documents, { ordered: false }),
-    Label.collection.insertMany(labels, { ordered: false }),
-    Pattern.collection.insertMany(patterns, { ordered: false }),
-    Sentence.collection.insertMany(sentences, { ordered: false }),
-    ValenceUnit.collection.insertMany(valenceUnits, { ordered: false }),
-  ]);*/
 }
 
 function saveRelationsAndSemTypesToDatabase(feRelations, frameRelations,
@@ -88,9 +79,29 @@ function saveFramesDataToDatabase(framesMap, fesMap, lexUnitsMap, lexemes) {
   ]);
 }
 
+async function extractLexUnits(lexUnitDir, lexUnitChunkSize, annoSetsMap,
+                               labels, patternsMap, sentencesMap,
+                               valenceUnitsMap) {
+  await lexUnitsExtractor.extractLexUnits(lexUnitDir, lexUnitChunkSize,
+                                          annoSetsMap, labels, patternsMap,
+                                          sentencesMap, valenceUnitsMap);
+  logger.info('Done extracting lexUnits');
+}
+
+async function extractFullTexts(fullTextDir, annoSetsMap, corporaMap,
+                                documentsMap, labels, patternsMap,
+                                sentencesMap, valenceUnitsMap) {
+  await fullTextsExtractor.extractFullTexts(fullTextDir, annoSetsMap,
+                                            corporaMap, documentsMap, labels,
+                                            patternsMap, sentencesMap,
+                                            valenceUnitsMap);
+  logger.info('Done extracting fullTexts');
+}
+
 async function importFrameNetData(dbUri, lexUnitDir, lexUnitChunkSize,
                                   frameDir, frameChunkSize, fullTextDir,
-                                  relationsFilePath, semTypesFilePath) {
+                                  relationsFilePath, semTypesFilePath,
+                                  importLexUnits, importFullTexts) {
   await driver.connectToDatabase(dbUri);
 
   // Maps are for unique documents
@@ -134,20 +145,19 @@ async function importFrameNetData(dbUri, lexUnitDir, lexUnitChunkSize,
   await saveRelationsAndSemTypesToDatabase(feRelations, frameRelations,
                                            frameRelationTypes, semTypes);
 
-  await lexUnitsExtractor.extractLexUnits(lexUnitDir, lexUnitChunkSize,
-                                          annoSetsMap, labels, patternsMap,
-                                          sentencesMap, valenceUnitsMap);
-  logger.info('Done extracting lexUnits');
+  if (importLexUnits) {
+    await extractLexUnits(lexUnitDir, lexUnitChunkSize, annoSetsMap,
+                          labels, patternsMap, sentencesMap, valenceUnitsMap);
+  }
 
-  await fullTextsExtractor.extractFullTexts(fullTextDir, annoSetsMap,
-                                            corporaMap, documentsMap, labels,
-                                            patternsMap, sentencesMap,
-                                            valenceUnitsMap);
-  logger.info('Done extracting fullTexts');
+  if (importFullTexts) {
+    await extractFullTexts(fullTextDir, annoSetsMap, corporaMap, documentsMap,
+                           labels, patternsMap, sentencesMap, valenceUnitsMap);
+  }
+
   logger.info('Saving data to database. This can take several minutes...');
-  await saveFullTextDataToDatabase(annoSetsMap, corporaMap, documentsMap,
-                                   labels, patternsMap, sentencesMap,
-                                   valenceUnitsMap);
+  await saveDataToDatabase(annoSetsMap, corporaMap, documentsMap,
+                           labels, patternsMap, sentencesMap, valenceUnitsMap);
   logger.info('Done saving data to database');
   logger.verbose(`  annoSetsMap.size = ${annoSetsMap.size}`);
   logger.verbose(`  corporaMap.size = ${corporaMap.size}`);
@@ -166,15 +176,17 @@ async function importFrameNetData(dbUri, lexUnitDir, lexUnitChunkSize,
 if (require.main === module) {
   const startTime = process.hrtime();
   const dbUri = config.dbUri;
-  const lexUnitDir = path.join(config.frameNetDir, 'lu');
+  const importLexUnits = config.importLexUnits;
+  const importFullTexts = config.importFullTexts;
+  const lexUnitDir = path.join(config.splitsDir, 'lu');
   const lexUnitChunkSize = config.lexUnitChunkSize;
   const frameDir = path.join(config.frameNetDir, 'frame');
   const frameChunkSize = config.frameChunkSize;
-  const fullTextDir = path.join(config.frameNetDir, 'fulltext');
+  const fullTextDir = path.join(config.splitsDir, 'fulltext');
   const relationsFilePath = path.join(config.frameNetDir, 'frRelation.xml');
   const semTypesFilePath = path.join(config.frameNetDir, 'semTypes.xml');
   importFrameNetData(dbUri, lexUnitDir, lexUnitChunkSize, frameDir,
                      frameChunkSize, fullTextDir, relationsFilePath,
-                     semTypesFilePath)
+                     semTypesFilePath, importLexUnits, importFullTexts)
     .then(() => logger.info(`FrameNet data import completed in ${process.hrtime(startTime)[0]}s`));
 }
