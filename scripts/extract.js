@@ -37,27 +37,27 @@ async function saveDataToDatabase(annoSetsMap, corporaMap, documentsMap,
   const patterns = Array.from(patternsMap.values());
   const sentences = Array.from(sentencesMap.values());
   const valenceUnits = Array.from(valenceUnitsMap.values());
-  logger.info('Importing AnnotationSet documents...');
+  logger.info('Saving AnnotationSet documents...');
   await AnnotationSet.collection.insertMany(annosets, { ordered: false });
-  logger.info('Done importing AnnotationSet documents');
-  logger.info('Importing Corpus documents...');
+  logger.info('Done saving AnnotationSet documents');
+  logger.info('Saving Corpus documents...');
   await Corpus.collection.insertMany(corpora, { ordered: false });
-  logger.info('Done importing Corpus documents');
-  logger.info('Importing Document documents...');
+  logger.info('Done saving Corpus documents');
+  logger.info('Saving Document documents...');
   await Document.collection.insertMany(documents, { ordered: false });
-  logger.info('Done importing Document documents');
-  logger.info('Importing Label documents...');
+  logger.info('Done saving Document documents');
+  logger.info('Saving Label documents...');
   await Label.collection.insertMany(labels, { ordered: false });
-  logger.info('Done importing Label documents');
-  logger.info('Importing Pattern documents...');
+  logger.info('Done saving Label documents');
+  logger.info('Saving Pattern documents...');
   await Pattern.collection.insertMany(patterns, { ordered: false });
-  logger.info('Done importing Pattern documents');
-  logger.info('Importing Sentence documents...');
+  logger.info('Done saving Pattern documents');
+  logger.info('Saving Sentence documents...');
   await Sentence.collection.insertMany(sentences, { ordered: false });
-  logger.info('Done importing Sentence documents');
-  logger.info('Importing ValenceUnit documents...');
+  logger.info('Done saving Sentence documents');
+  logger.info('Saving ValenceUnit documents...');
   await ValenceUnit.collection.insertMany(valenceUnits, { ordered: false });
-  logger.info('Done importing ValenceUnit documents');
+  logger.info('Done saving ValenceUnit documents');
 }
 
 function saveRelationsAndSemTypesToDatabase(feRelations, frameRelations,
