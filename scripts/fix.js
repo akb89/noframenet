@@ -4,7 +4,9 @@
 const Pattern = require('noframenet-core').Pattern;
 const ValenceUnit = require('noframenet-core').ValenceUnit;
 const config = require('./../config');
-const driver = require('./../db/mongo');
+const driver = require('./../db/mongoose');
+const mongoose = require('mongoose');
+mongoose.Promise = require('bluebird');
 
 const logger = config.logger;
 
@@ -62,50 +64,42 @@ async function check() { // eslint-disable-line
   logger.info(`Wrong VU = ${wrongpt}`);
 }
 
-/**
- * In FrameNet 1.6 there is one valenceUnit with a wrong PT:
- * vu = { _id: ...,
- * FE: '2085',
- * PT: 'Obj',
- * GF: 'Obj' }
- * @method fixOnceConnectedToDB
- * @return {Promise}              [description]
- */
 async function fixOnceConnectedToDB() {
   const wrongPTVU = await ValenceUnit.findOne({
     FE: 2085,
     PT: 'Obj',
     GF: 'Obj',
   });
-  logger.verbose(`Invalid PT ValenceUnit: ${JSON.stringify(wrongPTVU)}`);
+  logger.info(`Invalid PT ValenceUnit: ${JSON.stringify(wrongPTVU)}`);
   const correctPTVU = await ValenceUnit.findOne({
     FE: 2085,
     PT: 'NP',
     GF: 'Obj',
   });
-  logger.verbose(`To be replaced by: ${JSON.stringify(correctPTVU)}`);
+  logger.info(`To be replaced by: ${JSON.stringify(correctPTVU)}`);
   const wrongpatterns = await Pattern.find({
     valenceUnits: wrongPTVU,
   });
-  logger.verbose(`Patterns with incorrect ValenceUnit: ${JSON.stringify(wrongpatterns)}`);
-  await Pattern.update({
-    _id: {
-      $in: wrongpatterns,
-    },
-    valenceUnits: wrongPTVU,
-  }, {
-    $set: {
-      'valenceUnits.$': correctPTVU,
-    },
-  });
-  await ValenceUnit.remove(wrongPTVU);
+  logger.info(`Patterns with incorrect ValenceUnit: ${JSON.stringify(wrongpatterns)}`);
+  if (wrongPTVU.length !== 0) {
+    await Pattern.update({
+      _id: {
+        $in: wrongpatterns,
+      },
+      valenceUnits: wrongPTVU,
+    }, {
+      $set: {
+        'valenceUnits.$': correctPTVU,
+      },
+    });
+    await ValenceUnit.remove(wrongPTVU);
+  }
 }
 
 async function fix(dbUri) {
-  const db = await driver.connectToDatabase(dbUri);
+  await driver.connectToDatabase(dbUri);
   await fixOnceConnectedToDB();
-  db.mongo.close();
-  db.mongoose.disconnect();
+  await mongoose.disconnect();
 }
 
 if (require.main === module) {
