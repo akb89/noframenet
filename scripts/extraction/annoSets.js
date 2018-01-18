@@ -103,8 +103,8 @@ function getLabelIDs(jsonixAnnoSet, labels) {
           name: jsonixLabel.name,
           type: jsonixLayer.name,
           rank: jsonixLayer.rank,
-          startPos: jsonixLabel.start,
-          endPos: jsonixLabel.end,
+          start: jsonixLabel.start,
+          end: jsonixLabel.end,
         }).toObject();
         labels.push(label);
         return label._id;

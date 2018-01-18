@@ -40,7 +40,7 @@
     "bluebird": "^3.5.0",
     "jsonix": "^2.4.1",
     "mongoose": "4.10.8",
-    "noframenet-core": "^4.0.0",
+    "noframenet-core": "^5.0.0",
     "winston": "^2.3.1"
   },
   "devDependencies": {
