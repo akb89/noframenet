@@ -9,21 +9,10 @@ mongoose.Promise = bluebird;
 async function connectToDatabase(uri) {
   try {
     const options = {
-      server: {
-        reconnectTries: Number.MAX_VALUE,
-        socketOptions: {
-          keepAlive: 120,
-          connectTimeoutMS: 0,
-          socketTimeoutMS: 0,
-        },
-      },
-      replset: {
-        socketOptions: {
-          keepAlive: 120,
-          connectTimeoutMS: 0,
-          socketTimeoutMS: 0,
-        },
-      },
+      reconnectTries: Number.MAX_VALUE,
+      keepAlive: 120,
+      connectTimeoutMS: 0,
+      socketTimeoutMS: 0,
     };
 
     await mongoose.connect(uri, options);
