@@ -22,7 +22,7 @@ if (!Array.prototype.chunk) {
         iterator += chunkSize;
       }
       if (this.slice(iterator)
-          .length !== 0) {
+        .length !== 0) {
         chunks.push(this.slice(iterator));
       }
       return chunks;
