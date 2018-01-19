@@ -2,6 +2,7 @@
 [![GitHub release][release-image]][release-url]
 [![Build][travis-image]][travis-url]
 [![Dependencies][david-dep-image]][david-url]
+[![DevDependencies][david-dev-dep-image]][david-dev-url]
 [![MIT License][license-image]][license-url]
 [![FrameNet][framenet-image]][framenet-url]
 
@@ -25,16 +26,53 @@ npm install
 Modify the `config/production.js` file
 ```
 const config = {
-  dbUri: 'mongodb://localhost:27017/fn_en_d170',
+  dbUri: 'mongodb://localhost:27017/fn_en_170',
   logger: logger.info,
-  frameNetDir: '/path/to/FrameNetData/fndata-1.7',
+  frameNetDir: '/path/to/framenet/data/fndata-1.7',
+  splitsDir: '/path/to/framenet/splits/fndata-1.7',
+  importLexUnits: true,
+  importFullTexts: true,
   frameChunkSize: 150,
   lexUnitChunkSize: 200,
 };
 ```
 The `frameNetDir` parameter should refer to the absolute path of the unzipped FrameNet data directory.
 
-You can tweak the `frameChunkSize` and `lexUnitChunkSize`parameters to improve import speed by specifying how many frame or lexunit files should be processed at once.  
+You can tweak the `frameChunkSize` and `lexUnitChunkSize`parameters to improve import speed by specifying how many frame or lexunit files should be processed at once.
+
+Set `importLexUnits` to `true` if you wish to import the content of the `lu` dir. Set `importFullTexts` to `true` if you wish to important the content of the `fulltext` dir.
+
+Specify a different `splitsDir` parameter if you want to split FrameNet files into train/dev/test directories and import only a specific dir.
+Your frameNetDir should have the following structure:
+```
+.
+|-- frameNetDir
+|   |-- frame
+|   |   |-- Abandonment.xml
+|   |   |-- ...
+|   |-- frRelation.xml
+|   |-- train
+|   |   |-- fulltext
+|   |   |   |-- corpusNameXYZ__123.xml
+|   |   |   |-- ...
+|   |   |-- lu
+|   |   |   |-- luFile.xml
+|   |   |   |-- ...
+|   |-- dev
+|   |   |-- fulltext
+|   |   |   |-- corpusNameXYZ__123.xml
+|   |   |   |-- ...
+|   |   |-- lu
+|   |   |   |-- luFile.xml
+|   |   |   |-- ...
+|   |-- test
+|   |   |-- fulltext
+|   |   |   |-- corpusNameXYZ__123.xml
+|   |   |   |-- ...
+|   |   |-- lu
+|   |   |   |-- luFile.xml
+|   |   |   |-- ...
+```
 
 ### 5. Start the full import process
 Run the following command in your terminal, under the NoFrameNet directory:
@@ -68,3 +106,5 @@ NoFrameNet has been tested on FrameNet:
 [license-url]:LICENSE.txt
 [david-url]: https://david-dm.org/akb89/noframenet
 [david-dep-image]: https://david-dm.org/akb89/noframenet.svg?style=flat-square
+[david-dev-dep-image]: https://img.shields.io/david/dev/akb89/noframenet.svg?style=flat-square
+[david-dev-url]: https://david-dm.org/akb89/noframenet?type=dev
