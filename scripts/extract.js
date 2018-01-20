@@ -28,6 +28,8 @@ mongoose.Promise = Promise;
 
 const logger = config.logger;
 
+const INSERTMANY_BATCH_SIZE = 1000;
+
 async function saveDataToDatabase(annoSetsMap, corporaMap, documentsMap,
                                   labels, patternsMap, sentencesMap,
                                   valenceUnitsMap) {
@@ -38,7 +40,13 @@ async function saveDataToDatabase(annoSetsMap, corporaMap, documentsMap,
   const sentences = Array.from(sentencesMap.values());
   const valenceUnits = Array.from(valenceUnitsMap.values());
   logger.info('Saving AnnotationSet documents...');
-  await AnnotationSet.collection.insertMany(annosets, { ordered: false });
+  // await AnnotationSet.collection.insertMany(annosets, { ordered: false });
+  // Fixed bug with v3.6.2 of mongodb where BSON object size limit is exceeded
+  // when processing all annosets at once (same for sentences below)
+  for (let i = 0; i < annosets.length; i += INSERTMANY_BATCH_SIZE) {
+    await AnnotationSet.collection.insertMany(annosets.slice(i, i + INSERTMANY_BATCH_SIZE),
+                                              { ordered: false });
+  }
   logger.info('Done saving AnnotationSet documents');
   logger.info('Saving Corpus documents...');
   await Corpus.collection.insertMany(corpora, { ordered: false });
@@ -53,7 +61,11 @@ async function saveDataToDatabase(annoSetsMap, corporaMap, documentsMap,
   await Pattern.collection.insertMany(patterns, { ordered: false });
   logger.info('Done saving Pattern documents');
   logger.info('Saving Sentence documents...');
-  await Sentence.collection.insertMany(sentences, { ordered: false });
+  // await Sentence.collection.insertMany(sentences, { ordered: false });
+  for (let i = 0; i < sentences.length; i += INSERTMANY_BATCH_SIZE) {
+    await Sentence.collection.insertMany(sentences.slice(i, i + INSERTMANY_BATCH_SIZE),
+                                         { ordered: false });
+  }
   logger.info('Done saving Sentence documents');
   logger.info('Saving ValenceUnit documents...');
   await ValenceUnit.collection.insertMany(valenceUnits, { ordered: false });
