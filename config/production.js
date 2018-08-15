@@ -7,6 +7,7 @@ const config = {
   splitsDir: '/Users/AKB/Dropbox/FrameNetData/fndata-1.7',
   importLexUnits: true,
   importFullTexts: true,
+  importHierarchy: true,
   frameChunkSize: 150,
   lexUnitChunkSize: 200,
 };

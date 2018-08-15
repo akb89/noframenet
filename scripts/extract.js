@@ -4,6 +4,8 @@ const Corpus = require('noframenet-core').Corpus;
 const Document = require('noframenet-core').Document;
 const Frame = require('noframenet-core').Frame;
 const FrameElement = require('noframenet-core').FrameElement;
+const FEHierarchy = require('noframenet-core').FEHierarchy;
+const FrameHierarchy = require('noframenet-core').FrameHierarchy;
 const FERelation = require('noframenet-core').FERelation;
 const FrameRelation = require('noframenet-core').FrameRelation;
 const FrameRelationType = require('noframenet-core').FrameRelationType;
@@ -16,6 +18,7 @@ const Sentence = require('noframenet-core').Sentence;
 const ValenceUnit = require('noframenet-core').ValenceUnit;
 const config = require('./../config');
 const driver = require('./../db/mongoose');
+const hierarchiesExtractor = require('./extraction/hierarchies');
 const framesExtractor = require('./extraction/frames');
 const fullTextsExtractor = require('./extraction/fullTexts');
 const lexUnitsExtractor = require('./extraction/lexUnits');
@@ -91,29 +94,19 @@ function saveFramesDataToDatabase(framesMap, fesMap, lexUnitsMap, lexemes) {
   ]);
 }
 
-async function extractLexUnits(lexUnitDir, lexUnitChunkSize, annoSetsMap,
-                               labels, patternsMap, sentencesMap,
-                               valenceUnitsMap) {
-  await lexUnitsExtractor.extractLexUnits(lexUnitDir, lexUnitChunkSize,
-                                          annoSetsMap, labels, patternsMap,
-                                          sentencesMap, valenceUnitsMap);
-  logger.info('Done extracting lexUnits');
-}
-
-async function extractFullTexts(fullTextDir, annoSetsMap, corporaMap,
-                                documentsMap, labels, patternsMap,
-                                sentencesMap, valenceUnitsMap) {
-  await fullTextsExtractor.extractFullTexts(fullTextDir, annoSetsMap,
-                                            corporaMap, documentsMap, labels,
-                                            patternsMap, sentencesMap,
-                                            valenceUnitsMap);
-  logger.info('Done extracting fullTexts');
+function saveHierarchiesToDatabase(frameHierarchyMap, feHierarchyMap) {
+  return Promise.all([
+    FrameHierarchy.collection.insertMany(Array.from(frameHierarchyMap.values()),
+                                         { ordered: false }),
+    FEHierarchy.collection.insertMany(Array.from(feHierarchyMap.values()), { ordered: false }),
+  ]);
 }
 
 async function importFrameNetData(dbUri, lexUnitDir, lexUnitChunkSize,
                                   frameDir, frameChunkSize, fullTextDir,
                                   relationsFilePath, semTypesFilePath,
-                                  importLexUnits, importFullTexts) {
+                                  importLexUnits, importFullTexts,
+                                  importHierarchy) {
   await driver.connectToDatabase(dbUri);
 
   // Maps are for unique documents
@@ -122,6 +115,8 @@ async function importFrameNetData(dbUri, lexUnitDir, lexUnitChunkSize,
   const documentsMap = new Map();
   const framesMap = new Map();
   const fesMap = new Map();
+  const frameHierarchyMap = new Map();
+  const feHierarchyMap = new Map();
   const lexUnitsMap = new Map();
   const patternsMap = new Map();
   const sentencesMap = new Map();
@@ -157,14 +152,28 @@ async function importFrameNetData(dbUri, lexUnitDir, lexUnitChunkSize,
   await saveRelationsAndSemTypesToDatabase(feRelations, frameRelations,
                                            frameRelationTypes, semTypes);
 
+  if (importHierarchy) {
+    hierarchiesExtractor.extractHierarchies(feRelations, frameRelations,
+                                            frameRelationTypes, framesMap,
+                                            fesMap, frameHierarchyMap,
+                                            feHierarchyMap);
+    await saveHierarchiesToDatabase(frameHierarchyMap, feHierarchyMap);
+    logger.info('Done extracting hierarchy');
+  }
+
   if (importLexUnits) {
-    await extractLexUnits(lexUnitDir, lexUnitChunkSize, annoSetsMap,
-                          labels, patternsMap, sentencesMap, valenceUnitsMap);
+    await lexUnitsExtractor.extractLexUnits(lexUnitDir, lexUnitChunkSize,
+                                            annoSetsMap, labels, patternsMap,
+                                            sentencesMap, valenceUnitsMap);
+    logger.info('Done extracting lexUnits');
   }
 
   if (importFullTexts) {
-    await extractFullTexts(fullTextDir, annoSetsMap, corporaMap, documentsMap,
-                           labels, patternsMap, sentencesMap, valenceUnitsMap);
+    await fullTextsExtractor.extractFullTexts(fullTextDir, annoSetsMap,
+                                              corporaMap, documentsMap, labels,
+                                              patternsMap, sentencesMap,
+                                              valenceUnitsMap);
+    logger.info('Done extracting fullTexts');
   }
 
   logger.info('Saving data to database. This can take several minutes...');
@@ -176,6 +185,8 @@ async function importFrameNetData(dbUri, lexUnitDir, lexUnitChunkSize,
   logger.verbose(`  documentsMap.size = ${documentsMap.size}`);
   logger.verbose(`  fesMap.size = ${fesMap.size}`);
   logger.verbose(`  framesMap.size = ${framesMap.size}`);
+  logger.verbose(`  frameHierarchyMap.size = ${frameHierarchyMap.size}`);
+  logger.verbose(`  feHierarchyMap.size = ${feHierarchyMap.size}`);
   logger.verbose(`  labels.length = ${labels.length}`);
   logger.verbose(`  lexemes.length = ${lexemes.length}`);
   logger.verbose(`  lexUnitsMap.size = ${lexUnitsMap.size}`);
@@ -190,6 +201,7 @@ if (require.main === module) {
   const dbUri = config.dbUri;
   const importLexUnits = config.importLexUnits;
   const importFullTexts = config.importFullTexts;
+  const importHierarchy = config.importHierarchy;
   const lexUnitDir = path.join(config.splitsDir, 'lu');
   const lexUnitChunkSize = config.lexUnitChunkSize;
   const frameDir = path.join(config.frameNetDir, 'frame');
@@ -199,6 +211,7 @@ if (require.main === module) {
   const semTypesFilePath = path.join(config.frameNetDir, 'semTypes.xml');
   importFrameNetData(dbUri, lexUnitDir, lexUnitChunkSize, frameDir,
                      frameChunkSize, fullTextDir, relationsFilePath,
-                     semTypesFilePath, importLexUnits, importFullTexts)
+                     semTypesFilePath, importLexUnits, importFullTexts,
+                     importHierarchy)
     .then(() => logger.info(`FrameNet data import completed in ${process.hrtime(startTime)[0]}s`));
 }

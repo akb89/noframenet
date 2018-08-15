@@ -1,0 +1,7 @@
+const FRTYPE_NAMES_FOR_FRAME_HIERARCHY = ['Inheritance'];
+const FRTYPE_NAMES_FOR_FE_HIERARCHY = ['Inheritance'];
+
+module.exports = {
+  FRTYPE_NAMES_FOR_FRAME_HIERARCHY,
+  FRTYPE_NAMES_FOR_FE_HIERARCHY,
+};
