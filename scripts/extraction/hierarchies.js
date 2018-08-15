@@ -23,7 +23,7 @@ function getRelatives(itemName, childrenParentsMap, type, visitedSet) {
 }
 
 function fillFEhierarchyMap(feHierarchyMap, fesMap, parentsMap, childrenMap) {
-  fesMap.forEach((fe, feID) => {
+  fesMap.forEach((fe) => {
     if (!feHierarchyMap.has(fe.name)) {
       const visitedSet = new Set([fe.name]);
       feHierarchyMap.set(fe.name, new FEHierarchy({
@@ -38,7 +38,7 @@ function fillFEhierarchyMap(feHierarchyMap, fesMap, parentsMap, childrenMap) {
 
 function fillFrameHierarchyMap(frameHierarchyMap, framesMap, parentsMap,
                                childrenMap) {
-  framesMap.forEach((frame, frameID) => {
+  framesMap.forEach((frame) => {
     if (!frameHierarchyMap.has(frame.name)) {
       const visitedSet = new Set([frame.name]);
       frameHierarchyMap.set(frame.name, new FrameHierarchy({
