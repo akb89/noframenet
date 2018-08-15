@@ -1,6 +1,6 @@
 {
   "name": "noframenet",
-  "version": "4.0.5",
+  "version": "4.1.0",
   "description": "A set of scripts to import FrameNet XML data to a MongoDB database",
   "keywords": [
     "FrameNet",
@@ -17,7 +17,7 @@
     "check": "NODE_ENV=production node ./scripts/check.js",
     "checkdev": "NODE_ENV=development node ./scripts/check.js",
     "import": "npm run clean && NODE_ENV=production node --max-old-space-size=8192 ./scripts/extract.js",
-    "importdev": "npm run cleandev && NODE_ENV=development node --max-old-space-size=8192 ./scripts/extract.js",
+    "importdev": "npm run cleandev && NODE_ENV=development node --max-old-space-size=8192 --trace-warnings ./scripts/extract.js",
     "postimport": "npm run fix",
     "postimportdev": "npm run fixdev",
     "fix": "NODE_ENV=production node ./scripts/fix.js",
@@ -39,8 +39,8 @@
     "ascii-progress": "^1.0.5",
     "bluebird": "^3.5.0",
     "jsonix": "^2.4.1",
-    "mongoose": "5.0.0",
-    "noframenet-core": "^5.0.4",
+    "mongoose": "^5.0.0",
+    "noframenet-core": "^5.4.1",
     "winston": "^2.4.0"
   },
   "devDependencies": {
