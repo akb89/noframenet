@@ -1,6 +1,6 @@
 {
   "name": "noframenet",
-  "version": "4.1.0",
+  "version": "4.1.1",
   "description": "A set of scripts to import FrameNet XML data to a MongoDB database",
   "keywords": [
     "FrameNet",

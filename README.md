@@ -28,10 +28,11 @@ Modify the `config/production.js` file
 const config = {
   dbUri: 'mongodb://localhost:27017/fn_en_170',
   logger: logger.info,
-  frameNetDir: '/path/to/framenet/data/fndata-1.7',
-  splitsDir: '/path/to/framenet/splits/fndata-1.7',
+  frameNetDir: '/Users/AKB/Dropbox/FrameNetData/fndata-1.7',
+  splitsDir: '/Users/AKB/Dropbox/FrameNetData/fndata-1.7',
   importLexUnits: true,
   importFullTexts: true,
+  importHierarchy: true,
   frameChunkSize: 150,
   lexUnitChunkSize: 200,
 };
@@ -40,7 +41,9 @@ The `frameNetDir` parameter should refer to the absolute path of the unzipped Fr
 
 You can tweak the `frameChunkSize` and `lexUnitChunkSize`parameters to improve import speed by specifying how many frame or lexunit files should be processed at once.
 
-Set `importLexUnits` to `true` if you wish to import the content of the `lu` dir. Set `importFullTexts` to `true` if you wish to important the content of the `fulltext` dir.
+Set `importLexUnits` to `true` if you wish to import the content of the `lu` dir. Set `importFullTexts` to `true` if you wish to important the content of the `fulltext` dir. Set `importHierarchy` to `true` if you wish to import a
+formatted collection of FrameNet Frame and FE hierarchies, as used by
+the [Valencer API](http://www.github.io/akb89/valencer).
 
 Specify a different `splitsDir` parameter if you want to split FrameNet files into train/dev/test directories and import only a specific dir.
 Your frameNetDir should have the following structure:
