@@ -1,6 +1,6 @@
 const winston = require('winston');
 
-const error = new (winston.Logger)({
+const error = winston.createLogger({
   transports: [
     new (winston.transports.Console)({
       level: 'error',
@@ -9,7 +9,7 @@ const error = new (winston.Logger)({
   ],
 });
 
-const warn = new (winston.Logger)({
+const warn = winston.createLogger({
   transports: [
     new (winston.transports.Console)({
       level: 'warn',
@@ -18,7 +18,7 @@ const warn = new (winston.Logger)({
   ],
 });
 
-const info = new (winston.Logger)({
+const info = winston.createLogger({
   transports: [
     new (winston.transports.Console)({
       level: 'info',
@@ -32,7 +32,7 @@ const info = new (winston.Logger)({
   ],
 });
 
-const verbose = new (winston.Logger)({
+const verbose = winston.createLogger({
   transports: [
     new (winston.transports.Console)({
       level: 'verbose',
@@ -46,7 +46,7 @@ const verbose = new (winston.Logger)({
   ],
 });
 
-const debug = new (winston.Logger)({
+const debug = winston.createLogger({
   transports: [
     new (winston.transports.Console)({
       level: 'debug',
@@ -60,7 +60,7 @@ const debug = new (winston.Logger)({
   ],
 });
 
-const silly = new (winston.Logger)({
+const silly = winston.createLogger({
   transports: [
     new (winston.transports.Console)({
       level: 'silly',
