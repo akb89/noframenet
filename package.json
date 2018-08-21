@@ -39,7 +39,7 @@
     "ascii-progress": "^1.0.5",
     "bluebird": "^3.5.0",
     "jsonix": "^2.4.1",
-    "mongoose": "^5.0.0",
+    "mongoose": "^5.2.9",
     "noframenet-core": "^5.4.3",
     "winston": "^3.0.0"
   },

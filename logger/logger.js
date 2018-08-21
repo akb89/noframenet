@@ -1,8 +1,13 @@
 const winston = require('winston');
 
+const myFormat = winston.format.combine(winston.format.timestamp(),
+                                        winston.format.colorize(),
+                                        winston.format.printf(mess => `[${mess.timestamp}] ${mess.level}: ${mess.message}`));
+
 const error = winston.createLogger({
   transports: [
     new (winston.transports.Console)({
+      format: myFormat,
       level: 'error',
       colorize: true,
     }),
@@ -12,6 +17,7 @@ const error = winston.createLogger({
 const warn = winston.createLogger({
   transports: [
     new (winston.transports.Console)({
+      format: myFormat,
       level: 'warn',
       colorize: true,
     }),
@@ -21,6 +27,7 @@ const warn = winston.createLogger({
 const info = winston.createLogger({
   transports: [
     new (winston.transports.Console)({
+      format: myFormat,
       level: 'info',
       colorize: true,
     }),
@@ -35,6 +42,7 @@ const info = winston.createLogger({
 const verbose = winston.createLogger({
   transports: [
     new (winston.transports.Console)({
+      format: myFormat,
       level: 'verbose',
       colorize: true,
     }),
@@ -49,6 +57,7 @@ const verbose = winston.createLogger({
 const debug = winston.createLogger({
   transports: [
     new (winston.transports.Console)({
+      format: myFormat,
       level: 'debug',
       colorize: true,
     }),
@@ -63,6 +72,7 @@ const debug = winston.createLogger({
 const silly = winston.createLogger({
   transports: [
     new (winston.transports.Console)({
+      format: myFormat,
       level: 'silly',
       colorize: true,
     }),
