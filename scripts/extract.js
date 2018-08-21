@@ -16,6 +16,9 @@ const Pattern = require('noframenet-core').Pattern;
 const SemType = require('noframenet-core').SemType;
 const Sentence = require('noframenet-core').Sentence;
 const ValenceUnit = require('noframenet-core').ValenceUnit;
+const mongoose = require('mongoose');
+const Promise = require('bluebird');
+
 const config = require('./../config');
 const driver = require('./../db/mongoose');
 const hierarchiesExtractor = require('./extraction/hierarchies');
@@ -24,8 +27,6 @@ const fullTextsExtractor = require('./extraction/fullTexts');
 const lexUnitsExtractor = require('./extraction/lexUnits');
 const relationsExtractor = require('./extraction/relations');
 const semTypesExtractor = require('./extraction/semTypes');
-const mongoose = require('mongoose');
-const Promise = require('bluebird');
 
 mongoose.Promise = Promise;
 

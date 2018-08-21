@@ -1,8 +1,5 @@
 const path = require('path');
 const mongoose = require('mongoose');
-const config = require('./../config');
-const driver = require('./../db/mongoose');
-const counts = require('./../framenet/counts');
 
 const AnnotationSet = require('noframenet-core').AnnotationSet;
 const Corpus = require('noframenet-core').Corpus;
@@ -19,6 +16,10 @@ const Pattern = require('noframenet-core').Pattern;
 const SemType = require('noframenet-core').SemType;
 const Sentence = require('noframenet-core').Sentence;
 const ValenceUnit = require('noframenet-core').ValenceUnit;
+
+const config = require('./../config');
+const driver = require('./../db/mongoose');
+const counts = require('./../framenet/counts');
 
 const logger = config.logger;
 

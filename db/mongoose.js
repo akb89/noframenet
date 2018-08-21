@@ -13,6 +13,7 @@ async function connectToDatabase(uri) {
       keepAlive: 120,
       connectTimeoutMS: 0,
       socketTimeoutMS: 0,
+      useNewUrlParser: true,
     };
 
     await mongoose.connect(uri, options);

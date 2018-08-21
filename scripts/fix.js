@@ -3,9 +3,9 @@
  */
 const Pattern = require('noframenet-core').Pattern;
 const ValenceUnit = require('noframenet-core').ValenceUnit;
+const mongoose = require('mongoose');
 const config = require('./../config');
 const driver = require('./../db/mongoose');
-const mongoose = require('mongoose');
 mongoose.Promise = require('bluebird');
 
 const logger = config.logger;
