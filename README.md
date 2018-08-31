@@ -185,17 +185,17 @@ For a detailed account of the Berkeley FrameNet XML format, check out the
 [XSD schema files](data/schema.zip)
 
 The following tags should be identified by a unique number ID:
-- <annotationSet>
-- <sentence>
-- <lexUnit>
-- <frame>
-- <corpus>
-- <document>
-- <FE> or <frameElement>
-- <frameRelation>
+- `<annotationSet>`
+- `<sentence>`
+- `<lexUnit>`
+- `<frame>`
+- `<corpus>`
+- `<document>`
+- `<FE>`
+- `<frameRelation>`
 
- NoFrameNet extracts valence information (FE/PT/GF labels) from the <annotationSet> tags, and NOT from the <valences> or <FERealization> tags.
- Make sure to have all FE/PT/GF layers under <annotationSet>
+ NoFrameNet extracts valence information (FE/PT/GF labels) from the `<annotationSet>` tags, and NOT from the `<valences>` or `<FERealization>` tags.
+ Make sure to have all FE/PT/GF layers under `<annotationSet>`
  specified when appropriate.
 
 [release-image]:https://img.shields.io/github/release/akb89/noframenet.svg?style=flat-square
