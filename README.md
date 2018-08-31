@@ -99,6 +99,105 @@ NoFrameNet has been tested on FrameNet:
 - 1.6
 - 1.7
 
+## Format of FrameNet XML data
+NoFrameNet expects FrameNet XML data to follow the Berkeley FrameNet XML format.
+XML documents should therefore follow:
+
+Either the `fulltext` format structured as:
+```xml
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<?xml-stylesheet type="text/xsl" href="fullText.xsl"?>
+<fullTextAnnotation xsi:schemaLocation="../schema/fullText.xsd" xmlns="http://framenet.icsi.berkeley.edu" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <header>
+        <corpus description="American National Corpus Texts" name="ANC" ID="195">
+            <document description="Goodwill fund-raising letter" name="110CYL067" ID="23791"/>
+        </corpus>
+    </header>
+    <sentence corpID="195" docID="23791" sentNo="1" paragNo="1" aPos="0" ID="4106338">
+        <text>December 1998</text>
+        <annotationSet cDate="12/08/2010 04:12:18 PST Wed" luID="4654" luName="December.n" frameID="229" frameName="Calendric_unit" status="MANUAL" ID="6559768">
+            <layer rank="1" name="Target">
+                <label cBy="MLC" end="7" start="0" name="Target"/>
+            </layer>
+            <layer rank="1" name="FE">
+                <label cBy="MLC" feID="10331" bgColor="FF0000" fgColor="FFFFFF" end="7" start="0" name="Unit"/>
+                <label cBy="MLC" feID="2016" bgColor="FF69B4" fgColor="FFFFFF" end="12" start="9" name="Whole"/>
+            </layer>
+            <layer rank="1" name="GF">
+                <label end="12" start="9" name="Dep"/>
+            </layer>
+            <layer rank="1" name="PT">
+                <label end="12" start="9" name="NP"/>
+            </layer>
+            <layer rank="1" name="Other"/>
+            <layer rank="1" name="Sent"/>
+            <layer rank="1" name="Noun"/>
+        </annotationSet>
+        ...
+```
+
+Either the `lexicographic` format structured as:
+```xml
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<?xml-stylesheet type="text/xsl" href="lexUnit.xsl"?>
+<lexUnit status="Finished_Initial" POS="V" name="cause.v" ID="2" frame="Causation" frameID="5" totalAnnotated="116" xsi:schemaLocation="../schema/lexUnit.xsd" xmlns="http://framenet.icsi.berkeley.edu" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <header>
+        <corpus description="BNC2" name="BNC2" ID="111">
+            <document description="bncp" name="bncp" ID="421"/>
+            ...
+        </corpus>
+        ...
+        <frame>
+            <FE fgColor="FFFFFF" bgColor="1E90FF" type="Core" abbrev="act" name="Actor"/>
+            ...
+        </frame>
+    </header>
+    <definition>COD: be the cause of; make happen. </definition>
+    <lexeme POS="V" name="cause"/>
+    <subCorpus name="V-429-s20-rcoll-change">
+      <sentence sentNo="0" aPos="20224298" ID="651966">
+        <text>Irreversible cell expansion -- very rapid growth -- caused the movement , not turgor change . </text>
+        <annotationSet cDate="01/07/2003 09:27:03 PST Tue" status="MANUAL" ID="784400">
+            <layer rank="1" name="FE">
+                <label cBy="Pam" feID="18" end="47" start="0" name="Cause"/>
+                <label cBy="Pam" feID="20" end="70" start="59" name="Effect"/>
+            </layer>
+            <layer rank="1" name="GF">
+                <label end="47" start="0" name="Ext"/>
+                <label end="70" start="59" name="Obj"/>
+            </layer>
+            <layer rank="1" name="PT">
+                <label end="47" start="0" name="NP"/>
+                <label end="70" start="59" name="NP"/>
+            </layer>
+            <layer rank="1" name="Sent"/>
+            <layer rank="1" name="Other"/>
+            <layer rank="1" name="Target">
+                <label cBy="BoC" end="57" start="52" name="Target"/>
+            </layer>
+            <layer rank="1" name="Verb"/>
+        </annotationSet>
+    </sentence>
+
+```
+
+For a detailed account of the Berkeley FrameNet XML format, check out the
+[XSD schema files](data/schema.zip)
+
+The following tags should be identified by a unique number ID:
+- <annotationSet>
+- <sentence>
+- <lexUnit>
+- <frame>
+- <corpus>
+- <document>
+- <FE> or <frameElement>
+- <frameRelation>
+
+ NoFrameNet extracts valence information (FE/PT/GF labels) from the <annotationSet> tags, and NOT from the <valences> or <FERealization> tags.
+ Make sure to have all FE/PT/GF layers under <annotationSet>
+ specified when appropriate.
+
 [release-image]:https://img.shields.io/github/release/akb89/noframenet.svg?style=flat-square
 [release-url]:https://github.com/akb89/noframenet/releases/latest
 [travis-image]:https://img.shields.io/travis/akb89/noframenet.svg?style=flat-square
