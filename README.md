@@ -182,7 +182,7 @@ Either the `lexicographic` format structured as:
 ```
 
 For a detailed account of the Berkeley FrameNet XML format, check out the
-[XSD schema files](data/schema.zip)
+[XSD schema files](data/schema.zip).
 
 The following tags should be identified by a unique number ID:
 - `<annotationSet>`
